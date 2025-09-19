@@ -1,5 +1,5 @@
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
 
 const app = express();
 const port = 3000;
@@ -7,11 +7,11 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 
-app.post('/summarize', (req, res) => {
+app.post("/summarize", (req, res) => {
   const { content } = req.body;
   // Here you would implement the summarization logic.
   // For now, we'll just return a placeholder.
-  const summary = `This is a summary of the content: ${content.substring(0, 100)}...`;
+  const summary = `${content.substring(0, 100)}...`;
   res.json({ summary });
 });
 
