@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AI Page Summarizer Options</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="password"], select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .info {
+      background-color: #f0f8ff;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+    .status {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 4px;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+  </style>
+</head>
+<body>
+  <h2>AI Page Summarizer Settings</h2>
+  
+  <div class="info">
+    <strong>Note:</strong> This extension first tries to use Chrome's built-in AI (if available). 
+    If that's not available, it will use your preferred AI provider as a fallback.
+  </div>
+
+  <div class="form-group">
+    <label for="aiProvider">Preferred AI Provider (fallback):</label>
+    <select id="aiProvider">
+      <option value="openai">OpenAI (GPT-3.5)</option>
+      <option value="gemini">Google Gemini</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="openaiApiKey">OpenAI API Key:</label>
+    <input type="password" id="openaiApiKey" placeholder="sk-...">
+  </div>
+
+  <div class="form-group">
+    <label for="geminiApiKey">Gemini API Key:</label>
+    <input type="password" id="geminiApiKey" placeholder="AIza...">
+  </div>
+
+  <button id="save">Save Settings</button>
+  
+  <div id="status"></div>
+
+  <script src="options.js"></script>
+</body>
+</html>

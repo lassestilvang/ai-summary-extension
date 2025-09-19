@@ -79,11 +79,15 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
 // Initial content extraction and sending to background script
 // This part only runs when content.js is first injected
-const paragraphs = Array.from(document.querySelectorAll('p')).map(p => p.textContent);
-const pageContent = paragraphs.join('\n');
+if (!window.aiSummarizerInitialized) {
+  window.aiSummarizerInitialized = true;
+  
+  const paragraphs = Array.from(document.querySelectorAll('p')).map(p => p.textContent);
+  const pageContent = paragraphs.join('\n');
 
-// Only send content for summarization if summaryDiv doesn't exist yet
-// This prevents re-summarizing if the user just wants to toggle visibility
-if (!document.getElementById('ai-summary-extension-summary-div')) {
-  chrome.runtime.sendMessage({ action: 'process_content', content: pageContent });
+  // Only send content for summarization if summaryDiv doesn't exist yet
+  // This prevents re-summarizing if the user just wants to toggle visibility
+  if (!document.getElementById('ai-summary-extension-summary-div')) {
+    chrome.runtime.sendMessage({ action: 'process_content', content: pageContent });
+  }
 }
