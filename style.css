@@ -1,0 +1,18 @@
+body {
+  font-family: sans-serif;
+  width: 300px;
+}
+
+h1 {
+  font-size: 18px;
+  text-align: center;
+}
+
+button {
+  display: block;
+  margin: 10px auto;
+}
+
+textarea {
+  width: 100%;
+}

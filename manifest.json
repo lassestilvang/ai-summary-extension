@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "AI Page Summarizer",
+  "version": "1.0",
+  "description": "Summarizes the current page using AI.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "http://localhost:3000/"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
