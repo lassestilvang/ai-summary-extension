@@ -8,11 +8,6 @@ h1 {
   text-align: center;
 }
 
-button {
-  display: block;
-  margin: 10px auto;
-}
-
 textarea {
   width: 100%;
 }
