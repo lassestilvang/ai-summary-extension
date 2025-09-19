@@ -9,7 +9,7 @@
     "http://localhost:3000/"
   ],
   "action": {
-    "default_popup": "popup.html"
+    "default_title": "AI Page Summarizer"
   },
   "background": {
     "service_worker": "background.js"
