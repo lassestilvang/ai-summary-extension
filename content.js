@@ -173,6 +173,21 @@ function createOrUpdateSummaryDiv(summaryText, theme) {
 
   document.getElementById('ai-summary-extension-summary-content').textContent = summaryText;
   summaryDiv.style.display = 'flex';
+
+  adjustHeight();
+}
+
+function adjustHeight() {
+  const summaryContent = document.getElementById('ai-summary-extension-summary-content');
+  const summaryDiv = document.getElementById('ai-summary-extension-summary-div');
+  const titleBarHeight = 30;
+  const padding = 30;
+  const maxHeight = window.innerHeight * 0.9;
+
+  const contentHeight = summaryContent.scrollHeight + padding;
+  const newHeight = Math.min(contentHeight + titleBarHeight, maxHeight);
+
+  summaryDiv.style.height = newHeight + 'px';
 }
 
 function makeDraggable(element, handle) {
