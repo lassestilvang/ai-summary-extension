@@ -1,17 +1,8 @@
 const summaryState = {}; // Stores { tabId: { summary: "...", visible: true/false } }
 
 chrome.action.onClicked.addListener((tab) => {
-  if (summaryState[tab.id] && summaryState[tab.id].summary) {
-    // If summary already exists for this tab, just toggle visibility
-    summaryState[tab.id].visible = !summaryState[tab.id].visible;
-    chrome.tabs.sendMessage(tab.id, { action: 'toggle_summary_visibility', visible: summaryState[tab.id].visible });
-  } else {
-    // Otherwise, proceed with summarization
-    chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      files: ['content.js']
-    });
-  }
+  // When the action button is clicked, send a message to the content script to toggle the summary visibility
+  chrome.tabs.sendMessage(tab.id, { action: 'toggle_summary_visibility' });
 });
 
 async function summarizeWithAI(content) {
