@@ -168,6 +168,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (summaryState[tabId]) {
       summaryState[tabId].visible = request.visible;
     }
+  } else if (request.action === 'open_options_page') {
+    chrome.runtime.openOptionsPage();
   }
 });
 

@@ -64,7 +64,7 @@ function createOrUpdateSummaryDiv(summaryText) {
     copyButton.style.cssText = `
       position: absolute !important;
       top: 5px !important;
-      right: 30px !important;
+      right: 35px !important;
       cursor: pointer !important;
       font-size: 16px !important;
       color: #666 !important;
@@ -81,7 +81,7 @@ function createOrUpdateSummaryDiv(summaryText) {
     shareButton.style.cssText = `
       position: absolute !important;
       top: 7px !important;
-      right: 50px !important;
+      right: 60px !important;
       cursor: pointer !important;
       width: 16px !important;
       height: 16px !important;
@@ -98,6 +98,30 @@ function createOrUpdateSummaryDiv(summaryText) {
     });
 
     summaryDiv.appendChild(shareButton);
+
+    const settingsLink = document.createElement('a');
+    settingsLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      chrome.runtime.sendMessage({ action: 'open_options_page' });
+    });
+    settingsLink.style.cssText = `
+      position: absolute !important;
+      top: 7px !important;
+      right: 85px !important;
+      cursor: pointer !important;
+      width: 16px !important;
+      height: 16px !important;
+    `;
+
+    const settingsIcon = document.createElement('img');
+    settingsIcon.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0iZmVhdGhlciBmZWF0aGVyLXNldHRpbmdzIj4KICA8Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIzIj48L2NpcmNsZT4KICA8cGF0aCBkPSJNMTkuNCAxNWExLjY1IDEuNjUgMCAwIDAgLjMgMS40bDEuNSAyLjVjLjEuMiAwIC41LS4yLjZsLTIuMSAxLjFhMS42NSAxLjY1IDAgMCAwLTEuOCAwbDAtLjUuNWEyLjY1IDEuNjUgMCAwIDAtMS40LS4zbC0yLjUgMS41Yy0uMi4xLS41IDAtLjYtLjJsLTEuMS0yLjFhMS42NSAxLjY1IDAgMCAwIDAtMS44bC41LS44YTEuNjUgMS42NSAwIDAgMCAuMy0xLjRsLTEuNS0yLjVjLS4xLS4yIDAtLjUuMi0uNmwzLjEtMS4xYTEuNjUgMS42NSAwIDAgMCAxLjggMGwuOC41YTEuNjUgMS42NSAwIDAgMCAxLjQuM2wyLjUtMS41Yy4yLS4xLjUgMCAuNi4ybDEuMSAyLjFhMS42NSAxLjY1IDAgMCAwIDAgMS44bC0uNS44eiI+PC9wYXRoPgo8L3N2Zz4=';
+    settingsIcon.style.cssText = `
+      width: 16px !important;
+      height: 16px !important;
+    `;
+
+    settingsLink.appendChild(settingsIcon);
+    summaryDiv.appendChild(settingsLink);
 
 
     summaryDiv.appendChild(summaryTitle);
