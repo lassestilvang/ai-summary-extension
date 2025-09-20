@@ -3,10 +3,19 @@ document.addEventListener('DOMContentLoaded', function() {
   const openaiApiKeyInput = document.getElementById('openaiApiKey');
   const geminiApiKeyInput = document.getElementById('geminiApiKey');
   const saveButton = document.getElementById('save');
+  const themeSelect = document.getElementById('theme');
   const statusDiv = document.getElementById('status');
 
+  // Populate theme selector
+  for (const themeKey in themes) {
+    const option = document.createElement('option');
+    option.value = themeKey;
+    option.textContent = themes[themeKey].name;
+    themeSelect.appendChild(option);
+  }
+
   // Load saved settings
-  chrome.storage.sync.get(['aiProvider', 'openaiApiKey', 'geminiApiKey'], function(result) {
+  chrome.storage.sync.get(['aiProvider', 'openaiApiKey', 'geminiApiKey', 'theme'], function(result) {
     if (result.aiProvider) {
       aiProviderSelect.value = result.aiProvider;
     }
@@ -15,6 +24,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     if (result.geminiApiKey) {
       geminiApiKeyInput.value = result.geminiApiKey;
+    }
+    if (result.theme) {
+      themeSelect.value = result.theme;
     }
   });
 
@@ -42,11 +54,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const aiProvider = aiProviderSelect.value;
     const openaiApiKey = openaiApiKeyInput.value.trim();
     const geminiApiKey = geminiApiKeyInput.value.trim();
+    const theme = themeSelect.value;
     
     chrome.storage.sync.set({
       aiProvider: aiProvider,
       openaiApiKey: openaiApiKey,
-      geminiApiKey: geminiApiKey
+      geminiApiKey: geminiApiKey,
+      theme: theme
     }, function() {
       statusDiv.textContent = 'Settings saved successfully!';
       statusDiv.className = 'status success';

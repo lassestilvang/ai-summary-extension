@@ -1,6 +1,8 @@
 let summaryDiv = null;
 
-function createOrUpdateSummaryDiv(summaryText) {
+function createOrUpdateSummaryDiv(summaryText, theme) {
+  const themeColors = themes[theme]?.colors || themes.light.colors;
+
   if (!summaryDiv) {
     summaryDiv = document.createElement('div');
     summaryDiv.id = 'ai-summary-extension-summary-div';
@@ -10,16 +12,16 @@ function createOrUpdateSummaryDiv(summaryText) {
       right: 10px !important;
       width: 300px !important;
       max-height: 400px !important;
-      background-color: white !important;
+      background-color: ${themeColors.backgroundColor} !important;
       padding: 15px !important;
-      border: 1px solid #ccc !important;
+      border: 1px solid ${themeColors.borderColor} !important;
       border-radius: 8px !important;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+      box-shadow: 0 4px 8px ${themeColors.shadowColor} !important;
       z-index: 99999 !important;
       overflow-y: auto !important;
       font-family: Arial, sans-serif !important;
       font-size: 14px !important;
-      color: #333 !important;
+      color: ${themeColors.textColor} !important;
     `;
 
     const closeButton = document.createElement('span');
@@ -31,7 +33,7 @@ function createOrUpdateSummaryDiv(summaryText) {
       cursor: pointer !important;
       font-size: 16px !important;
       font-weight: bold !important;
-      color: #666 !important;
+      color: ${themeColors.closeButtonColor} !important;
     `;
     closeButton.addEventListener('click', () => {
       summaryDiv.style.display = 'none'; // Hide instead of remove
@@ -43,7 +45,7 @@ function createOrUpdateSummaryDiv(summaryText) {
     summaryTitle.style.cssText = `
       font-family: Arial, sans-serif !important;
       font-size: 16px !important;
-      color: #333 !important;
+      color: ${themeColors.titleColor} !important;
       margin-top: 0 !important;
       margin-bottom: 10px !important;
     `;
@@ -53,7 +55,7 @@ function createOrUpdateSummaryDiv(summaryText) {
     summaryContent.style.cssText = `
       font-family: Arial, sans-serif !important;
       font-size: 14px !important;
-      color: #333 !important;
+      color: ${themeColors.textColor} !important;
       margin: 0 !important;
     `;
 
@@ -67,7 +69,7 @@ function createOrUpdateSummaryDiv(summaryText) {
       right: 35px !important;
       cursor: pointer !important;
       font-size: 16px !important;
-      color: #666 !important;
+      color: ${themeColors.copyButtonColor} !important;
     `;
     copyButton.addEventListener('click', () => {
       const summaryText = document.getElementById('ai-summary-extension-summary-content').textContent;
@@ -135,7 +137,9 @@ function createOrUpdateSummaryDiv(summaryText) {
 // Listener for messages from background.js
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.action === 'display_inline_summary') {
-    createOrUpdateSummaryDiv(request.summary);
+    chrome.storage.sync.get('theme', function(result) {
+      createOrUpdateSummaryDiv(request.summary, result.theme || 'light');
+    });
   } else if (request.action === 'toggle_summary_visibility') {
     if (summaryDiv) {
       summaryDiv.style.display = request.visible ? 'block' : 'none';
