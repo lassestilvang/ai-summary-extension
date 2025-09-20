@@ -111,6 +111,12 @@ function createOrUpdateSummaryDiv(summaryText, theme) {
     buttons.appendChild(minimizeButton);
     buttons.appendChild(maximizeButton);
 
+    const summaryTitleContainer = document.createElement('div');
+    summaryTitleContainer.style.cssText = `
+      flex-grow: 1 !important;
+      text-align: center !important;
+    `;
+
     const summaryTitle = document.createElement('div');
     summaryTitle.textContent = 'Summary';
     summaryTitle.style.cssText = `
@@ -118,11 +124,74 @@ function createOrUpdateSummaryDiv(summaryText, theme) {
       font-family: Arial, sans-serif !important;
       font-size: 14px !important;
       font-weight: bold !important;
-      margin: 0 auto !important;
+      display: inline-block !important;
     `;
 
+    summaryTitleContainer.appendChild(summaryTitle);
+
+    const actionButtons = document.createElement('div');
+    actionButtons.style.cssText = `display: flex !important;`;
+
+    const copyButton = document.createElement('span');
+    copyButton.textContent = '📋'; // Clipboard emoji
+    copyButton.style.cssText = `
+      cursor: pointer !important;
+      font-size: 16px !important;
+      color: ${themeColors.copyButtonColor} !important;
+      margin-left: 8px !important;
+    `;
+    copyButton.addEventListener('click', () => {
+      const summaryText = document.getElementById('ai-summary-extension-summary-content').textContent;
+      navigator.clipboard.writeText(summaryText);
+    });
+
+    const shareButton = document.createElement('img');
+    shareButton.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktc2hhcmUiIHZpZXdCb3g9IjAgMCAxNiAxNiI+CiAgPHBhdGggZD0iTTEzLjUgMWExLjUgMS41IDAgMSAwIDAgMyAxLjUgMS41IDAgMCAwIDAgLTN6TTExIDIuNWEyLjUgMi41IDAgMSAxIC42MDMgMS42MjhsLTYuNzE4IDMuMTJhMi40OTkgMi40OTkgMCAwIDEgMCAxLjUwNGw2LjcxOCAzLjEyQTIuNSAyLjUgMCAxIDEgMTEgMTQuNWEyLjUgMi41IDAgMCAxLS42MDMtMS42MjhsLTYuNzE4LTMuMTJhMi41IDIuNSAwIDAgMSAwLTEuNTA0bDYuNzE4LTMuMTJBMS41IDEuNSAwIDAgMSAxMSAyLjV6bS04LjUgNGExLjUgMS41IDAgMSAwIDAgMyAxLjUgMS41IDAgMCAwIDAtM3ptMTEgNS41YTEuNSAxLjUgMCAxIDAgMCAzIDEuNSAxLjUgMCAwIDAgMC0zeiIvPgo8L3N2Zz4=';
+    shareButton.style.cssText = `
+      cursor: pointer !important;
+      width: 16px !important;
+      height: 16px !important;
+      margin-left: 8px !important;
+    `;
+    shareButton.addEventListener('click', () => {
+      const summaryText = document.getElementById('ai-summary-extension-summary-content').textContent;
+      if (navigator.share) {
+        navigator.share({
+          title: document.title,
+          text: summaryText,
+        })
+        .catch(console.error);
+      }
+    });
+
+    const settingsLink = document.createElement('a');
+    settingsLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      chrome.runtime.sendMessage({ action: 'open_options_page' });
+    });
+    settingsLink.style.cssText = `
+      cursor: pointer !important;
+      width: 16px !important;
+      height: 16px !important;
+      margin-left: 8px !important;
+    `;
+
+    const settingsIcon = document.createElement('img');
+    settingsIcon.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0iZmVhdGhlciBmZWF0aGVyLXNldHRpbmdzIj4KICA8Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIzIj48L2NpcmNsZT4KICA8cGF0aCBkPSJNMTkuNCAxNWExLjY1IDEuNjUgMCAwIDAgLjMgMS40bDEuNSAyLjVjLjEuMiAwIC41LS4yLjZsLTIuMSAxLjFhMS42NSAxLjY1IDAgMCAwLTEuOCAwbDAtLjUuNWEyLjY1IDEuNjUgMCAwIDAtMS40LS4zbC0yLjUgMS41Yy0uMi4xLS41IDAtLjYtLjJsLTEuMS0yLjFhMS42NSAxLjY1IDAgMCAwIDAtMS44bC41LS44YTEuNjUgMS42NSAwIDAgMCAuMy0xLjRsLTEuNS0yLjVjLS4xLS4yIDAtLjUuMi0uNmwzLjEtMS4xYTEuNjUgMS42NSAwIDAgMCAxLjggMGwuOC41YTEuNjUgMS42NSAwIDAgMCAxLjQuM2wyLjUtMS41Yy4yLS4xLjUgMCAuNi4ybDEuMSAyLjFhMS42NSAxLjY1IDAgMCAwIDAgMS44bC0uNS44eiI+PC9wYXRoPgo8L3N2Zz4=';
+    settingsIcon.style.cssText = `
+      width: 16px !important;
+      height: 16px !important;
+    `;
+
+    settingsLink.appendChild(settingsIcon);
+
+    actionButtons.appendChild(copyButton);
+    actionButtons.appendChild(shareButton);
+    actionButtons.appendChild(settingsLink);
+
     titleBar.appendChild(buttons);
-    titleBar.appendChild(summaryTitle);
+    titleBar.appendChild(summaryTitleContainer);
+    titleBar.appendChild(actionButtons);
 
     const summaryContent = document.createElement('div');
     summaryContent.id = 'ai-summary-extension-summary-content';
@@ -171,7 +240,9 @@ function createOrUpdateSummaryDiv(summaryText, theme) {
     makeDraggable(summaryDiv, titleBar);
   }
 
-  document.getElementById('ai-summary-extension-summary-content').textContent = summaryText;
+  const converter = new showdown.Converter();
+  const htmlSummary = converter.makeHtml(summaryText);
+  document.getElementById('ai-summary-extension-summary-content').innerHTML = htmlSummary;
   summaryDiv.style.display = 'flex';
 
   adjustHeight();
