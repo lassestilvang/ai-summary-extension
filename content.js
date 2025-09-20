@@ -90,7 +90,7 @@ function createOrUpdateSummaryDiv(summaryText) {
       const summaryText = document.getElementById('ai-summary-extension-summary-content').textContent;
       if (navigator.share) {
         navigator.share({
-          title: 'AI Summary',
+          title: document.title,
           text: summaryText,
         })
         .catch(console.error);
