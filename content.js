@@ -58,6 +58,48 @@ function createOrUpdateSummaryDiv(summaryText) {
     `;
 
     summaryDiv.appendChild(closeButton);
+
+    const copyButton = document.createElement('span');
+    copyButton.textContent = '📋'; // Clipboard emoji
+    copyButton.style.cssText = `
+      position: absolute !important;
+      top: 5px !important;
+      right: 30px !important;
+      cursor: pointer !important;
+      font-size: 16px !important;
+      color: #666 !important;
+    `;
+    copyButton.addEventListener('click', () => {
+      const summaryText = document.getElementById('ai-summary-extension-summary-content').textContent;
+      navigator.clipboard.writeText(summaryText);
+    });
+
+    summaryDiv.appendChild(copyButton);
+
+    const shareButton = document.createElement('img');
+    shareButton.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktc2hhcmUiIHZpZXdCb3g9IjAgMCAxNiAxNiI+CiAgPHBhdGggZD0iTTEzLjUgMWExLjUgMS41IDAgMSAwIDAgMyAxLjUgMS41IDAgMCAwIDAgLTN6TTExIDIuNWEyLjUgMi41IDAgMSAxIC42MDMgMS42MjhsLTYuNzE4IDMuMTJhMi40OTkgMi40OTkgMCAwIDEgMCAxLjUwNGw2LjcxOCAzLjEyQTIuNSAyLjUgMCAxIDEgMTEgMTQuNWEyLjUgMi41IDAgMCAxLS42MDMtMS42MjhsLTYuNzE4LTMuMTJhMi41IDIuNSAwIDAgMSAwLTEuNTA0bDYuNzE4LTMuMTJBMS41IDEuNSAwIDAgMSAxMSAyLjV6bS04LjUgNGExLjUgMS41IDAgMSAwIDAgMyAxLjUgMS41IDAgMCAwIDAtM3ptMTEgNS41YTEuNSAxLjUgMCAxIDAgMCAzIDEuNSAxLjUgMCAwIDAgMC0zeiIvPgo8L3N2Zz4=';
+    shareButton.style.cssText = `
+      position: absolute !important;
+      top: 7px !important;
+      right: 50px !important;
+      cursor: pointer !important;
+      width: 16px !important;
+      height: 16px !important;
+    `;
+    shareButton.addEventListener('click', () => {
+      const summaryText = document.getElementById('ai-summary-extension-summary-content').textContent;
+      if (navigator.share) {
+        navigator.share({
+          title: 'AI Summary',
+          text: summaryText,
+        })
+        .catch(console.error);
+      }
+    });
+
+    summaryDiv.appendChild(shareButton);
+
+
     summaryDiv.appendChild(summaryTitle);
     summaryDiv.appendChild(summaryContent);
     document.body.prepend(summaryDiv);
