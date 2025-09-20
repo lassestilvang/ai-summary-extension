@@ -15,7 +15,42 @@ chrome.action.onClicked.addListener((tab) => {
 });
 
 async function summarizeWithAI(content) {
-  // Try Chrome built-in AI first
+  // Get user preferences
+  const { aiProvider, openaiApiKey, geminiApiKey } = await chrome.storage.sync.get(['aiProvider', 'openaiApiKey', 'geminiApiKey']);
+
+  // Default to Chrome built-in AI if no preference is set
+  const preferredProvider = aiProvider || 'chrome';
+
+  // Try preferred provider first
+  let result = await tryProvider(preferredProvider, content, openaiApiKey, geminiApiKey);
+  if (result.success) return result.summary;
+
+  // Try fallback providers
+  const providers = ['chrome', 'openai', 'gemini'];
+  for (const provider of providers) {
+    if (provider !== preferredProvider) {
+      result = await tryProvider(provider, content, openaiApiKey, geminiApiKey);
+      if (result.success) return result.summary;
+    }
+  }
+
+  return 'Unable to summarize content. Please check your settings and try again.';
+}
+
+async function tryProvider(provider, content, openaiApiKey, geminiApiKey) {
+  switch (provider) {
+    case 'chrome':
+      return await tryChromeBuiltinAI(content);
+    case 'openai':
+      return await tryOpenAI(content, openaiApiKey);
+    case 'gemini':
+      return await tryGeminiAPI(content, geminiApiKey);
+    default:
+      return { success: false, error: 'Unknown provider' };
+  }
+}
+
+async function tryChromeBuiltinAI(content) {
   try {
     if ('Summarizer' in globalThis) {
       const summarizer = await globalThis.Summarizer.create({
@@ -25,37 +60,13 @@ async function summarizeWithAI(content) {
       });
       const summary = await summarizer.summarize(content);
       summarizer.destroy();
-      return summary;
+      return { success: true, summary };
+    } else {
+      return { success: false, error: 'Chrome built-in AI not available' };
     }
   } catch (error) {
-    console.log('Built-in AI unavailable, trying fallback:', error);
-  }
-
-  // Get user preferences for fallback AI
-  const { aiProvider, openaiApiKey, geminiApiKey } = await chrome.storage.sync.get(['aiProvider', 'openaiApiKey', 'geminiApiKey']);
-  
-  // Determine which API to try first based on user preference
-  const preferredProvider = aiProvider || 'openai';
-  
-  if (preferredProvider === 'gemini') {
-    const geminiResult = await tryGeminiAPI(content, geminiApiKey);
-    if (geminiResult.success) return geminiResult.summary;
-    
-    // Fallback to OpenAI if Gemini fails
-    const openaiResult = await tryOpenAI(content, openaiApiKey);
-    if (openaiResult.success) return openaiResult.summary;
-    
-    return 'Please configure your API keys in the extension options.';
-  } else {
-    // Default: try OpenAI first, then Gemini
-    const openaiResult = await tryOpenAI(content, openaiApiKey);
-    if (openaiResult.success) return openaiResult.summary;
-    
-    // Fallback to Gemini if OpenAI fails
-    const geminiResult = await tryGeminiAPI(content, geminiApiKey);
-    if (geminiResult.success) return geminiResult.summary;
-    
-    return 'Please configure your API keys in the extension options.';
+    console.log('Chrome built-in AI error:', error);
+    return { success: false, error: error.message };
   }
 }
 
@@ -100,7 +111,7 @@ async function tryGeminiAPI(content, apiKey) {
       return { success: false, error: 'No Gemini API key configured' };
     }
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -134,13 +145,13 @@ async function tryGeminiAPI(content, apiKey) {
   }
 }
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.action === 'process_content') {
     const tabId = sender.tab.id;
-    
+
     // Show loading state
     chrome.tabs.sendMessage(tabId, { action: 'display_inline_summary', summary: 'Summarizing...' });
-    
+
     summarizeWithAI(request.content)
       .then(summary => {
         summaryState[tabId] = { summary, visible: true };

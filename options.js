@@ -18,6 +18,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
+  // Show/hide API key fields based on selected provider
+  function updateFieldVisibility() {
+    const selectedProvider = aiProviderSelect.value;
+    const openaiGroup = openaiApiKeyInput.closest('.form-group');
+    const geminiGroup = geminiApiKeyInput.closest('.form-group');
+    
+    if (selectedProvider === 'chrome') {
+      openaiGroup.style.opacity = '0.5';
+      geminiGroup.style.opacity = '0.5';
+    } else {
+      openaiGroup.style.opacity = '1';
+      geminiGroup.style.opacity = '1';
+    }
+  }
+  
+  // Update visibility on provider change
+  aiProviderSelect.addEventListener('change', updateFieldVisibility);
+  updateFieldVisibility(); // Initial call
+
   // Save settings
   saveButton.addEventListener('click', function() {
     const aiProvider = aiProviderSelect.value;

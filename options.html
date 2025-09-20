@@ -57,15 +57,16 @@
   <h2>AI Page Summarizer Settings</h2>
   
   <div class="info">
-    <strong>Note:</strong> This extension first tries to use Chrome's built-in AI (if available). 
-    If that's not available, it will use your preferred AI provider as a fallback.
+    <strong>Note:</strong> Choose your preferred AI provider. If your selected provider is unavailable, 
+    the extension will automatically try other providers as fallbacks.
   </div>
 
   <div class="form-group">
-    <label for="aiProvider">Preferred AI Provider (fallback):</label>
+    <label for="aiProvider">Preferred AI Provider:</label>
     <select id="aiProvider">
+      <option value="chrome">Chrome Built-in AI (Free)</option>
       <option value="openai">OpenAI (GPT-3.5)</option>
-      <option value="gemini">Google Gemini</option>
+      <option value="gemini">Google Gemini 2.0</option>
     </select>
   </div>
 
