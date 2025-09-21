@@ -6,26 +6,34 @@ chrome.action.onClicked.addListener((tab) => {
 });
 
 async function summarizeWithAI(content) {
-  // Get user preferences
+  const startTime = Date.now();
   const { aiProvider, openaiApiKey, geminiApiKey } = await chrome.storage.sync.get(['aiProvider', 'openaiApiKey', 'geminiApiKey']);
-
-  // Default to Chrome built-in AI if no preference is set
   const preferredProvider = aiProvider || 'chrome';
 
-  // Try preferred provider first
   let result = await tryProvider(preferredProvider, content, openaiApiKey, geminiApiKey);
-  if (result.success) return result.summary;
+  let usedProvider = preferredProvider;
 
-  // Try fallback providers
-  const providers = ['chrome', 'openai', 'gemini'];
-  for (const provider of providers) {
-    if (provider !== preferredProvider) {
-      result = await tryProvider(provider, content, openaiApiKey, geminiApiKey);
-      if (result.success) return result.summary;
+  if (!result.success) {
+    const providers = ['chrome', 'openai', 'gemini'];
+    for (const provider of providers) {
+      if (provider !== preferredProvider) {
+        result = await tryProvider(provider, content, openaiApiKey, geminiApiKey);
+        if (result.success) {
+          usedProvider = provider;
+          break;
+        }
+      }
     }
   }
 
-  return 'Unable to summarize content. Please check your settings and try again.';
+  const endTime = Date.now();
+  const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
+
+  if (result.success) {
+    return { summary: result.summary, provider: usedProvider, time: timeTaken };
+  } else {
+    return { summary: 'Unable to summarize content. Please check your settings and try again.', provider: 'N/A', time: timeTaken };
+  }
 }
 
 async function tryProvider(provider, content, openaiApiKey, geminiApiKey) {
@@ -141,18 +149,18 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     const tabId = sender.tab.id;
 
     // Show loading state
-    chrome.tabs.sendMessage(tabId, { action: 'display_inline_summary', summary: 'Summarizing...' });
+    chrome.tabs.sendMessage(tabId, { action: 'show_loading_spinner' });
 
     summarizeWithAI(request.content)
-      .then(summary => {
-        summaryState[tabId] = { summary, visible: true };
-        chrome.tabs.sendMessage(tabId, { action: 'display_inline_summary', summary });
+      .then(({ summary, provider, time }) => {
+        summaryState[tabId] = { summary, visible: true, provider, time };
+        chrome.tabs.sendMessage(tabId, { action: 'display_inline_summary', summary, provider, time });
       })
       .catch(error => {
         console.error('Error summarizing:', error);
         const errorMessage = 'Error summarizing content. Please try again.';
-        summaryState[tabId] = { summary: errorMessage, visible: true };
-        chrome.tabs.sendMessage(tabId, { action: 'display_inline_summary', summary: errorMessage });
+        summaryState[tabId] = { summary: errorMessage, visible: true, provider: 'N/A', time: 'N/A' };
+        chrome.tabs.sendMessage(tabId, { action: 'display_inline_summary', summary: errorMessage, provider: 'N/A', time: 'N/A' });
       });
   } else if (request.action === 'update_summary_visibility') {
     const tabId = sender.tab.id;
