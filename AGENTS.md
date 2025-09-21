@@ -23,4 +23,5 @@ To run the Chrome extension:
 *   **Background Script (`background.js`):** Handles browser events, manages communication with the backend server, and orchestrates data flow within the extension.
 *   **Options Page (`options.html`, `options.js`):** Provides a user interface for configuring extension settings.
 *   **Theming (`themes.js`):** Suggests that the extension supports different visual themes.
+*   **Code Quality:** After making changes, run `npm run lint` to ensure code adheres to style guidelines and fix issues with `npm run lint:fix`.
 *   **Documentation:** Product and steering documents are located in `AGENTS.md` and `.kiro/steering/product.md`, providing insights into the project's goals and design principles.
