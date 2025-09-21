@@ -7,17 +7,32 @@ chrome.action.onClicked.addListener((tab) => {
 
 async function summarizeWithAI(content) {
   const startTime = Date.now();
-  const { aiProvider, openaiApiKey, geminiApiKey } = await chrome.storage.sync.get(['aiProvider', 'openaiApiKey', 'geminiApiKey']);
+  const { aiProvider, openaiApiKey, geminiApiKey } =
+    await chrome.storage.sync.get([
+      'aiProvider',
+      'openaiApiKey',
+      'geminiApiKey',
+    ]);
   const preferredProvider = aiProvider || 'chrome';
 
-  let result = await tryProvider(preferredProvider, content, openaiApiKey, geminiApiKey);
+  let result = await tryProvider(
+    preferredProvider,
+    content,
+    openaiApiKey,
+    geminiApiKey
+  );
   let usedProvider = preferredProvider;
 
   if (!result.success) {
     const providers = ['chrome', 'openai', 'gemini'];
     for (const provider of providers) {
       if (provider !== preferredProvider) {
-        result = await tryProvider(provider, content, openaiApiKey, geminiApiKey);
+        result = await tryProvider(
+          provider,
+          content,
+          openaiApiKey,
+          geminiApiKey
+        );
         if (result.success) {
           usedProvider = provider;
           break;
@@ -32,7 +47,12 @@ async function summarizeWithAI(content) {
   if (result.success) {
     return { summary: result.summary, provider: usedProvider, time: timeTaken };
   } else {
-    return { summary: 'Unable to summarize content. Please check your settings and try again.', provider: 'N/A', time: timeTaken };
+    return {
+      summary:
+        'Unable to summarize content. Please check your settings and try again.',
+      provider: 'N/A',
+      time: timeTaken,
+    };
   }
 }
 
@@ -55,7 +75,7 @@ async function tryChromeBuiltinAI(content) {
       const summarizer = await globalThis.Summarizer.create({
         type: 'key-points',
         format: 'markdown',
-        length: 'medium'
+        length: 'medium',
       });
       const summary = await summarizer.summarize(content);
       summarizer.destroy();
@@ -78,18 +98,20 @@ async function tryOpenAI(content, apiKey) {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
-        messages: [{
-          role: 'user',
-          content: `Please provide a concise summary of the following text in 2-3 sentences:\n\n${content.substring(0, 4000)}`
-        }],
+        messages: [
+          {
+            role: 'user',
+            content: `Please provide a concise summary of the following text in 2-3 sentences:\n\n${content.substring(0, 4000)}`,
+          },
+        ],
         max_tokens: 150,
-        temperature: 0.3
-      })
+        temperature: 0.3,
+      }),
     });
 
     if (!response.ok) {
@@ -110,23 +132,30 @@ async function tryGeminiAPI(content, apiKey) {
       return { success: false, error: 'No Gemini API key configured' };
     }
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `Please provide a concise summary of the following text in 2-3 sentences:\n\n${content.substring(0, 4000)}`
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: 150
-        }
-      })
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `Please provide a concise summary of the following text in 2-3 sentences:\n\n${content.substring(0, 4000)}`,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 150,
+          },
+        }),
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Gemini API request failed: ${response.status}`);
@@ -134,7 +163,10 @@ async function tryGeminiAPI(content, apiKey) {
 
     const data = await response.json();
     if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-      return { success: true, summary: data.candidates[0].content.parts[0].text.trim() };
+      return {
+        success: true,
+        summary: data.candidates[0].content.parts[0].text.trim(),
+      };
     } else {
       throw new Error('Invalid response format from Gemini API');
     }
@@ -144,7 +176,7 @@ async function tryGeminiAPI(content, apiKey) {
   }
 }
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function (request, sender) {
   if (request.action === 'process_content') {
     const tabId = sender.tab.id;
 
@@ -154,13 +186,28 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     summarizeWithAI(request.content)
       .then(({ summary, provider, time }) => {
         summaryState[tabId] = { summary, visible: true, provider, time };
-        chrome.tabs.sendMessage(tabId, { action: 'display_inline_summary', summary, provider, time });
+        chrome.tabs.sendMessage(tabId, {
+          action: 'display_inline_summary',
+          summary,
+          provider,
+          time,
+        });
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error summarizing:', error);
         const errorMessage = 'Error summarizing content. Please try again.';
-        summaryState[tabId] = { summary: errorMessage, visible: true, provider: 'N/A', time: 'N/A' };
-        chrome.tabs.sendMessage(tabId, { action: 'display_inline_summary', summary: errorMessage, provider: 'N/A', time: 'N/A' });
+        summaryState[tabId] = {
+          summary: errorMessage,
+          visible: true,
+          provider: 'N/A',
+          time: 'N/A',
+        };
+        chrome.tabs.sendMessage(tabId, {
+          action: 'display_inline_summary',
+          summary: errorMessage,
+          provider: 'N/A',
+          time: 'N/A',
+        });
       });
   } else if (request.action === 'update_summary_visibility') {
     const tabId = sender.tab.id;

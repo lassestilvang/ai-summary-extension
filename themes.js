@@ -1,3 +1,6 @@
+/* exported themes */
+/* exported themes */
+// eslint-disable-next-line no-unused-vars
 const themes = {
   light: {
     name: 'Light',
