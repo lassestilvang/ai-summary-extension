@@ -294,12 +294,16 @@ function createOrUpdateSummaryDiv(
     let isMinimized = false;
     const originalSize: { height: string } = { height: '' };
     minimizeButton.addEventListener('click', () => {
+      const footerDiv = document.getElementById(
+        'ai-summary-extension-footer-div'
+      );
       if (isMinimized) {
         summaryDiv!.style.height = originalSize.height;
         const summaryContent = document.getElementById(
           'ai-summary-extension-summary-content'
         );
         if (summaryContent) summaryContent.style.display = 'block';
+        if (footerDiv) footerDiv.style.display = 'flex';
         isMinimized = false;
       } else {
         originalSize.height = summaryDiv!.style.height;
@@ -308,6 +312,7 @@ function createOrUpdateSummaryDiv(
           'ai-summary-extension-summary-content'
         );
         if (summaryContent) summaryContent.style.display = 'none';
+        if (footerDiv) footerDiv.style.display = 'none';
         isMinimized = true;
       }
     });
@@ -352,6 +357,10 @@ function createOrUpdateSummaryDiv(
         );
         if (summaryContent) summaryContent.style.display = 'block';
         isMinimized = false;
+        const footerDiv = document.getElementById(
+          'ai-summary-extension-footer-div'
+        );
+        if (footerDiv) footerDiv.style.display = 'flex';
       }
     });
     maximizeButton.title = 'Maximize';
