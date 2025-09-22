@@ -5,7 +5,7 @@ chrome.action.onClicked.addListener((tab) => {
   chrome.tabs.sendMessage(tab.id, { action: 'toggle_summary_visibility' });
 });
 
-async function summarizeWithAI(content) {
+async function summarizeWithAI(content, forceModel = null) {
   const startTime = Date.now();
   const {
     selectedModel,
@@ -21,7 +21,7 @@ async function summarizeWithAI(content) {
     'enableFallback',
   ]);
 
-  const preferredModel = selectedModel || 'chrome-builtin';
+  const preferredModel = forceModel || selectedModel || 'chrome-builtin';
   const metrics = { attempts: [], totalTime: 0 };
 
   let result = await tryModel(preferredModel, content, {
@@ -405,7 +405,7 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
     // Show loading state
     chrome.tabs.sendMessage(tabId, { action: 'show_loading_spinner' });
 
-    summarizeWithAI(request.content)
+    summarizeWithAI(request.content, request.forceModel)
       .then(({ summary, model, time, metrics }) => {
         summaryState[tabId] = { summary, visible: true, model, time, metrics };
         chrome.tabs.sendMessage(tabId, {

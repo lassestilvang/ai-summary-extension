@@ -464,12 +464,57 @@ function createOrUpdateSummaryDiv(
       }
     });
 
-    // Handle model change
+    // Handle model change - trigger automatic regeneration
     modelSelect.addEventListener('change', () => {
+      const newModel = modelSelect.value;
+
+      // Update stored preference
       chrome.runtime.sendMessage({
         action: 'switch_model',
-        model: modelSelect.value,
+        model: newModel,
       });
+
+      // Clear existing content and show loading state
+      const summaryContent = document.getElementById(
+        'ai-summary-extension-summary-content'
+      );
+      const statusText = document.getElementById('ai-summary-status-text');
+      const loadingSpinner = document.getElementById(
+        'ai-summary-extension-loading-spinner'
+      );
+
+      if (summaryContent) {
+        summaryContent.innerHTML = '';
+        summaryContent.style.display = 'none';
+      }
+      if (statusText) {
+        statusText.textContent = 'Regenerating...';
+      }
+      if (loadingSpinner) {
+        loadingSpinner.style.display = 'block';
+      }
+
+      // Extract page content and regenerate summary
+      const paragraphs = Array.from(document.querySelectorAll('p')).map(
+        (p) => p.textContent
+      );
+      const pageContent = paragraphs.join('\n');
+
+      if (pageContent.trim()) {
+        chrome.runtime.sendMessage({
+          action: 'process_content',
+          content: pageContent,
+          forceModel: newModel, // Force the specific model for regeneration
+        });
+      } else {
+        // Handle case where no content is available
+        if (statusText) {
+          statusText.textContent = 'No content available to summarize';
+        }
+        if (loadingSpinner) {
+          loadingSpinner.style.display = 'none';
+        }
+      }
     });
 
     // Status text container
