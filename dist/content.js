@@ -182,7 +182,7 @@ function createOrUpdateSummaryDiv(summaryText, theme, model, time, metrics) {
       position: fixed !important;
       top: 10px !important;
       right: 10px !important;
-      width: 300px !important;
+      width: 400px !important;
       height: 400px !important;
       background-color: ${themeColors.backgroundColor} !important;
       border: 1px solid ${themeColors.borderColor} !important;
@@ -404,7 +404,8 @@ function createOrUpdateSummaryDiv(summaryText, theme, model, time, metrics) {
       .resize-handle-nw { top: -10px; left: -10px; cursor: nw-resize; }
 
       #ai-summary-extension-summary-content ul, #ai-summary-extension-summary-content ol {
-        padding-left: 20px;
+        list-style: initial;
+        padding-left: 13px;
         margin-bottom: 10px;
         line-height: 1.5;
       }
@@ -816,6 +817,8 @@ function updateLoadingProgress(progress) {
 }
 // Listener for messages from background.js
 chrome.runtime.onMessage.addListener(function (request) {
+    if (!request || !request.action)
+        return;
     if (request.action === 'display_inline_summary') {
         chrome.storage.sync.get('theme', function (result) {
             createOrUpdateSummaryDiv(request.summary, result.theme || 'light', request.model, request.time, request.metrics);

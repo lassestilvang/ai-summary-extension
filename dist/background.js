@@ -361,6 +361,8 @@ async function tryAnthropicAPI(content, apiKey, model = 'claude-3-haiku-20240307
     }
 }
 chrome.runtime.onMessage.addListener(function (request, sender) {
+    if (!request || !request.action)
+        return;
     if (request.action === 'process_content') {
         const tabId = sender.tab.id;
         // Show loading state
