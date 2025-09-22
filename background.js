@@ -8,7 +8,9 @@ chrome.action.onClicked.addListener((tab) => {
 async function summarizeWithAI(
   content,
   forceModel = null,
-  progressCallback = null
+  progressCallback = null,
+  selectionMode = false,
+  options = {}
 ) {
   const startTime = Date.now();
   const {
@@ -43,11 +45,17 @@ async function summarizeWithAI(
     });
   }
 
-  let result = await tryModel(preferredModel, content, {
-    openaiApiKey,
-    geminiApiKey,
-    anthropicApiKey,
-  });
+  let result = await tryModel(
+    preferredModel,
+    content,
+    {
+      openaiApiKey,
+      geminiApiKey,
+      anthropicApiKey,
+    },
+    selectionMode,
+    options
+  );
 
   metrics.attempts.push({
     model: preferredModel,
@@ -89,11 +97,17 @@ async function summarizeWithAI(
         });
       }
 
-      result = await tryModel(model, content, {
-        openaiApiKey,
-        geminiApiKey,
-        anthropicApiKey,
-      });
+      result = await tryModel(
+        model,
+        content,
+        {
+          openaiApiKey,
+          geminiApiKey,
+          anthropicApiKey,
+        },
+        selectionMode,
+        options
+      );
 
       metrics.attempts.push({
         model,
@@ -166,7 +180,31 @@ async function summarizeWithAI(
   }
 }
 
-async function tryModel(model, content, apiKeys) {
+function generatePrompt(content, selectionMode = false, options = {}) {
+  const {
+    length = 'medium',
+    focus = 'summary',
+    format = 'paragraphs',
+  } = options;
+
+  let prompt = '';
+
+  if (selectionMode) {
+    prompt = `Please provide a ${length} summary of the following selected text. Focus on ${focus === 'key-points' ? 'key points' : focus === 'summary' ? 'a comprehensive summary' : 'detailed information'}. Format the output as ${format === 'bullets' ? 'bullet points' : format === 'concise' ? 'a concise paragraph' : 'paragraphs'}.\n\n${content.substring(0, 12000)}`;
+  } else {
+    prompt = `Please provide a ${length} summary of the following text in ${format === 'bullets' ? 'bullet points' : format === 'concise' ? 'a concise paragraph' : '2-3 sentences'}. Focus on ${focus === 'key-points' ? 'key points' : focus === 'summary' ? 'the main content' : 'detailed information'}.\n\n${content.substring(0, 12000)}`;
+  }
+
+  return prompt;
+}
+
+async function tryModel(
+  model,
+  content,
+  apiKeys,
+  selectionMode = false,
+  options = {}
+) {
   const modelConfig = getModelConfig(model);
   if (!modelConfig) {
     return { success: false, error: 'Unknown model' };
@@ -174,24 +212,30 @@ async function tryModel(model, content, apiKeys) {
 
   switch (modelConfig.provider) {
     case 'chrome':
-      return await tryChromeBuiltinAI(content);
+      return await tryChromeBuiltinAI(content, options);
     case 'openai':
       return await tryOpenAI(
         content,
         apiKeys.openaiApiKey,
-        modelConfig.modelId
+        modelConfig.modelId,
+        selectionMode,
+        options
       );
     case 'gemini':
       return await tryGeminiAPI(
         content,
         apiKeys.geminiApiKey,
-        modelConfig.modelId
+        modelConfig.modelId,
+        selectionMode,
+        options
       );
     case 'anthropic':
       return await tryAnthropicAPI(
         content,
         apiKeys.anthropicApiKey,
-        modelConfig.modelId
+        modelConfig.modelId,
+        selectionMode,
+        options
       );
     default:
       return { success: false, error: 'Unknown provider' };
@@ -354,13 +398,14 @@ async function storeSummaryHistory(tabId, summary, model, time, metrics) {
   }
 }
 
-async function tryChromeBuiltinAI(content) {
+async function tryChromeBuiltinAI(content, options = {}) {
   try {
     if ('Summarizer' in globalThis) {
+      const { length = 'medium' } = options;
       const summarizer = await globalThis.Summarizer.create({
         type: 'key-points',
         format: 'markdown',
-        length: 'medium',
+        length: length,
       });
       const summary = await summarizer.summarize(content);
       summarizer.destroy();
@@ -374,11 +419,19 @@ async function tryChromeBuiltinAI(content) {
   }
 }
 
-async function tryOpenAI(content, apiKey, model = 'gpt-3.5-turbo') {
+async function tryOpenAI(
+  content,
+  apiKey,
+  model = 'gpt-3.5-turbo',
+  selectionMode = false,
+  options = {}
+) {
   try {
     if (!apiKey) {
       return { success: false, error: 'No OpenAI API key configured' };
     }
+
+    const prompt = generatePrompt(content, selectionMode, options);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -391,7 +444,7 @@ async function tryOpenAI(content, apiKey, model = 'gpt-3.5-turbo') {
         messages: [
           {
             role: 'user',
-            content: `Please provide a concise summary of the following text in 2-3 sentences:\n\n${content.substring(0, 12000)}`,
+            content: prompt,
           },
         ],
         max_tokens: 300,
@@ -411,11 +464,19 @@ async function tryOpenAI(content, apiKey, model = 'gpt-3.5-turbo') {
   }
 }
 
-async function tryGeminiAPI(content, apiKey, model = 'gemini-2.0-flash-exp') {
+async function tryGeminiAPI(
+  content,
+  apiKey,
+  model = 'gemini-2.0-flash-exp',
+  selectionMode = false,
+  options = {}
+) {
   try {
     if (!apiKey) {
       return { success: false, error: 'No Gemini API key configured' };
     }
+
+    const prompt = generatePrompt(content, selectionMode, options);
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
@@ -429,7 +490,7 @@ async function tryGeminiAPI(content, apiKey, model = 'gemini-2.0-flash-exp') {
             {
               parts: [
                 {
-                  text: `Please provide a concise summary of the following text in 2-3 sentences:\n\n${content.substring(0, 12000)}`,
+                  text: prompt,
                 },
               ],
             },
@@ -464,12 +525,16 @@ async function tryGeminiAPI(content, apiKey, model = 'gemini-2.0-flash-exp') {
 async function tryAnthropicAPI(
   content,
   apiKey,
-  model = 'claude-3-haiku-20240307'
+  model = 'claude-3-haiku-20240307',
+  selectionMode = false,
+  options = {}
 ) {
   try {
     if (!apiKey) {
       return { success: false, error: 'No Anthropic API key configured' };
     }
+
+    const prompt = generatePrompt(content, selectionMode, options);
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -486,7 +551,7 @@ async function tryAnthropicAPI(
         messages: [
           {
             role: 'user',
-            content: `Please provide a concise summary of the following text in 2-3 sentences:\n\n${content.substring(0, 12000)}`,
+            content: prompt,
           },
         ],
       }),
@@ -523,7 +588,13 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
       });
     };
 
-    summarizeWithAI(request.content, request.forceModel, progressCallback)
+    summarizeWithAI(
+      request.content,
+      request.forceModel,
+      progressCallback,
+      request.selectionMode,
+      request.options
+    )
       .then(async ({ summary, model, time, metrics }) => {
         summaryState[tabId] = { summary, visible: true, model, time, metrics };
         chrome.tabs.sendMessage(tabId, {

@@ -1,4 +1,7 @@
 let summaryDiv = null;
+let selectionMode = false; // false = full page, true = selective
+let selectedTextRanges = []; // Array to store selected text ranges
+let selectionOverlay = null; // Overlay for visual selection feedback
 
 function getModelDisplayName(model) {
   const modelConfig = getModelConfig(model);
@@ -223,7 +226,25 @@ function createOrUpdateSummaryDiv(
       display: inline-block !important;
     `;
 
+    // Selection mode toggle
+    const selectionToggle = document.createElement('button');
+    selectionToggle.id = 'ai-summary-selection-toggle';
+    selectionToggle.textContent = 'Select Text';
+    selectionToggle.style.cssText = `
+      margin-left: 8px !important;
+      padding: 2px 6px !important;
+      font-size: 11px !important;
+      border: 1px solid ${themeColors.borderColor} !important;
+      border-radius: 3px !important;
+      background-color: ${themeColors.backgroundColor} !important;
+      color: ${themeColors.textColor} !important;
+      cursor: pointer !important;
+      font-family: Arial, sans-serif !important;
+    `;
+    selectionToggle.addEventListener('click', toggleSelectionMode);
+
     summaryTitleContainer.appendChild(summaryTitle);
+    summaryTitleContainer.appendChild(selectionToggle);
 
     const actionButtons = document.createElement('div');
     actionButtons.style.cssText = `display: flex !important; align-items: center !important;`;
@@ -462,6 +483,90 @@ function createOrUpdateSummaryDiv(
 
     summaryDiv.appendChild(loadingContainer);
 
+    // Manual text input for selection mode
+    const manualInputContainer = document.createElement('div');
+    manualInputContainer.id = 'ai-summary-manual-input-container';
+    manualInputContainer.style.cssText = `
+      display: none; /* Hidden by default */
+      padding: 10px !important;
+      border-top: 1px solid ${themeColors.borderColor} !important;
+      background-color: ${themeColors.backgroundColor} !important;
+    `;
+
+    const manualInputLabel = document.createElement('div');
+    manualInputLabel.textContent = 'Enter text to summarize:';
+    manualInputLabel.style.cssText = `
+      font-size: 12px !important;
+      font-weight: bold !important;
+      margin-bottom: 5px !important;
+      color: ${themeColors.textColor} !important;
+    `;
+
+    const manualInput = document.createElement('textarea');
+    manualInput.id = 'ai-summary-manual-input';
+    manualInput.placeholder = 'Paste or type the text you want to summarize...';
+    manualInput.style.cssText = `
+      width: 100% !important;
+      height: 80px !important;
+      padding: 8px !important;
+      border: 1px solid ${themeColors.borderColor} !important;
+      border-radius: 4px !important;
+      background-color: ${themeColors.backgroundColor} !important;
+      color: ${themeColors.textColor} !important;
+      font-family: Arial, sans-serif !important;
+      font-size: 12px !important;
+      resize: vertical !important;
+      box-sizing: border-box !important;
+    `;
+
+    const manualInputButton = document.createElement('button');
+    manualInputButton.textContent = 'Summarize Text';
+    manualInputButton.style.cssText = `
+      margin-top: 8px !important;
+      padding: 6px 12px !important;
+      background-color: #4CAF50 !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 4px !important;
+      cursor: pointer !important;
+      font-size: 12px !important;
+      font-family: Arial, sans-serif !important;
+    `;
+    manualInputButton.addEventListener('click', () => {
+      const text = manualInput.value.trim();
+      if (text) {
+        // Get customization options
+        const lengthSelect = document.getElementById(
+          'ai-summary-length-selector'
+        );
+        const focusSelect = document.getElementById(
+          'ai-summary-focus-selector'
+        );
+        const formatSelect = document.getElementById(
+          'ai-summary-format-selector'
+        );
+
+        const options = {
+          length: lengthSelect ? lengthSelect.value : 'medium',
+          focus: focusSelect ? focusSelect.value : 'summary',
+          format: formatSelect ? formatSelect.value : 'paragraphs',
+        };
+
+        chrome.runtime.sendMessage({
+          action: 'process_content',
+          content: text,
+          selectionMode: true,
+          options: options,
+        });
+      }
+    });
+
+    manualInputContainer.appendChild(manualInputLabel);
+    manualInputContainer.appendChild(manualInput);
+    manualInputContainer.appendChild(manualInputButton);
+
+    summaryDiv.appendChild(manualInputContainer);
+
     summaryDiv.appendChild(summaryContent);
 
     const footerDiv = document.createElement('div');
@@ -483,6 +588,96 @@ function createOrUpdateSummaryDiv(
       justify-content: space-between !important;
       z-index: 100000 !important;
     `;
+
+    // Customization options container
+    const customizationContainer = document.createElement('div');
+    customizationContainer.id = 'ai-summary-customization-container';
+    customizationContainer.style.cssText = `
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      margin-right: 8px !important;
+      flex-shrink: 0 !important;
+    `;
+
+    // Length selector
+    const lengthSelect = document.createElement('select');
+    lengthSelect.id = 'ai-summary-length-selector';
+    lengthSelect.style.cssText = `
+      padding: 2px 4px !important;
+      font-size: 10px !important;
+      border: 1px solid ${themeColors.borderColor} !important;
+      border-radius: 3px !important;
+      background-color: ${themeColors.backgroundColor} !important;
+      color: ${themeColors.textColor} !important;
+      width: 80px !important;
+    `;
+    const lengthOptions = [
+      { value: 'short', label: 'Short' },
+      { value: 'medium', label: 'Medium' },
+      { value: 'long', label: 'Long' },
+    ];
+    lengthOptions.forEach((option) => {
+      const opt = document.createElement('option');
+      opt.value = option.value;
+      opt.textContent = option.label;
+      lengthSelect.appendChild(opt);
+    });
+    lengthSelect.value = 'medium'; // Default
+
+    // Focus selector
+    const focusSelect = document.createElement('select');
+    focusSelect.id = 'ai-summary-focus-selector';
+    focusSelect.style.cssText = `
+      padding: 2px 4px !important;
+      font-size: 10px !important;
+      border: 1px solid ${themeColors.borderColor} !important;
+      border-radius: 3px !important;
+      background-color: ${themeColors.backgroundColor} !important;
+      color: ${themeColors.textColor} !important;
+      width: 100px !important;
+    `;
+    const focusOptions = [
+      { value: 'key-points', label: 'Key Points' },
+      { value: 'summary', label: 'Summary' },
+      { value: 'details', label: 'Details' },
+    ];
+    focusOptions.forEach((option) => {
+      const opt = document.createElement('option');
+      opt.value = option.value;
+      opt.textContent = option.label;
+      focusSelect.appendChild(opt);
+    });
+    focusSelect.value = 'summary'; // Default
+
+    // Format selector
+    const formatSelect = document.createElement('select');
+    formatSelect.id = 'ai-summary-format-selector';
+    formatSelect.style.cssText = `
+      padding: 2px 4px !important;
+      font-size: 10px !important;
+      border: 1px solid ${themeColors.borderColor} !important;
+      border-radius: 3px !important;
+      background-color: ${themeColors.backgroundColor} !important;
+      color: ${themeColors.textColor} !important;
+      width: 90px !important;
+    `;
+    const formatOptions = [
+      { value: 'paragraphs', label: 'Paragraphs' },
+      { value: 'bullets', label: 'Bullets' },
+      { value: 'concise', label: 'Concise' },
+    ];
+    formatOptions.forEach((option) => {
+      const opt = document.createElement('option');
+      opt.value = option.value;
+      opt.textContent = option.label;
+      formatSelect.appendChild(opt);
+    });
+    formatSelect.value = 'paragraphs'; // Default
+
+    customizationContainer.appendChild(lengthSelect);
+    customizationContainer.appendChild(focusSelect);
+    customizationContainer.appendChild(formatSelect);
 
     // Model selector in footer
     const modelSelect = document.createElement('select');
@@ -558,27 +753,72 @@ function createOrUpdateSummaryDiv(
         loadingContainer.style.display = 'block';
       }
 
-      // Extract page content and regenerate summary
-      const paragraphs = Array.from(document.querySelectorAll('p')).map(
-        (p) => p.textContent
-      );
-      const pageContent = paragraphs.join('\n');
-
-      if (pageContent.trim()) {
-        chrome.runtime.sendMessage({
-          action: 'process_content',
-          content: pageContent,
-          forceModel: newModel, // Force the specific model for regeneration
-        });
-      } else {
-        // Handle case where no content is available
+      // Extract page content based on selection mode
+      let pageContent = '';
+      if (selectionMode && selectedTextRanges.length > 0) {
+        // Use selected text
+        pageContent = selectedTextRanges.map((sel) => sel.text).join('\n\n');
+      } else if (selectionMode) {
+        // In selection mode but no selections made
         if (statusText) {
-          statusText.textContent = 'No content available to summarize';
+          statusText.textContent =
+            'No text selected. Please select text on the page first.';
         }
         if (loadingContainer) {
           loadingContainer.style.display = 'none';
         }
+        showSelectionError(
+          'No text selected. Please highlight some text on the page to summarize.'
+        );
+        return;
+      } else {
+        // Use full page content
+        const paragraphs = Array.from(document.querySelectorAll('p')).map(
+          (p) => p.textContent
+        );
+        pageContent = paragraphs.join('\n');
       }
+
+      // Validate content
+      if (!pageContent.trim() || pageContent.trim().length < 50) {
+        if (statusText) {
+          statusText.textContent = selectionMode
+            ? 'Selected text too short. Please select more content.'
+            : 'Page content too short to summarize.';
+        }
+        if (loadingContainer) {
+          loadingContainer.style.display = 'none';
+        }
+        showSelectionError(
+          selectionMode
+            ? 'Selected text too short. Please select more content.'
+            : 'Page content too short to summarize.'
+        );
+        return;
+      }
+
+      // Get customization options
+      const lengthSelect = document.getElementById(
+        'ai-summary-length-selector'
+      );
+      const focusSelect = document.getElementById('ai-summary-focus-selector');
+      const formatSelect = document.getElementById(
+        'ai-summary-format-selector'
+      );
+
+      const options = {
+        length: lengthSelect ? lengthSelect.value : 'medium',
+        focus: focusSelect ? focusSelect.value : 'summary',
+        format: formatSelect ? formatSelect.value : 'paragraphs',
+      };
+
+      chrome.runtime.sendMessage({
+        action: 'process_content',
+        content: pageContent,
+        forceModel: newModel, // Force the specific model for regeneration
+        selectionMode: selectionMode, // Pass selection mode info
+        options: options, // Pass customization options
+      });
     });
 
     // Status text container
@@ -593,6 +833,7 @@ function createOrUpdateSummaryDiv(
       white-space: nowrap !important;
     `;
 
+    footerDiv.appendChild(customizationContainer);
     footerDiv.appendChild(modelSelect);
     footerDiv.appendChild(statusText);
     summaryDiv.appendChild(footerDiv);
@@ -747,6 +988,280 @@ function makeResizable(element, content, handle, direction) {
   };
 }
 
+// Toggle between full page and selective summarization modes
+function toggleSelectionMode() {
+  selectionMode = !selectionMode;
+  const toggleButton = document.getElementById('ai-summary-selection-toggle');
+  const manualInputContainer = document.getElementById(
+    'ai-summary-manual-input-container'
+  );
+
+  if (selectionMode) {
+    toggleButton.textContent = 'Full Page';
+    toggleButton.style.backgroundColor = '#4CAF50';
+    toggleButton.style.color = 'white';
+    if (manualInputContainer) manualInputContainer.style.display = 'block';
+    enableTextSelection();
+    showSelectionInstructions();
+  } else {
+    toggleButton.textContent = 'Select Text';
+    toggleButton.style.backgroundColor = '';
+    toggleButton.style.color = '';
+    if (manualInputContainer) manualInputContainer.style.display = 'none';
+    disableTextSelection();
+    hideSelectionInstructions();
+    clearSelections();
+  }
+}
+
+// Enable text selection on the page
+function enableTextSelection() {
+  document.body.style.userSelect = 'text';
+  document.body.style.cursor = 'text';
+  document.addEventListener('mouseup', handleTextSelection);
+  document.addEventListener('dblclick', handleTextSelection);
+}
+
+// Disable text selection on the page
+function disableTextSelection() {
+  document.body.style.userSelect = '';
+  document.body.style.cursor = '';
+  document.removeEventListener('mouseup', handleTextSelection);
+  document.removeEventListener('dblclick', handleTextSelection);
+}
+
+// Handle text selection events
+function handleTextSelection() {
+  const selection = window.getSelection();
+  if (selection.rangeCount > 0) {
+    const range = selection.getRangeAt(0);
+    const selectedText = selection.toString().trim();
+
+    if (selectedText.length > 0) {
+      // Validate selection - ensure it's not just whitespace or too short
+      if (selectedText.length < 10) {
+        showSelectionError('Selection too short. Please select more text.');
+        return;
+      }
+
+      // Check if selection contains actual content (not just HTML elements)
+      const textNodes = getTextNodesInRange(range);
+      if (textNodes.length === 0) {
+        showSelectionError('No readable text found in selection.');
+        return;
+      }
+
+      addTextSelection(range, selectedText);
+    } else {
+      showSelectionError(
+        'No text selected. Please highlight some text on the page.'
+      );
+    }
+  }
+}
+
+// Get text nodes within a range
+function getTextNodesInRange(range) {
+  const textNodes = [];
+  const treeWalker = document.createTreeWalker(
+    range.commonAncestorContainer,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode: function (node) {
+        const nodeRange = document.createRange();
+        nodeRange.selectNodeContents(node);
+        if (range.intersectsNode(node) && node.textContent.trim().length > 0) {
+          return NodeFilter.FILTER_ACCEPT;
+        }
+        return NodeFilter.FILTER_REJECT;
+      },
+    }
+  );
+
+  let node;
+  while ((node = treeWalker.nextNode())) {
+    textNodes.push(node);
+  }
+
+  return textNodes;
+}
+
+// Show selection error message
+function showSelectionError(message) {
+  // Remove existing error
+  const existingError = document.getElementById('ai-summary-selection-error');
+  if (existingError) {
+    existingError.remove();
+  }
+
+  const errorDiv = document.createElement('div');
+  errorDiv.id = 'ai-summary-selection-error';
+  errorDiv.style.cssText = `
+    position: fixed !important;
+    top: 60px !important;
+    right: 320px !important;
+    background-color: #ff4444 !important;
+    color: white !important;
+    padding: 8px 12px !important;
+    border-radius: 4px !important;
+    font-family: Arial, sans-serif !important;
+    font-size: 12px !important;
+    z-index: 99999 !important;
+    max-width: 300px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+  `;
+  errorDiv.textContent = message;
+
+  document.body.appendChild(errorDiv);
+
+  // Auto-hide after 3 seconds
+  setTimeout(() => {
+    if (errorDiv.parentNode) {
+      errorDiv.remove();
+    }
+  }, 3000);
+}
+
+// Add a text selection to the collection
+function addTextSelection(range, text) {
+  const selectionRect = range.getBoundingClientRect();
+  const selectionData = {
+    text: text,
+    range: range,
+    rect: selectionRect,
+    timestamp: Date.now(),
+  };
+
+  selectedTextRanges.push(selectionData);
+  updateSelectionVisualFeedback();
+}
+
+// Clear all selections
+function clearSelections() {
+  selectedTextRanges = [];
+  updateSelectionVisualFeedback();
+}
+
+// Update visual feedback for selections
+function updateSelectionVisualFeedback() {
+  // Remove existing overlay
+  if (selectionOverlay) {
+    selectionOverlay.remove();
+    selectionOverlay = null;
+  }
+
+  if (selectedTextRanges.length > 0) {
+    createSelectionOverlay();
+  }
+}
+
+// Create visual overlay for selections
+function createSelectionOverlay() {
+  selectionOverlay = document.createElement('div');
+  selectionOverlay.id = 'ai-summary-selection-overlay';
+  selectionOverlay.style.cssText = `
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: none !important;
+    z-index: 99998 !important;
+  `;
+
+  selectedTextRanges.forEach((selection, index) => {
+    const highlight = document.createElement('div');
+    highlight.className = 'selection-highlight';
+    highlight.style.cssText = `
+      position: absolute !important;
+      top: ${selection.rect.top + window.scrollY}px !important;
+      left: ${selection.rect.left + window.scrollX}px !important;
+      width: ${selection.rect.width}px !important;
+      height: ${selection.rect.height}px !important;
+      background-color: rgba(255, 255, 0, 0.3) !important;
+      border: 2px solid #ff6b35 !important;
+      border-radius: 3px !important;
+      pointer-events: none !important;
+    `;
+
+    // Add remove button
+    const removeButton = document.createElement('div');
+    removeButton.textContent = '×';
+    removeButton.style.cssText = `
+      position: absolute !important;
+      top: -8px !important;
+      right: -8px !important;
+      width: 16px !important;
+      height: 16px !important;
+      background-color: #ff6b35 !important;
+      color: white !important;
+      border-radius: 50% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 12px !important;
+      font-weight: bold !important;
+      cursor: pointer !important;
+      pointer-events: auto !important;
+    `;
+    removeButton.addEventListener('click', () => {
+      selectedTextRanges.splice(index, 1);
+      updateSelectionVisualFeedback();
+    });
+
+    highlight.appendChild(removeButton);
+    selectionOverlay.appendChild(highlight);
+  });
+
+  document.body.appendChild(selectionOverlay);
+}
+
+// Show instructions for text selection
+function showSelectionInstructions() {
+  const instructions = document.createElement('div');
+  instructions.id = 'ai-summary-selection-instructions';
+  instructions.style.cssText = `
+    position: fixed !important;
+    top: 50px !important;
+    right: 320px !important;
+    background-color: #333 !important;
+    color: white !important;
+    padding: 10px 15px !important;
+    border-radius: 5px !important;
+    font-family: Arial, sans-serif !important;
+    font-size: 12px !important;
+    z-index: 99999 !important;
+    max-width: 250px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+  `;
+  instructions.innerHTML = `
+    <strong>Selection Mode Active</strong><br>
+    • Drag to select text<br>
+    • Double-click for word selection<br>
+    • Click × to remove selections<br>
+    • Switch back to summarize selected text
+  `;
+
+  document.body.appendChild(instructions);
+
+  // Auto-hide after 5 seconds
+  setTimeout(() => {
+    if (instructions.parentNode) {
+      instructions.remove();
+    }
+  }, 5000);
+}
+
+// Hide selection instructions
+function hideSelectionInstructions() {
+  const instructions = document.getElementById(
+    'ai-summary-selection-instructions'
+  );
+  if (instructions) {
+    instructions.remove();
+  }
+}
+
 // Function to update loading progress display
 function updateLoadingProgress(progress) {
   const progressBar = document.getElementById(
@@ -812,13 +1327,66 @@ chrome.runtime.onMessage.addListener(function (request) {
         visible: summaryDiv.style.display !== 'none',
       });
     } else {
-      const paragraphs = Array.from(document.querySelectorAll('p')).map(
-        (p) => p.textContent
+      // Extract page content based on selection mode
+      let pageContent = '';
+      if (selectionMode && selectedTextRanges.length > 0) {
+        // Use selected text
+        pageContent = selectedTextRanges.map((sel) => sel.text).join('\n\n');
+      } else if (selectionMode) {
+        // In selection mode but no selections made
+        const statusText = document.getElementById('ai-summary-status-text');
+        if (statusText) {
+          statusText.textContent =
+            'No text selected. Please select text on the page first.';
+        }
+        showSelectionError(
+          'No text selected. Please highlight some text on the page to summarize.'
+        );
+        return;
+      } else {
+        // Use full page content
+        const paragraphs = Array.from(document.querySelectorAll('p')).map(
+          (p) => p.textContent
+        );
+        pageContent = paragraphs.join('\n');
+      }
+
+      // Validate content
+      if (!pageContent.trim() || pageContent.trim().length < 50) {
+        const statusText = document.getElementById('ai-summary-status-text');
+        if (statusText) {
+          statusText.textContent = selectionMode
+            ? 'Selected text too short. Please select more content.'
+            : 'Page content too short to summarize.';
+        }
+        showSelectionError(
+          selectionMode
+            ? 'Selected text too short. Please select more content.'
+            : 'Page content too short to summarize.'
+        );
+        return;
+      }
+
+      // Get customization options
+      const lengthSelect = document.getElementById(
+        'ai-summary-length-selector'
       );
-      const pageContent = paragraphs.join('\n');
+      const focusSelect = document.getElementById('ai-summary-focus-selector');
+      const formatSelect = document.getElementById(
+        'ai-summary-format-selector'
+      );
+
+      const options = {
+        length: lengthSelect ? lengthSelect.value : 'medium',
+        focus: focusSelect ? focusSelect.value : 'summary',
+        format: formatSelect ? formatSelect.value : 'paragraphs',
+      };
+
       chrome.runtime.sendMessage({
         action: 'process_content',
         content: pageContent,
+        selectionMode: selectionMode,
+        options: options,
       });
     }
   } else if (request.action === 'model_switched') {
