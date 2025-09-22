@@ -13,13 +13,14 @@
     "default_title": "AI Page Summarizer"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "dist/background.js",
+    "type": "module"
   },
   "options_page": "options.html",
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["showdown.min.js", "themes.js", "content.js"]
+      "js": ["showdown.min.js", "dist/content.js"]
     }
   ]
 }

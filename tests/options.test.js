@@ -1,5 +1,5 @@
 // Import the options script to initialize it
-import '../options.js';
+import '../options.ts';
 
 describe('Options Script Tests', () => {
   beforeEach(() => {

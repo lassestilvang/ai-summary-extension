@@ -1,5 +1,5 @@
 // Import the background script to initialize it
-import '../background.js';
+import '../background.ts';
 
 describe('Background Script Tests', () => {
   beforeEach(() => {

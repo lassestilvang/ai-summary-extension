@@ -1,5 +1,112 @@
-function getModelConfig(model) {
-  const models = {
+interface ThemeColors {
+  backgroundColor: string;
+  textColor: string;
+  borderColor: string;
+  shadowColor: string;
+  closeButtonColor: string;
+  copyButtonColor: string;
+  titleColor: string;
+}
+
+interface Theme {
+  name: string;
+  colors: ThemeColors;
+}
+
+interface ModelConfig {
+  provider: 'chrome' | 'openai' | 'gemini' | 'anthropic';
+  modelId: string | null;
+  name: string;
+  cost: number;
+}
+
+interface Metrics {
+  attempts: Array<{
+    model: string;
+    success: boolean;
+    time: number;
+    error?: string;
+  }>;
+  totalTime: number;
+}
+
+const optionsThemes: Record<string, Theme> = {
+  light: {
+    name: 'Light',
+    colors: {
+      backgroundColor: '#ffffff',
+      textColor: '#333333',
+      borderColor: '#cccccc',
+      shadowColor: 'rgba(0, 0, 0, 0.2)',
+      closeButtonColor: '#666666',
+      copyButtonColor: '#666666',
+      titleColor: '#333333',
+    },
+  },
+  dark: {
+    name: 'Dark',
+    colors: {
+      backgroundColor: '#2d2d2d',
+      textColor: '#f1f1f1',
+      borderColor: '#555555',
+      shadowColor: 'rgba(255, 255, 255, 0.2)',
+      closeButtonColor: '#cccccc',
+      copyButtonColor: '#cccccc',
+      titleColor: '#f1f1f1',
+    },
+  },
+  solarized: {
+    name: 'Solarized',
+    colors: {
+      backgroundColor: '#fdf6e3',
+      textColor: '#657b83',
+      borderColor: '#93a1a1',
+      shadowColor: 'rgba(0, 0, 0, 0.1)',
+      closeButtonColor: '#93a1a1',
+      copyButtonColor: '#93a1a1',
+      titleColor: '#586e75',
+    },
+  },
+  nord: {
+    name: 'Nord',
+    colors: {
+      backgroundColor: '#2e3440',
+      textColor: '#d8dee9',
+      borderColor: '#4c566a',
+      shadowColor: 'rgba(0, 0, 0, 0.2)',
+      closeButtonColor: '#d8dee9',
+      copyButtonColor: '#d8dee9',
+      titleColor: '#eceff4',
+    },
+  },
+  autumn: {
+    name: 'Autumn',
+    colors: {
+      backgroundColor: '#f3e9d2',
+      textColor: '#4a403a',
+      borderColor: '#c8a083',
+      shadowColor: 'rgba(0, 0, 0, 0.15)',
+      closeButtonColor: '#8c6d5e',
+      copyButtonColor: '#8c6d5e',
+      titleColor: '#4a403a',
+    },
+  },
+  synthwave: {
+    name: 'Synthwave',
+    colors: {
+      backgroundColor: '#261b3e',
+      textColor: '#f0d4f7',
+      borderColor: '#ff6ac1',
+      shadowColor: 'rgba(255, 106, 193, 0.3)',
+      closeButtonColor: '#f0d4f7',
+      copyButtonColor: '#f0d4f7',
+      titleColor: '#f0d4f7',
+    },
+  },
+};
+
+function optionsGetModelConfig(model: string): ModelConfig | undefined {
+  const models: Record<string, ModelConfig> = {
     'chrome-builtin': {
       provider: 'chrome',
       modelId: null,
@@ -77,25 +184,45 @@ function getModelConfig(model) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  const selectedModelSelect = document.getElementById('selectedModel');
-  const enableFallbackCheckbox = document.getElementById('enableFallback');
-  const openaiApiKeyInput = document.getElementById('openaiApiKey');
-  const geminiApiKeyInput = document.getElementById('geminiApiKey');
-  const anthropicApiKeyInput = document.getElementById('anthropicApiKey');
-  const saveButton = document.getElementById('save');
-  const themeSelect = document.getElementById('theme');
-  const statusDiv = document.getElementById('status');
-  const refreshMetricsButton = document.getElementById('refreshMetrics');
-  const metricsContainer = document.getElementById('metricsContainer');
-  const refreshHistoryButton = document.getElementById('refreshHistory');
-  const clearHistoryButton = document.getElementById('clearHistory');
-  const historyContainer = document.getElementById('historyContainer');
+  const selectedModelSelect = document.getElementById(
+    'selectedModel'
+  ) as HTMLSelectElement;
+  const enableFallbackCheckbox = document.getElementById(
+    'enableFallback'
+  ) as HTMLInputElement;
+  const openaiApiKeyInput = document.getElementById(
+    'openaiApiKey'
+  ) as HTMLInputElement;
+  const geminiApiKeyInput = document.getElementById(
+    'geminiApiKey'
+  ) as HTMLInputElement;
+  const anthropicApiKeyInput = document.getElementById(
+    'anthropicApiKey'
+  ) as HTMLInputElement;
+  const saveButton = document.getElementById('save') as HTMLButtonElement;
+  const themeSelect = document.getElementById('theme') as HTMLSelectElement;
+  const statusDiv = document.getElementById('status') as HTMLDivElement;
+  const refreshMetricsButton = document.getElementById(
+    'refreshMetrics'
+  ) as HTMLButtonElement;
+  const metricsContainer = document.getElementById(
+    'metricsContainer'
+  ) as HTMLDivElement;
+  const refreshHistoryButton = document.getElementById(
+    'refreshHistory'
+  ) as HTMLButtonElement;
+  const clearHistoryButton = document.getElementById(
+    'clearHistory'
+  ) as HTMLButtonElement;
+  const historyContainer = document.getElementById(
+    'historyContainer'
+  ) as HTMLDivElement;
 
   // Populate theme selector
-  for (const themeKey in themes) {
+  for (const themeKey in optionsThemes) {
     const option = document.createElement('option');
     option.value = themeKey;
-    option.textContent = themes[themeKey].name;
+    option.textContent = optionsThemes[themeKey].name;
     themeSelect.appendChild(option);
   }
 
@@ -172,7 +299,18 @@ document.addEventListener('DOMContentLoaded', function () {
     chrome.runtime.sendMessage({ action: 'get_model_metrics' });
   }
 
-  function displayMetrics(metrics) {
+  function displayMetrics(
+    metrics: Record<
+      string,
+      {
+        totalRequests: number;
+        successfulRequests: number;
+        totalTime: number;
+        avgTime: number;
+        lastUsed: string;
+      }
+    >
+  ) {
     if (!metrics || Object.keys(metrics).length === 0) {
       metricsContainer.innerHTML =
         '<p>No performance data available yet. Use the extension to generate summaries and metrics will appear here.</p>';
@@ -182,8 +320,8 @@ document.addEventListener('DOMContentLoaded', function () {
     let html =
       '<table class="metrics-table"><thead><tr><th>Model</th><th>Requests</th><th>Success Rate</th><th>Avg Time</th><th>Last Used</th></tr></thead><tbody>';
 
-    Object.entries(metrics).forEach(([modelKey, stats]) => {
-      const modelConfig = getModelConfig(modelKey);
+    Object.entries(metrics).forEach(([modelKey, stats]: [string, any]) => {
+      const modelConfig = optionsGetModelConfig(modelKey);
       const modelName = modelConfig ? modelConfig.name : modelKey;
       const successRate =
         stats.totalRequests > 0
@@ -208,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Handle metrics response
-  chrome.runtime.onMessage.addListener((request) => {
+  chrome.runtime.onMessage.addListener((request: any) => {
     if (request.action === 'model_metrics_response') {
       displayMetrics(request.metrics);
     }
@@ -224,7 +362,18 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  function displayHistory(history) {
+  function displayHistory(
+    history: Array<{
+      id: string;
+      timestamp: string;
+      url: string;
+      title: string;
+      summary: string;
+      model: string;
+      time: string;
+      metrics: Metrics;
+    }>
+  ) {
     if (!history || history.length === 0) {
       historyContainer.innerHTML =
         '<p>No summary history available yet. Use the extension to generate summaries and they will appear here.</p>';
@@ -234,7 +383,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let html = '';
     history.forEach((item) => {
       const date = new Date(item.timestamp).toLocaleString();
-      const modelConfig = getModelConfig(item.model);
+      const modelConfig = optionsGetModelConfig(item.model);
       const modelName = modelConfig ? modelConfig.name : item.model;
 
       html += `
@@ -279,7 +428,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Global functions for button onclick handlers
-  window.copyToClipboard = function (text) {
+  (window as any).copyToClipboard = function (text: string) {
     navigator.clipboard.writeText(text).then(() => {
       statusDiv.textContent = 'Summary copied to clipboard!';
       statusDiv.className = 'status success';
@@ -290,7 +439,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   };
 
-  window.shareSummary = function (title, text) {
+  (window as any).shareSummary = function (title: string, text: string) {
     if (navigator.share) {
       navigator
         .share({
@@ -299,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(console.error);
     } else {
-      window.copyToClipboard(text);
+      (window as any).copyToClipboard(text);
     }
   };
 

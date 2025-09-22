@@ -1,15 +1,74 @@
-const summaryState = {}; // Stores { tabId: { summary: "...", visible: true/false } }
+import {
+  getModelConfig,
+  Metrics,
+  ProgressUpdate,
+  OpenAIResponse,
+  GeminiResponse,
+  AnthropicResponse,
+} from './utils.js';
 
-chrome.action.onClicked.addListener((tab) => {
+interface SummaryState {
+  [tabId: number]: {
+    summary: string;
+    visible: boolean;
+    model?: string;
+    time?: string;
+    metrics?: Metrics;
+  };
+}
+
+interface ApiKeys {
+  openaiApiKey: string;
+  geminiApiKey: string;
+  anthropicApiKey: string;
+}
+
+interface TryModelResult {
+  success: boolean;
+  summary?: string;
+  error?: string;
+}
+
+interface SummarizeResult {
+  summary: string;
+  model: string;
+  time: string;
+  metrics: Metrics;
+}
+
+interface ModelMetrics {
+  [model: string]: {
+    totalRequests: number;
+    successfulRequests: number;
+    totalTime: number;
+    avgTime: number;
+    lastUsed: string;
+  };
+}
+
+interface SummaryHistoryEntry {
+  id: string;
+  timestamp: string;
+  url: string;
+  title: string;
+  summary: string;
+  model: string;
+  time: string;
+  metrics: any;
+}
+
+const summaryState: SummaryState = {}; // Stores { tabId: { summary: "...", visible: true/false } }
+
+chrome.action.onClicked.addListener((tab: chrome.tabs.Tab) => {
   // When the action button is clicked, send a message to the content script to toggle the summary visibility
-  chrome.tabs.sendMessage(tab.id, { action: 'toggle_summary_visibility' });
+  chrome.tabs.sendMessage(tab.id!, { action: 'toggle_summary_visibility' });
 });
 
 async function summarizeWithAI(
-  content,
-  forceModel = null,
-  progressCallback = null
-) {
+  content: string,
+  forceModel: string | null = null,
+  progressCallback?: (progress: ProgressUpdate) => void
+): Promise<SummarizeResult> {
   const startTime = Date.now();
   const {
     selectedModel,
@@ -26,11 +85,11 @@ async function summarizeWithAI(
   ]);
 
   const preferredModel = forceModel || selectedModel || 'chrome-builtin';
-  const metrics = { attempts: [], totalTime: 0 };
+  const metrics: Metrics = { attempts: [], totalTime: 0 };
 
   // Get stored metrics for time estimation
   const { modelMetrics = {} } = await chrome.storage.local.get('modelMetrics');
-  const primaryMetrics = modelMetrics[preferredModel];
+  const primaryMetrics = (modelMetrics as ModelMetrics)[preferredModel];
   const estimatedTotalTime = primaryMetrics ? primaryMetrics.avgTime : 5; // Default 5 seconds
 
   // Step 1: Content extraction (10%)
@@ -82,7 +141,7 @@ async function summarizeWithAI(
 
       if (progressCallback) {
         progressCallback({
-          step: `Trying ${getModelConfig(model).name}`,
+          step: `Trying ${getModelConfig(model)!.name}`,
           percentage: fallbackProgress + i * 15,
           estimatedTimeRemaining: estimatedTotalTime * (0.8 - i * 0.1),
           currentModel: model,
@@ -150,7 +209,7 @@ async function summarizeWithAI(
 
   if (result.success) {
     return {
-      summary: result.summary,
+      summary: result.summary!,
       model: usedModel,
       time: timeTaken,
       metrics,
@@ -166,7 +225,11 @@ async function summarizeWithAI(
   }
 }
 
-async function tryModel(model, content, apiKeys) {
+async function tryModel(
+  model: string,
+  content: string,
+  apiKeys: ApiKeys
+): Promise<TryModelResult> {
   const modelConfig = getModelConfig(model);
   if (!modelConfig) {
     return { success: false, error: 'Unknown model' };
@@ -179,108 +242,30 @@ async function tryModel(model, content, apiKeys) {
       return await tryOpenAI(
         content,
         apiKeys.openaiApiKey,
-        modelConfig.modelId
+        modelConfig.modelId!
       );
     case 'gemini':
       return await tryGeminiAPI(
         content,
         apiKeys.geminiApiKey,
-        modelConfig.modelId
+        modelConfig.modelId!
       );
     case 'anthropic':
       return await tryAnthropicAPI(
         content,
         apiKeys.anthropicApiKey,
-        modelConfig.modelId
+        modelConfig.modelId!
       );
     default:
       return { success: false, error: 'Unknown provider' };
   }
 }
 
-function getModelConfig(model) {
-  const models = {
-    'chrome-builtin': {
-      provider: 'chrome',
-      modelId: null,
-      name: 'Chrome Built-in AI',
-      cost: 0,
-    },
-    'gpt-3.5-turbo': {
-      provider: 'openai',
-      modelId: 'gpt-3.5-turbo',
-      name: 'GPT-3.5 Turbo',
-      cost: 0.002,
-    },
-    'gpt-4': {
-      provider: 'openai',
-      modelId: 'gpt-4',
-      name: 'GPT-4',
-      cost: 0.03,
-    },
-    'gpt-4-turbo': {
-      provider: 'openai',
-      modelId: 'gpt-4-turbo',
-      name: 'GPT-4 Turbo',
-      cost: 0.01,
-    },
-    'gpt-4o': {
-      provider: 'openai',
-      modelId: 'gpt-4o',
-      name: 'GPT-4o',
-      cost: 0.005,
-    },
-    'gemini-1.5-pro': {
-      provider: 'gemini',
-      modelId: 'gemini-1.5-pro',
-      name: 'Gemini 1.5 Pro',
-      cost: 0.00125,
-    },
-    'gemini-1.5-flash': {
-      provider: 'gemini',
-      modelId: 'gemini-1.5-flash',
-      name: 'Gemini 1.5 Flash',
-      cost: 0.000075,
-    },
-    'gemini-2.0-flash-exp': {
-      provider: 'gemini',
-      modelId: 'gemini-2.0-flash-exp',
-      name: 'Gemini 2.0 Flash (Exp)',
-      cost: 0,
-    },
-    'claude-3-haiku': {
-      provider: 'anthropic',
-      modelId: 'claude-3-haiku-20240307',
-      name: 'Claude 3 Haiku',
-      cost: 0.00025,
-    },
-    'claude-3-sonnet': {
-      provider: 'anthropic',
-      modelId: 'claude-3-sonnet-20240229',
-      name: 'Claude 3 Sonnet',
-      cost: 0.003,
-    },
-    'claude-3-opus': {
-      provider: 'anthropic',
-      modelId: 'claude-3-opus-20240229',
-      name: 'Claude 3 Opus',
-      cost: 0.015,
-    },
-    'claude-3.5-sonnet': {
-      provider: 'anthropic',
-      modelId: 'claude-3-5-sonnet-20240620',
-      name: 'Claude 3.5 Sonnet',
-      cost: 0.003,
-    },
-  };
-  return models[model];
-}
-
-function getFallbackModels(primaryModel) {
+function getFallbackModels(primaryModel: string): string[] {
   const modelConfig = getModelConfig(primaryModel);
   if (!modelConfig) return [];
 
-  const fallbacks = {
+  const fallbacks: Record<string, string[]> = {
     chrome: ['gpt-3.5-turbo', 'gemini-2.0-flash-exp', 'claude-3-haiku'],
     openai: ['gemini-2.0-flash-exp', 'claude-3-haiku', 'chrome-builtin'],
     gemini: ['gpt-3.5-turbo', 'claude-3-haiku', 'chrome-builtin'],
@@ -290,21 +275,24 @@ function getFallbackModels(primaryModel) {
   return fallbacks[modelConfig.provider] || [];
 }
 
-async function storeModelMetrics(model, metrics) {
+async function storeModelMetrics(
+  model: string,
+  metrics: Metrics
+): Promise<void> {
   try {
     const { modelMetrics = {} } =
       await chrome.storage.local.get('modelMetrics');
-    if (!modelMetrics[model]) {
-      modelMetrics[model] = {
+    if (!(modelMetrics as ModelMetrics)[model]) {
+      (modelMetrics as ModelMetrics)[model] = {
         totalRequests: 0,
         successfulRequests: 0,
         totalTime: 0,
         avgTime: 0,
-        lastUsed: null,
+        lastUsed: null as any,
       };
     }
 
-    const modelStats = modelMetrics[model];
+    const modelStats = (modelMetrics as ModelMetrics)[model];
     modelStats.totalRequests++;
     modelStats.totalTime += metrics.totalTime;
     modelStats.avgTime = modelStats.totalTime / modelStats.totalRequests;
@@ -321,7 +309,13 @@ async function storeModelMetrics(model, metrics) {
   }
 }
 
-async function storeSummaryHistory(tabId, summary, model, time, metrics) {
+async function storeSummaryHistory(
+  tabId: number,
+  summary: string,
+  model: string,
+  time: string,
+  metrics: any
+): Promise<void> {
   try {
     const { summaryHistory = [] } =
       await chrome.storage.local.get('summaryHistory');
@@ -329,11 +323,11 @@ async function storeSummaryHistory(tabId, summary, model, time, metrics) {
     // Get tab info for URL and title
     const tab = await chrome.tabs.get(tabId);
 
-    const historyEntry = {
+    const historyEntry: SummaryHistoryEntry = {
       id: Date.now() + '-' + Math.random().toString(36).substr(2, 9),
       timestamp: new Date().toISOString(),
-      url: tab.url,
-      title: tab.title,
+      url: tab.url!,
+      title: tab.title!,
       summary: summary,
       model: model,
       time: time,
@@ -341,11 +335,11 @@ async function storeSummaryHistory(tabId, summary, model, time, metrics) {
     };
 
     // Add to beginning of array (most recent first)
-    summaryHistory.unshift(historyEntry);
+    (summaryHistory as SummaryHistoryEntry[]).unshift(historyEntry);
 
     // Keep only the most recent 50 summaries
-    if (summaryHistory.length > 50) {
-      summaryHistory.splice(50);
+    if ((summaryHistory as SummaryHistoryEntry[]).length > 50) {
+      (summaryHistory as SummaryHistoryEntry[]).splice(50);
     }
 
     await chrome.storage.local.set({ summaryHistory });
@@ -354,10 +348,10 @@ async function storeSummaryHistory(tabId, summary, model, time, metrics) {
   }
 }
 
-async function tryChromeBuiltinAI(content) {
+async function tryChromeBuiltinAI(content: string): Promise<TryModelResult> {
   try {
     if ('Summarizer' in globalThis) {
-      const summarizer = await globalThis.Summarizer.create({
+      const summarizer = await (globalThis as any).Summarizer.create({
         type: 'key-points',
         format: 'markdown',
         length: 'medium',
@@ -370,11 +364,15 @@ async function tryChromeBuiltinAI(content) {
     }
   } catch (error) {
     console.log('Chrome built-in AI error:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: (error as Error).message };
   }
 }
 
-async function tryOpenAI(content, apiKey, model = 'gpt-3.5-turbo') {
+async function tryOpenAI(
+  content: string,
+  apiKey: string,
+  model: string = 'gpt-3.5-turbo'
+): Promise<TryModelResult> {
   try {
     if (!apiKey) {
       return { success: false, error: 'No OpenAI API key configured' };
@@ -403,15 +401,19 @@ async function tryOpenAI(content, apiKey, model = 'gpt-3.5-turbo') {
       throw new Error(`OpenAI API request failed: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: OpenAIResponse = await response.json();
     return { success: true, summary: data.choices[0].message.content.trim() };
   } catch (error) {
     console.error('OpenAI API error:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: (error as Error).message };
   }
 }
 
-async function tryGeminiAPI(content, apiKey, model = 'gemini-2.0-flash-exp') {
+async function tryGeminiAPI(
+  content: string,
+  apiKey: string,
+  model: string = 'gemini-2.0-flash-exp'
+): Promise<TryModelResult> {
   try {
     if (!apiKey) {
       return { success: false, error: 'No Gemini API key configured' };
@@ -446,7 +448,7 @@ async function tryGeminiAPI(content, apiKey, model = 'gemini-2.0-flash-exp') {
       throw new Error(`Gemini API request failed: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: GeminiResponse = await response.json();
     if (data.candidates && data.candidates[0] && data.candidates[0].content) {
       return {
         success: true,
@@ -457,15 +459,15 @@ async function tryGeminiAPI(content, apiKey, model = 'gemini-2.0-flash-exp') {
     }
   } catch (error) {
     console.error('Gemini API error:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: (error as Error).message };
   }
 }
 
 async function tryAnthropicAPI(
-  content,
-  apiKey,
-  model = 'claude-3-haiku-20240307'
-) {
+  content: string,
+  apiKey: string,
+  model: string = 'claude-3-haiku-20240307'
+): Promise<TryModelResult> {
   try {
     if (!apiKey) {
       return { success: false, error: 'No Anthropic API key configured' };
@@ -496,7 +498,7 @@ async function tryAnthropicAPI(
       throw new Error(`Anthropic API request failed: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: AnthropicResponse = await response.json();
     if (data.content && data.content[0] && data.content[0].text) {
       return { success: true, summary: data.content[0].text.trim() };
     } else {
@@ -504,19 +506,22 @@ async function tryAnthropicAPI(
     }
   } catch (error) {
     console.error('Anthropic API error:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: (error as Error).message };
   }
 }
 
-chrome.runtime.onMessage.addListener(function (request, sender) {
+chrome.runtime.onMessage.addListener(function (
+  request: any,
+  sender: chrome.runtime.MessageSender
+) {
   if (request.action === 'process_content') {
-    const tabId = sender.tab.id;
+    const tabId = sender.tab!.id!;
 
     // Show loading state
     chrome.tabs.sendMessage(tabId, { action: 'show_loading_spinner' });
 
     // Progress callback to send updates to content script
-    const progressCallback = (progress) => {
+    const progressCallback = (progress: ProgressUpdate) => {
       chrome.tabs.sendMessage(tabId, {
         action: 'update_loading_progress',
         progress,
@@ -545,18 +550,18 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
           visible: true,
           model: 'N/A',
           time: 'N/A',
-          metrics: null,
+          metrics: undefined,
         };
         chrome.tabs.sendMessage(tabId, {
           action: 'display_inline_summary',
           summary: errorMessage,
           model: 'N/A',
           time: 'N/A',
-          metrics: null,
+          metrics: undefined,
         });
       });
   } else if (request.action === 'update_summary_visibility') {
-    const tabId = sender.tab.id;
+    const tabId = sender.tab!.id!;
     if (summaryState[tabId]) {
       summaryState[tabId].visible = request.visible;
     }
@@ -580,6 +585,6 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
 });
 
 // Clear summary state when a tab is closed
-chrome.tabs.onRemoved.addListener((tabId) => {
+chrome.tabs.onRemoved.addListener((tabId: number) => {
   delete summaryState[tabId];
 });
