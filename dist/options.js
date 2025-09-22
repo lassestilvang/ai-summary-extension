@@ -272,6 +272,35 @@ function optionsGetModelConfig(model) {
     return models[model];
 }
 document.addEventListener('DOMContentLoaded', function () {
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+    // Initialize theme from storage or default to light
+    function initializeTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        body.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+    }
+    function updateThemeIcon(theme) {
+        const icon = themeToggle.querySelector('i');
+        if (icon) {
+            icon.className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        }
+    }
+    function toggleTheme() {
+        const currentTheme = body.getAttribute('data-theme') || 'light';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        body.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon(newTheme);
+        // Add a subtle animation effect
+        body.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        setTimeout(() => {
+            body.style.transition = '';
+        }, 300);
+    }
+    themeToggle.addEventListener('click', toggleTheme);
+    initializeTheme();
     // Navigation elements
     const navLinks = document.querySelectorAll('.nav-link');
     const pages = document.querySelectorAll('.page');
@@ -327,10 +356,89 @@ document.addEventListener('DOMContentLoaded', function () {
     toggleSidebarBtn.addEventListener('click', () => {
         sidebar.classList.toggle('open');
     });
-    // Temperature slider
+    // Enhanced navigation with smooth transitions
+    function enhancedSwitchPage(pageId) {
+        pages.forEach((page) => {
+            page.classList.remove('active');
+            page.style.transform = 'translateY(30px)';
+            page.style.opacity = '0';
+        });
+        navLinks.forEach((link) => link.classList.remove('active'));
+        const targetPage = document.getElementById(pageId + '-page');
+        const targetLink = document.querySelector(`[data-page="${pageId}"]`);
+        if (targetPage) {
+            targetPage.classList.add('active');
+            // Trigger animation
+            setTimeout(() => {
+                targetPage.style.transform = 'translateY(0)';
+                targetPage.style.opacity = '1';
+            }, 50);
+        }
+        if (targetLink)
+            targetLink.classList.add('active');
+    }
+    // Override the basic switchPage with enhanced version
+    window.switchPage = enhancedSwitchPage;
+    // Temperature slider with enhanced interactions
     temperatureInput.addEventListener('input', () => {
         temperatureValue.textContent = temperatureInput.value;
+        // Add visual feedback
+        const percentage = ((parseFloat(temperatureInput.value) - 0) / (2 - 0)) * 100;
+        temperatureInput.style.setProperty('--slider-progress', `${percentage}%`);
+        // Add glow effect based on value
+        if (parseFloat(temperatureInput.value) > 1.5) {
+            temperatureInput.style.boxShadow = '0 0 20px rgba(244, 208, 63, 0.5)';
+        }
+        else if (parseFloat(temperatureInput.value) < 0.5) {
+            temperatureInput.style.boxShadow = '0 0 20px rgba(46, 204, 113, 0.5)';
+        }
+        else {
+            temperatureInput.style.boxShadow = '';
+        }
     });
+    // Add ripple effect to buttons
+    function addRippleEffect(button) {
+        button.addEventListener('click', function (e) {
+            const ripple = document.createElement('span');
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            ripple.style.cssText = `
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(0);
+        animation: ripple 0.6s linear;
+        width: ${size}px;
+        height: ${size}px;
+        left: ${x}px;
+        top: ${y}px;
+        pointer-events: none;
+      `;
+            button.style.position = 'relative';
+            button.style.overflow = 'hidden';
+            button.appendChild(ripple);
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    }
+    // Add ripple effect to all buttons
+    document.querySelectorAll('.btn').forEach((button) => {
+        addRippleEffect(button);
+    });
+    // Add CSS for ripple animation
+    const rippleStyle = document.createElement('style');
+    rippleStyle.textContent = `
+    @keyframes ripple {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+  `;
+    document.head.appendChild(rippleStyle);
     // Load saved settings
     chrome.storage.sync.get([
         'selectedModel',
