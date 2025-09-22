@@ -5,7 +5,11 @@ chrome.action.onClicked.addListener((tab) => {
   chrome.tabs.sendMessage(tab.id, { action: 'toggle_summary_visibility' });
 });
 
-async function summarizeWithAI(content, forceModel = null) {
+async function summarizeWithAI(
+  content,
+  forceModel = null,
+  progressCallback = null
+) {
   const startTime = Date.now();
   const {
     selectedModel,
@@ -24,6 +28,21 @@ async function summarizeWithAI(content, forceModel = null) {
   const preferredModel = forceModel || selectedModel || 'chrome-builtin';
   const metrics = { attempts: [], totalTime: 0 };
 
+  // Get stored metrics for time estimation
+  const { modelMetrics = {} } = await chrome.storage.local.get('modelMetrics');
+  const primaryMetrics = modelMetrics[preferredModel];
+  const estimatedTotalTime = primaryMetrics ? primaryMetrics.avgTime : 5; // Default 5 seconds
+
+  // Step 1: Content extraction (10%)
+  if (progressCallback) {
+    progressCallback({
+      step: 'Extracting content',
+      percentage: 10,
+      estimatedTimeRemaining: estimatedTotalTime * 0.9,
+      currentModel: preferredModel,
+    });
+  }
+
   let result = await tryModel(preferredModel, content, {
     openaiApiKey,
     geminiApiKey,
@@ -39,11 +58,37 @@ async function summarizeWithAI(content, forceModel = null) {
 
   let usedModel = preferredModel;
 
+  // Step 2: Primary model attempt (20-70%)
+  if (progressCallback) {
+    progressCallback({
+      step: result.success ? 'Processing response' : 'Trying fallback models',
+      percentage: result.success ? 70 : 20,
+      estimatedTimeRemaining: result.success
+        ? estimatedTotalTime * 0.3
+        : estimatedTotalTime * 0.8,
+      currentModel: preferredModel,
+      success: result.success,
+    });
+  }
+
   // Fallback to other models if enabled and preferred failed
   if (!result.success && enableFallback !== false) {
     const fallbackModels = getFallbackModels(preferredModel);
-    for (const model of fallbackModels) {
+    let fallbackProgress = 20;
+
+    for (let i = 0; i < fallbackModels.length; i++) {
+      const model = fallbackModels[i];
       const attemptStart = Date.now();
+
+      if (progressCallback) {
+        progressCallback({
+          step: `Trying ${getModelConfig(model).name}`,
+          percentage: fallbackProgress + i * 15,
+          estimatedTimeRemaining: estimatedTotalTime * (0.8 - i * 0.1),
+          currentModel: model,
+        });
+      }
+
       result = await tryModel(model, content, {
         openaiApiKey,
         geminiApiKey,
@@ -59,9 +104,31 @@ async function summarizeWithAI(content, forceModel = null) {
 
       if (result.success) {
         usedModel = model;
+        if (progressCallback) {
+          progressCallback({
+            step: 'Processing response',
+            percentage: 90,
+            estimatedTimeRemaining: estimatedTotalTime * 0.1,
+            currentModel: model,
+            success: true,
+          });
+        }
         break;
       }
+
+      fallbackProgress += 15;
     }
+  }
+
+  // Step 3: Final processing (90-100%)
+  if (progressCallback) {
+    progressCallback({
+      step: 'Finalizing summary',
+      percentage: 95,
+      estimatedTimeRemaining: 0.5,
+      currentModel: usedModel,
+      success: result.success,
+    });
   }
 
   const endTime = Date.now();
@@ -70,6 +137,16 @@ async function summarizeWithAI(content, forceModel = null) {
 
   // Store metrics for comparison
   await storeModelMetrics(usedModel, metrics);
+
+  if (progressCallback) {
+    progressCallback({
+      step: 'Complete',
+      percentage: 100,
+      estimatedTimeRemaining: 0,
+      currentModel: usedModel,
+      success: result.success,
+    });
+  }
 
   if (result.success) {
     return {
@@ -438,7 +515,15 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
     // Show loading state
     chrome.tabs.sendMessage(tabId, { action: 'show_loading_spinner' });
 
-    summarizeWithAI(request.content, request.forceModel)
+    // Progress callback to send updates to content script
+    const progressCallback = (progress) => {
+      chrome.tabs.sendMessage(tabId, {
+        action: 'update_loading_progress',
+        progress,
+      });
+    };
+
+    summarizeWithAI(request.content, request.forceModel, progressCallback)
       .then(async ({ summary, model, time, metrics }) => {
         summaryState[tabId] = { summary, visible: true, model, time, metrics };
         chrome.tabs.sendMessage(tabId, {

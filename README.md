@@ -1,7 +1,7 @@
 # AI Page Summarizer
 
 [![CI](https://github.com/lassestilvang/ai-summary-extension/workflows/CI/badge.svg)](https://github.com/lassestilvang/ai-summary-extension/actions)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/your-username/ai-summary-extension)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/lassestilvang/ai-summary-extension)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Table of Contents
@@ -67,7 +67,7 @@ _Note: Chrome Built-in AI models don't require API keys but may have limited ava
 
 1. **Download the Extension**
    - Visit the [Chrome Web Store](https://chrome.google.com/webstore) (link to be added)
-   - Or download the latest release from [GitHub Releases](https://github.com/your-username/ai-summary-extension/releases)
+   - Or download the latest release from [GitHub Releases](https://github.com/lassestilvang/ai-summary-extension/releases)
 
 2. **Install in Chrome**
    - Open Google Chrome
@@ -86,7 +86,7 @@ _Note: Chrome Built-in AI models don't require API keys but may have limited ava
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/your-username/ai-summary-extension.git
+   git clone https://github.com/lassestilvang/ai-summary-extension.git
    cd ai-summary-extension
    ```
 
@@ -348,11 +348,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact Details
 
-- **Project Homepage**: [https://github.com/your-username/ai-summary-extension](https://github.com/your-username/ai-summary-extension)
-- **Issues**: [GitHub Issues](https://github.com/your-username/ai-summary-extension/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/ai-summary-extension/discussions)
-- **Email**: your-email@example.com
+- **Project Homepage**: [https://github.com/lassestilvang/ai-summary-extension](https://github.com/lassestilvang/ai-summary-extension)
+- **Issues**: [GitHub Issues](https://github.com/lassestilvang/ai-summary-extension/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/lassestilvang/ai-summary-extension/discussions)
 
 ---
 
-_Made with ❤️ for efficient web browsing_
+_Made in [Copenhagen](https://en.wikipedia.org/wiki/Copenhagen) with ❤️ for efficient web browsing_

@@ -109,6 +109,7 @@ function createOrUpdateSummaryDiv(
       overflow: hidden !important;
       display: flex !important;
       flex-direction: column !important;
+      padding-bottom: 32px !important;
     `;
 
     const titleBar = document.createElement('div');
@@ -389,6 +390,18 @@ function createOrUpdateSummaryDiv(
 
     summaryDiv.appendChild(titleBar);
 
+    // Enhanced loading container
+    const loadingContainer = document.createElement('div');
+    loadingContainer.id = 'ai-summary-extension-loading-container';
+    loadingContainer.style.cssText = `
+      display: none; /* Hidden by default */
+      padding: 15px !important;
+      text-align: center !important;
+      font-family: Arial, sans-serif !important;
+      color: ${themeColors.textColor} !important;
+    `;
+
+    // Loading spinner
     const loadingSpinner = document.createElement('div');
     loadingSpinner.id = 'ai-summary-extension-loading-spinner';
     loadingSpinner.style.cssText = `
@@ -398,26 +411,77 @@ function createOrUpdateSummaryDiv(
       width: 30px;
       height: 30px;
       animation: spin 2s linear infinite;
-      margin: auto;
-      display: none; /* Hidden by default */
+      margin: 0 auto 10px auto;
     `;
-    summaryDiv.appendChild(loadingSpinner);
+    loadingContainer.appendChild(loadingSpinner);
+
+    // Progress bar container
+    const progressContainer = document.createElement('div');
+    progressContainer.style.cssText = `
+      width: 100% !important;
+      height: 8px !important;
+      background-color: #e0e0e0 !important;
+      border-radius: 4px !important;
+      margin-bottom: 10px !important;
+      overflow: hidden !important;
+    `;
+
+    const progressBar = document.createElement('div');
+    progressBar.id = 'ai-summary-extension-progress-bar';
+    progressBar.style.cssText = `
+      height: 100% !important;
+      width: 0% !important;
+      background-color: #3498db !important;
+      border-radius: 4px !important;
+      transition: width 0.3s ease !important;
+    `;
+    progressContainer.appendChild(progressBar);
+    loadingContainer.appendChild(progressContainer);
+
+    // Progress text (percentage and step)
+    const progressText = document.createElement('div');
+    progressText.id = 'ai-summary-extension-progress-text';
+    progressText.style.cssText = `
+      font-size: 14px !important;
+      font-weight: bold !important;
+      margin-bottom: 5px !important;
+    `;
+    progressText.textContent = 'Initializing...';
+    loadingContainer.appendChild(progressText);
+
+    // Model and time info
+    const progressDetails = document.createElement('div');
+    progressDetails.id = 'ai-summary-extension-progress-details';
+    progressDetails.style.cssText = `
+      font-size: 12px !important;
+      color: ${themeColors.titleColor} !important;
+      margin-bottom: 5px !important;
+    `;
+    progressDetails.textContent = '';
+    loadingContainer.appendChild(progressDetails);
+
+    summaryDiv.appendChild(loadingContainer);
 
     summaryDiv.appendChild(summaryContent);
 
     const footerDiv = document.createElement('div');
     footerDiv.id = 'ai-summary-extension-footer-div';
     footerDiv.style.cssText = `
+      position: absolute !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
       height: 32px !important;
       padding: 4px 8px !important;
       font-size: 12px !important;
       color: ${themeColors.titleColor} !important;
       background-color: ${themeColors.borderColor} !important;
       font-family: Arial, sans-serif !important;
-      flex-shrink: 0 !important;
+      border-top: 1px solid ${themeColors.borderColor} !important;
       display: flex !important;
       align-items: center !important;
       justify-content: space-between !important;
+      z-index: 100000 !important;
     `;
 
     // Model selector in footer
@@ -479,8 +543,8 @@ function createOrUpdateSummaryDiv(
         'ai-summary-extension-summary-content'
       );
       const statusText = document.getElementById('ai-summary-status-text');
-      const loadingSpinner = document.getElementById(
-        'ai-summary-extension-loading-spinner'
+      const loadingContainer = document.getElementById(
+        'ai-summary-extension-loading-container'
       );
 
       if (summaryContent) {
@@ -490,8 +554,8 @@ function createOrUpdateSummaryDiv(
       if (statusText) {
         statusText.textContent = 'Regenerating...';
       }
-      if (loadingSpinner) {
-        loadingSpinner.style.display = 'block';
+      if (loadingContainer) {
+        loadingContainer.style.display = 'block';
       }
 
       // Extract page content and regenerate summary
@@ -511,8 +575,8 @@ function createOrUpdateSummaryDiv(
         if (statusText) {
           statusText.textContent = 'No content available to summarize';
         }
-        if (loadingSpinner) {
-          loadingSpinner.style.display = 'none';
+        if (loadingContainer) {
+          loadingContainer.style.display = 'none';
         }
       }
     });
@@ -547,24 +611,24 @@ function createOrUpdateSummaryDiv(
     makeDraggable(summaryDiv, titleBar);
   }
 
-  const loadingSpinner = document.getElementById(
-    'ai-summary-extension-loading-spinner'
+  const loadingContainer = document.getElementById(
+    'ai-summary-extension-loading-container'
   );
   const summaryContent = document.getElementById(
     'ai-summary-extension-summary-content'
   );
 
   if (summaryText === null) {
-    // Show spinner, hide content
-    if (loadingSpinner) loadingSpinner.style.display = 'block';
+    // Show loading container, hide content
+    if (loadingContainer) loadingContainer.style.display = 'block';
     if (summaryContent) summaryContent.style.display = 'none';
     // Clear status text
     const statusText = document.getElementById('ai-summary-status-text');
     if (statusText) statusText.textContent = '';
     summaryDiv.style.display = 'flex';
   } else {
-    // Hide spinner, show content
-    if (loadingSpinner) loadingSpinner.style.display = 'none';
+    // Hide loading container, show content
+    if (loadingContainer) loadingContainer.style.display = 'none';
     if (summaryContent) {
       const converter = new showdown.Converter();
       const htmlSummary = converter.makeHtml(summaryText);
@@ -683,6 +747,44 @@ function makeResizable(element, content, handle, direction) {
   };
 }
 
+// Function to update loading progress display
+function updateLoadingProgress(progress) {
+  const progressBar = document.getElementById(
+    'ai-summary-extension-progress-bar'
+  );
+  const progressText = document.getElementById(
+    'ai-summary-extension-progress-text'
+  );
+  const progressDetails = document.getElementById(
+    'ai-summary-extension-progress-details'
+  );
+
+  if (progressBar && progressText && progressDetails) {
+    // Update progress bar
+    progressBar.style.width = `${progress.percentage}%`;
+
+    // Update progress text
+    progressText.textContent = `${progress.step} (${progress.percentage}%)`;
+
+    // Update details
+    const modelName = getModelDisplayName(progress.currentModel);
+    let detailsText = `Using ${modelName}`;
+    if (progress.estimatedTimeRemaining > 0) {
+      const timeText =
+        progress.estimatedTimeRemaining < 1
+          ? '< 1s'
+          : `${Math.ceil(progress.estimatedTimeRemaining)}s`;
+      detailsText += ` • ~${timeText} remaining`;
+    }
+    if (progress.success === false) {
+      detailsText += ' (failed, trying alternatives)';
+    } else if (progress.success === true) {
+      detailsText += ' (success)';
+    }
+    progressDetails.textContent = detailsText;
+  }
+}
+
 // Listener for messages from background.js
 chrome.runtime.onMessage.addListener(function (request) {
   if (request.action === 'display_inline_summary') {
@@ -699,6 +801,8 @@ chrome.runtime.onMessage.addListener(function (request) {
     chrome.storage.sync.get('theme', function (result) {
       createOrUpdateSummaryDiv(null, result.theme || 'light');
     });
+  } else if (request.action === 'update_loading_progress') {
+    updateLoadingProgress(request.progress);
   } else if (request.action === 'toggle_summary_visibility') {
     if (summaryDiv) {
       summaryDiv.style.display =
