@@ -477,14 +477,14 @@ function createOrUpdateSummaryDiv(
 
     const style = document.createElement('style');
     style.textContent = `
-      .resize-handle-n { top: -5px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
-      .resize-handle-ne { top: -5px; right: -5px; cursor: ne-resize; }
-      .resize-handle-e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
-      .resize-handle-se { bottom: -5px; right: -5px; cursor: se-resize; }
-      .resize-handle-s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
-      .resize-handle-sw { bottom: -5px; left: -5px; cursor: sw-resize; }
-      .resize-handle-w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
-      .resize-handle-nw { top: -5px; left: -5px; cursor: nw-resize; }
+      .resize-handle-n { top: -10px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+      .resize-handle-ne { top: -10px; right: -10px; cursor: ne-resize; }
+      .resize-handle-e { top: 50%; right: -10px; transform: translateY(-50%); cursor: e-resize; }
+      .resize-handle-se { bottom: -10px; right: -10px; cursor: se-resize; }
+      .resize-handle-s { bottom: -10px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+      .resize-handle-sw { bottom: -10px; left: -10px; cursor: sw-resize; }
+      .resize-handle-w { top: 50%; left: -10px; transform: translateY(-50%); cursor: w-resize; }
+      .resize-handle-nw { top: -10px; left: -10px; cursor: nw-resize; }
 
       #ai-summary-extension-summary-content ul, #ai-summary-extension-summary-content ol {
         padding-left: 20px;
@@ -544,8 +544,8 @@ function createOrUpdateSummaryDiv(
       handle.className = `resize-handle-${dir}`;
       handle.style.cssText = `
         position: absolute;
-        width: 10px;
-        height: 10px;
+        width: 20px;
+        height: 20px;
         z-index: 100000;
       `;
       summaryDiv!.appendChild(handle);
