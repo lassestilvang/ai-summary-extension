@@ -1,4 +1,125 @@
 "use strict";
+// Inline utility functions to avoid ES6 import issues
+async function validateApiKey(provider, apiKey) {
+    if (!apiKey || apiKey.trim() === '') {
+        return { valid: false, error: 'API key is required' };
+    }
+    try {
+        switch (provider) {
+            case 'openai':
+                return await validateOpenAIApiKey(apiKey);
+            case 'gemini':
+                return await validateGeminiApiKey(apiKey);
+            case 'anthropic':
+                return await validateAnthropicApiKey(apiKey);
+            default:
+                return { valid: false, error: 'Unknown provider' };
+        }
+    }
+    catch {
+        return { valid: false, error: 'Network error during validation' };
+    }
+}
+async function validateOpenAIApiKey(apiKey) {
+    try {
+        const response = await fetch('https://api.openai.com/v1/models', {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${apiKey}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        if (response.ok) {
+            return { valid: true };
+        }
+        else if (response.status === 401) {
+            return { valid: false, error: 'Invalid API key' };
+        }
+        else {
+            return {
+                valid: false,
+                error: `API validation failed: ${response.status}`,
+            };
+        }
+    }
+    catch {
+        return { valid: false, error: 'Network error during validation' };
+    }
+}
+async function validateGeminiApiKey(apiKey) {
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        if (response.ok) {
+            return { valid: true };
+        }
+        else if (response.status === 400 || response.status === 403) {
+            return { valid: false, error: 'Invalid API key' };
+        }
+        else {
+            return {
+                valid: false,
+                error: `API validation failed: ${response.status}`,
+            };
+        }
+    }
+    catch {
+        return { valid: false, error: 'Network error during validation' };
+    }
+}
+async function validateAnthropicApiKey(apiKey) {
+    try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: 'claude-3-haiku-20240307',
+                max_tokens: 1,
+                messages: [{ role: 'user', content: 'test' }],
+            }),
+        });
+        if (response.ok) {
+            return { valid: true };
+        }
+        else if (response.status === 401) {
+            return { valid: false, error: 'Invalid API key' };
+        }
+        else {
+            return {
+                valid: false,
+                error: `API validation failed: ${response.status}`,
+            };
+        }
+    }
+    catch {
+        return { valid: false, error: 'Network error during validation' };
+    }
+}
+function isModelAvailable(model, apiKeys) {
+    const config = optionsGetModelConfig(model);
+    if (!config)
+        return false;
+    switch (config.provider) {
+        case 'chrome':
+            return true; // Chrome built-in is always available
+        case 'openai':
+            return !!(apiKeys.openaiApiKey && apiKeys.openaiApiKey.trim() !== '');
+        case 'gemini':
+            return !!(apiKeys.geminiApiKey && apiKeys.geminiApiKey.trim() !== '');
+        case 'anthropic':
+            return !!(apiKeys.anthropicApiKey && apiKeys.anthropicApiKey.trim() !== '');
+        default:
+            return false;
+    }
+}
 const optionsThemes = {
     light: {
         name: 'Light',
@@ -207,13 +328,25 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
     // Save settings
-    saveButton.addEventListener('click', function () {
+    saveButton.addEventListener('click', async function () {
         const selectedModel = selectedModelSelect.value;
         const enableFallback = enableFallbackCheckbox.checked;
         const openaiApiKey = openaiApiKeyInput.value.trim();
         const geminiApiKey = geminiApiKeyInput.value.trim();
         const anthropicApiKey = anthropicApiKeyInput.value.trim();
         const theme = themeSelect.value;
+        // Check if selected model is available
+        const apiKeys = {
+            openaiApiKey,
+            geminiApiKey,
+            anthropicApiKey,
+        };
+        if (!isModelAvailable(selectedModel, apiKeys)) {
+            statusDiv.textContent =
+                'Cannot save: Selected model requires a valid API key. Please configure the appropriate API key or choose a different model.';
+            statusDiv.className = 'status error';
+            return;
+        }
         chrome.storage.sync.set({
             selectedModel: selectedModel,
             enableFallback: enableFallback,
@@ -353,4 +486,82 @@ document.addEventListener('DOMContentLoaded', function () {
     loadMetrics();
     // Load history on page load
     loadHistory();
+    // Real-time API key validation
+    const validationStatus = {
+        openai: { valid: false, checking: false },
+        gemini: { valid: false, checking: false },
+        anthropic: { valid: false, checking: false },
+    };
+    function updateValidationIndicator(provider, input) {
+        const status = validationStatus[provider];
+        const container = input.parentElement;
+        // Remove existing indicators
+        const existingIndicator = container.querySelector('.validation-indicator');
+        if (existingIndicator) {
+            existingIndicator.remove();
+        }
+        // Add new indicator
+        const indicator = document.createElement('span');
+        indicator.className = 'validation-indicator';
+        if (status.checking) {
+            indicator.textContent = '⏳';
+            indicator.title = 'Validating...';
+            indicator.style.color = '#ffa500';
+        }
+        else if (status.valid) {
+            indicator.textContent = '✓';
+            indicator.title = 'Valid API key';
+            indicator.style.color = '#28a745';
+        }
+        else if (input.value.trim() && status.error) {
+            indicator.textContent = '✗';
+            indicator.title = status.error;
+            indicator.style.color = '#dc3545';
+        }
+        if (indicator.textContent) {
+            indicator.style.marginLeft = '8px';
+            container.appendChild(indicator);
+        }
+    }
+    async function validateApiKeyInput(provider, input) {
+        const apiKey = input.value.trim();
+        if (!apiKey) {
+            validationStatus[provider] = { valid: false, checking: false };
+            updateValidationIndicator(provider, input);
+            return;
+        }
+        validationStatus[provider].checking = true;
+        updateValidationIndicator(provider, input);
+        try {
+            const result = await validateApiKey(provider, apiKey);
+            validationStatus[provider] = {
+                valid: result.valid,
+                checking: false,
+                error: result.error,
+            };
+        }
+        catch {
+            validationStatus[provider] = {
+                valid: false,
+                checking: false,
+                error: 'Validation failed',
+            };
+        }
+        updateValidationIndicator(provider, input);
+    }
+    // Add validation event listeners
+    openaiApiKeyInput.addEventListener('blur', () => validateApiKeyInput('openai', openaiApiKeyInput));
+    geminiApiKeyInput.addEventListener('blur', () => validateApiKeyInput('gemini', geminiApiKeyInput));
+    anthropicApiKeyInput.addEventListener('blur', () => validateApiKeyInput('anthropic', anthropicApiKeyInput));
+    // Also validate on input for better UX (debounced)
+    const validationTimeouts = {};
+    function debouncedValidate(provider, input) {
+        clearTimeout(validationTimeouts[provider]);
+        validationTimeouts[provider] = window.setTimeout(() => {
+            validateApiKeyInput(provider, input);
+        }, 1000); // 1 second delay
+    }
+    openaiApiKeyInput.addEventListener('input', () => debouncedValidate('openai', openaiApiKeyInput));
+    geminiApiKeyInput.addEventListener('input', () => debouncedValidate('gemini', geminiApiKeyInput));
+    anthropicApiKeyInput.addEventListener('input', () => debouncedValidate('anthropic', anthropicApiKeyInput));
 });

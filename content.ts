@@ -1,5 +1,33 @@
 declare const showdown: any; // Assuming showdown is loaded globally
 
+// Inline utility function to check if a model is available
+function contentIsModelAvailable(
+  model: string,
+  apiKeys: {
+    openaiApiKey: string;
+    geminiApiKey: string;
+    anthropicApiKey: string;
+  }
+): boolean {
+  const config = contentGetModelConfig(model);
+  if (!config) return false;
+
+  switch (config.provider) {
+    case 'chrome':
+      return true; // Chrome built-in is always available
+    case 'openai':
+      return !!(apiKeys.openaiApiKey && apiKeys.openaiApiKey.trim() !== '');
+    case 'gemini':
+      return !!(apiKeys.geminiApiKey && apiKeys.geminiApiKey.trim() !== '');
+    case 'anthropic':
+      return !!(
+        apiKeys.anthropicApiKey && apiKeys.anthropicApiKey.trim() !== ''
+      );
+    default:
+      return false;
+  }
+}
+
 let summaryDiv: HTMLDivElement | null = null;
 
 interface ThemeColors {
@@ -625,7 +653,7 @@ function createOrUpdateSummaryDiv(
       flex-shrink: 0 !important;
     `;
 
-    // Populate model selector
+    // Populate model selector with API key availability check
     const modelOptions = [
       { value: 'chrome-builtin', label: 'Chrome AI (Free)' },
       { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
@@ -641,12 +669,32 @@ function createOrUpdateSummaryDiv(
       { value: 'claude-3.5-sonnet', label: 'Claude 3.5 Sonnet' },
     ];
 
-    modelOptions.forEach((option) => {
-      const opt = document.createElement('option');
-      opt.value = option.value;
-      opt.textContent = option.label;
-      modelSelect.appendChild(opt);
-    });
+    // Get API keys to check availability
+    chrome.storage.sync.get(
+      ['openaiApiKey', 'geminiApiKey', 'anthropicApiKey'],
+      (result) => {
+        const apiKeys = {
+          openaiApiKey: result.openaiApiKey || '',
+          geminiApiKey: result.geminiApiKey || '',
+          anthropicApiKey: result.anthropicApiKey || '',
+        };
+
+        modelOptions.forEach((option) => {
+          const opt = document.createElement('option');
+          opt.value = option.value;
+          opt.textContent = option.label;
+
+          // Check if model is available based on API keys
+          if (!contentIsModelAvailable(option.value, apiKeys)) {
+            opt.disabled = true;
+            opt.style.opacity = '0.5';
+            opt.title = 'API key required - configure in settings';
+          }
+
+          modelSelect.appendChild(opt);
+        });
+      }
+    );
 
     // Load current selected model
     chrome.storage.sync.get('selectedModel', (result) => {

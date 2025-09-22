@@ -75,3 +75,125 @@ export function getModelConfig(model) {
     };
     return models[model];
 }
+// API Key validation functions
+export async function validateApiKey(provider, apiKey) {
+    if (!apiKey || apiKey.trim() === '') {
+        return { valid: false, error: 'API key is required' };
+    }
+    try {
+        switch (provider) {
+            case 'openai':
+                return await validateOpenAIApiKey(apiKey);
+            case 'gemini':
+                return await validateGeminiApiKey(apiKey);
+            case 'anthropic':
+                return await validateAnthropicApiKey(apiKey);
+            default:
+                return { valid: false, error: 'Unknown provider' };
+        }
+    }
+    catch (error) {
+        console.error('API key validation error:', error);
+        return { valid: false, error: 'Network error during validation' };
+    }
+}
+async function validateOpenAIApiKey(apiKey) {
+    try {
+        const response = await fetch('https://api.openai.com/v1/models', {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${apiKey}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        if (response.ok) {
+            return { valid: true };
+        }
+        else if (response.status === 401) {
+            return { valid: false, error: 'Invalid API key' };
+        }
+        else {
+            return {
+                valid: false,
+                error: `API validation failed: ${response.status}`,
+            };
+        }
+    }
+    catch {
+        return { valid: false, error: 'Network error during validation' };
+    }
+}
+async function validateGeminiApiKey(apiKey) {
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        if (response.ok) {
+            return { valid: true };
+        }
+        else if (response.status === 400 || response.status === 403) {
+            return { valid: false, error: 'Invalid API key' };
+        }
+        else {
+            return {
+                valid: false,
+                error: `API validation failed: ${response.status}`,
+            };
+        }
+    }
+    catch {
+        return { valid: false, error: 'Network error during validation' };
+    }
+}
+async function validateAnthropicApiKey(apiKey) {
+    try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: 'claude-3-haiku-20240307',
+                max_tokens: 1,
+                messages: [{ role: 'user', content: 'test' }],
+            }),
+        });
+        if (response.ok) {
+            return { valid: true };
+        }
+        else if (response.status === 401) {
+            return { valid: false, error: 'Invalid API key' };
+        }
+        else {
+            return {
+                valid: false,
+                error: `API validation failed: ${response.status}`,
+            };
+        }
+    }
+    catch {
+        return { valid: false, error: 'Network error during validation' };
+    }
+}
+export function isModelAvailable(model, apiKeys) {
+    const config = getModelConfig(model);
+    if (!config)
+        return false;
+    switch (config.provider) {
+        case 'chrome':
+            return true; // Chrome built-in is always available
+        case 'openai':
+            return !!(apiKeys.openaiApiKey && apiKeys.openaiApiKey.trim() !== '');
+        case 'gemini':
+            return !!(apiKeys.geminiApiKey && apiKeys.geminiApiKey.trim() !== '');
+        case 'anthropic':
+            return !!(apiKeys.anthropicApiKey && apiKeys.anthropicApiKey.trim() !== '');
+        default:
+            return false;
+    }
+}
