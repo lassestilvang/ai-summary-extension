@@ -244,6 +244,39 @@ async function storeModelMetrics(model, metrics) {
   }
 }
 
+async function storeSummaryHistory(tabId, summary, model, time, metrics) {
+  try {
+    const { summaryHistory = [] } =
+      await chrome.storage.local.get('summaryHistory');
+
+    // Get tab info for URL and title
+    const tab = await chrome.tabs.get(tabId);
+
+    const historyEntry = {
+      id: Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+      timestamp: new Date().toISOString(),
+      url: tab.url,
+      title: tab.title,
+      summary: summary,
+      model: model,
+      time: time,
+      metrics: metrics,
+    };
+
+    // Add to beginning of array (most recent first)
+    summaryHistory.unshift(historyEntry);
+
+    // Keep only the most recent 50 summaries
+    if (summaryHistory.length > 50) {
+      summaryHistory.splice(50);
+    }
+
+    await chrome.storage.local.set({ summaryHistory });
+  } catch (error) {
+    console.error('Error storing summary history:', error);
+  }
+}
+
 async function tryChromeBuiltinAI(content) {
   try {
     if ('Summarizer' in globalThis) {
@@ -406,7 +439,7 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
     chrome.tabs.sendMessage(tabId, { action: 'show_loading_spinner' });
 
     summarizeWithAI(request.content, request.forceModel)
-      .then(({ summary, model, time, metrics }) => {
+      .then(async ({ summary, model, time, metrics }) => {
         summaryState[tabId] = { summary, visible: true, model, time, metrics };
         chrome.tabs.sendMessage(tabId, {
           action: 'display_inline_summary',
@@ -415,6 +448,9 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
           time,
           metrics,
         });
+
+        // Store summary in history
+        await storeSummaryHistory(tabId, summary, model, time, metrics);
       })
       .catch((error) => {
         console.error('Error summarizing:', error);

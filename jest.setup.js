@@ -30,6 +30,7 @@ global.chrome = {
   },
   tabs: {
     sendMessage: jest.fn(),
+    get: jest.fn(),
     onRemoved: {
       addListener: jest.fn(),
     },

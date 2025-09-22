@@ -54,7 +54,6 @@ describe('Background Script Tests', () => {
       });
     });
   });
-
   describe('Tab removal', () => {
     it('should clean up summary state when tab is closed', () => {
       const tabId = 123;
