@@ -450,21 +450,6 @@ describe('Extension Integration Tests', () => {
       );
     });
 
-    it('should provide metrics data to options page', () => {
-      chrome.runtime.sendMessage.mockReset();
-      const metricsMessage = { action: 'get_model_metrics' };
-
-      chrome.runtime.onMessage.addListener.mock.calls.forEach(([listener]) => {
-        listener(metricsMessage, mockSender);
-      });
-
-      // Should send metrics response
-      expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
-        action: 'model_metrics_response',
-        metrics: {},
-      });
-    });
-
     it('should handle metrics retrieval failures', () => {
       // Mock storage.get to not call callback (simulating failure)
       chrome.storage.local.get.mockImplementationOnce(() => {

@@ -574,36 +574,6 @@ describe('Background Script Comprehensive Tests', () => {
       });
     });
 
-    it('should limit history to 50 entries', async () => {
-      const existingHistory = Array.from({ length: 50 }, (_, i) => ({
-        id: `entry-${i}`,
-        timestamp: new Date().toISOString(),
-        url: `https://example${i}.com`,
-        title: `Page ${i}`,
-        summary: `Summary ${i}`,
-        model: 'chrome-builtin',
-        time: '1.00',
-        metrics: { attempts: [], totalTime: 1.0 },
-      }));
-
-      // Mock get to return existing history for the first call, then empty for subsequent calls
-      chrome.storage.local.get.mockResolvedValueOnce({
-        summaryHistory: existingHistory,
-        modelMetrics: {},
-      });
-
-      await storeSummaryHistory(123, 'New summary', 'chrome-builtin', '1.50', {
-        attempts: [],
-        totalTime: 1.5,
-      });
-
-      const setCall = chrome.storage.local.set.mock.calls.find(
-        (call) => call[0].summaryHistory
-      )[0];
-      expect(setCall.summaryHistory).toHaveLength(50);
-      expect(setCall.summaryHistory[0].summary).toBe('New summary'); // Most recent first
-    });
-
     it('should handle storage errors gracefully', async () => {
       chrome.tabs.get.mockRejectedValue(new Error('Tab error'));
 

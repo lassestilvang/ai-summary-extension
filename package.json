@@ -13,14 +13,11 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --watchAll=false",
-    "test:e2e": "playwright test",
-    "test:e2e:headed": "playwright test --headed",
     "install-deps": "npm install"
   },
   "devDependencies": {
     "@babel/core": "^7.28.4",
     "@babel/preset-env": "^7.28.3",
-    "@playwright/test": "^1.40.0",
     "@testing-library/dom": "^9.3.0",
     "@testing-library/jest-dom": "^6.1.0",
     "@testing-library/user-event": "^14.5.0",
@@ -36,7 +33,6 @@
     "jest-environment-jsdom": "^29.7.0",
     "jest-fetch-mock": "^3.0.3",
     "prettier": "^3.2.5",
-    "puppeteer": "^21.0.0",
     "ts-jest": "^29.4.4",
     "typescript": "^5.9.2"
   }
