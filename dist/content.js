@@ -173,7 +173,7 @@ function getModelDisplayName(model) {
     const modelConfig = contentGetModelConfig(model);
     return modelConfig ? modelConfig.name : model;
 }
-function createOrUpdateSummaryDiv(summaryText, theme, model, time, metrics) {
+function createOrUpdateSummaryDiv(summaryText, theme, fontFamily, fontSize, fontStyle, model, time, metrics) {
     const themeColors = contentThemes[theme]?.colors || contentThemes.light.colors;
     if (!summaryDiv) {
         summaryDiv = document.createElement('div');
@@ -311,9 +311,10 @@ function createOrUpdateSummaryDiv(summaryText, theme, model, time, metrics) {
         summaryTitle.textContent = 'Summary';
         summaryTitle.style.cssText = `
       color: ${themeColors.titleColor} !important;
-      font-family: Arial, sans-serif !important;
-      font-size: 14px !important;
-      font-weight: bold !important;
+      font-family: ${fontFamily}, sans-serif !important;
+      font-size: ${fontSize + 4}px !important;
+      font-weight: ${fontStyle === 'bold' ? 'bold' : 'normal'} !important;
+      font-style: ${fontStyle === 'italic' ? 'italic' : 'normal'} !important;
       display: inline-block !important;
     `;
         summaryTitleContainer.appendChild(summaryTitle);
@@ -387,8 +388,10 @@ function createOrUpdateSummaryDiv(summaryText, theme, model, time, metrics) {
       padding: 15px !important;
       overflow-y: auto !important;
       flex-grow: 1 !important;
-      font-family: Arial, sans-serif !important;
-      font-size: 14px !important;
+      font-family: ${fontFamily}, sans-serif !important;
+      font-size: ${fontSize}px !important;
+      font-weight: ${fontStyle === 'bold' ? 'bold' : 'normal'} !important;
+      font-style: ${fontStyle === 'italic' ? 'italic' : 'normal'} !important;
       color: ${themeColors.textColor} !important;
       background-color: ${themeColors.backgroundColor} !important;
     `;
@@ -476,7 +479,10 @@ function createOrUpdateSummaryDiv(summaryText, theme, model, time, metrics) {
       display: none; /* Hidden by default */
       padding: 15px !important;
       text-align: center !important;
-      font-family: Arial, sans-serif !important;
+      font-family: ${fontFamily}, sans-serif !important;
+      font-size: ${fontSize}px !important;
+      font-weight: ${fontStyle === 'bold' ? 'bold' : 'normal'} !important;
+      font-style: ${fontStyle === 'italic' ? 'italic' : 'normal'} !important;
       color: ${themeColors.textColor} !important;
     `;
         // Loading spinner
@@ -544,10 +550,12 @@ function createOrUpdateSummaryDiv(summaryText, theme, model, time, metrics) {
       right: 0 !important;
       height: 32px !important;
       padding: 4px 8px !important;
-      font-size: 12px !important;
+      font-size: ${Math.max(fontSize - 2, 10)}px !important;
       color: ${themeColors.titleColor} !important;
       background-color: ${themeColors.borderColor} !important;
-      font-family: Arial, sans-serif !important;
+      font-family: ${fontFamily}, sans-serif !important;
+      font-weight: ${fontStyle === 'bold' ? 'bold' : 'normal'} !important;
+      font-style: ${fontStyle === 'italic' ? 'italic' : 'normal'} !important;
       border-top: 1px solid ${themeColors.borderColor} !important;
       display: flex !important;
       align-items: center !important;
@@ -820,13 +828,13 @@ chrome.runtime.onMessage.addListener(function (request) {
     if (!request || !request.action)
         return;
     if (request.action === 'display_inline_summary') {
-        chrome.storage.sync.get('theme', function (result) {
-            createOrUpdateSummaryDiv(request.summary, result.theme || 'light', request.model, request.time, request.metrics);
+        chrome.storage.sync.get(['theme', 'fontFamily', 'fontSize', 'fontStyle'], function (result) {
+            createOrUpdateSummaryDiv(request.summary, result.theme || 'light', result.fontFamily || 'Arial', result.fontSize || 14, result.fontStyle || 'normal', request.model, request.time, request.metrics);
         });
     }
     else if (request.action === 'show_loading_spinner') {
-        chrome.storage.sync.get('theme', function (result) {
-            createOrUpdateSummaryDiv(null, result.theme || 'light');
+        chrome.storage.sync.get(['theme', 'fontFamily', 'fontSize', 'fontStyle'], function (result) {
+            createOrUpdateSummaryDiv(null, result.theme || 'light', result.fontFamily || 'Arial', result.fontSize || 14, result.fontStyle || 'normal');
         });
     }
     else if (request.action === 'update_loading_progress') {

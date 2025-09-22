@@ -286,19 +286,24 @@ document.addEventListener('DOMContentLoaded', function () {
     const openaiApiKeyInput = document.getElementById('openaiApiKey');
     const geminiApiKeyInput = document.getElementById('geminiApiKey');
     const anthropicApiKeyInput = document.getElementById('anthropicApiKey');
-    const themeSelect = document.getElementById('theme');
     const statusDiv = document.getElementById('status');
+    // Theme elements
+    const themeSelect = document.getElementById('theme');
+    const fontFamilySelect = document.getElementById('fontFamily');
+    const fontSizeInput = document.getElementById('fontSize');
+    const fontStyleSelect = document.getElementById('fontStyle');
+    const themeStatusDiv = document.getElementById('themeStatus');
+    const themePreview = document.getElementById('themePreview');
+    const previewText = document.getElementById('previewText');
     // Performance elements
     const refreshMetricsButton = document.getElementById('refreshMetrics');
     const metricsContainer = document.getElementById('metricsContainer');
-    const performanceChartCanvas = document.getElementById('performanceChart');
     // History elements
     const searchInput = document.getElementById('searchInput');
     const filterModelSelect = document.getElementById('filterModel');
     const refreshHistoryButton = document.getElementById('refreshHistory');
     const clearHistoryButton = document.getElementById('clearHistory');
     const historyContainer = document.getElementById('historyContainer');
-    let performanceChart = null;
     // Navigation functionality
     function switchPage(pageId) {
         pages.forEach((page) => page.classList.remove('active'));
@@ -326,13 +331,6 @@ document.addEventListener('DOMContentLoaded', function () {
     temperatureInput.addEventListener('input', () => {
         temperatureValue.textContent = temperatureInput.value;
     });
-    // Populate theme selector
-    for (const themeKey in optionsThemes) {
-        const option = document.createElement('option');
-        option.value = themeKey;
-        option.textContent = optionsThemes[themeKey].name;
-        themeSelect.appendChild(option);
-    }
     // Load saved settings
     chrome.storage.sync.get([
         'selectedModel',
@@ -342,7 +340,6 @@ document.addEventListener('DOMContentLoaded', function () {
         'openaiApiKey',
         'geminiApiKey',
         'anthropicApiKey',
-        'theme',
     ], function (result) {
         if (result.selectedModel) {
             selectedModelSelect.value = result.selectedModel;
@@ -380,9 +377,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (result.anthropicApiKey) {
             anthropicApiKeyInput.value = result.anthropicApiKey;
         }
-        if (result.theme) {
-            themeSelect.value = result.theme;
-        }
     });
     // Save settings
     const settingsForm = document.getElementById('settings-form');
@@ -395,7 +389,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const openaiApiKey = openaiApiKeyInput.value.trim();
         const geminiApiKey = geminiApiKeyInput.value.trim();
         const anthropicApiKey = anthropicApiKeyInput.value.trim();
-        const theme = themeSelect.value;
         // Check if selected model is available
         const apiKeys = {
             openaiApiKey,
@@ -416,7 +409,6 @@ document.addEventListener('DOMContentLoaded', function () {
             openaiApiKey: openaiApiKey,
             geminiApiKey: geminiApiKey,
             anthropicApiKey: anthropicApiKey,
-            theme: theme,
         }, function () {
             statusDiv.textContent = 'Settings saved successfully!';
             statusDiv.className = 'status success';
@@ -438,11 +430,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         let html = '';
-        const chartData = {
-            labels: [],
-            responseTimes: [],
-            successRates: [],
-        };
         Object.entries(metrics).forEach(([modelKey, stats]) => {
             const modelConfig = optionsGetModelConfig(modelKey);
             const modelName = modelConfig ? modelConfig.name : modelKey;
@@ -453,9 +440,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const lastUsed = stats.lastUsed
                 ? new Date(stats.lastUsed).toLocaleDateString()
                 : 'Never';
-            chartData.labels.push(modelName);
-            chartData.responseTimes.push(avgTime);
-            chartData.successRates.push(successRate);
             html += `
         <div class="metric-card">
           <h3 class="metric-title">${modelName}</h3>
@@ -481,88 +465,6 @@ document.addEventListener('DOMContentLoaded', function () {
       `;
         });
         metricsContainer.innerHTML = html;
-        // Create chart
-        if (performanceChart) {
-            performanceChart.destroy();
-        }
-        performanceChart = new Chart(performanceChartCanvas, {
-            type: 'bar',
-            data: {
-                labels: chartData.labels,
-                datasets: [
-                    {
-                        label: 'Response Time (s)',
-                        data: chartData.responseTimes,
-                        backgroundColor: 'rgba(0, 212, 255, 0.6)',
-                        borderColor: '#00d4ff',
-                        borderWidth: 2,
-                        yAxisID: 'y',
-                    },
-                    {
-                        label: 'Success Rate (%)',
-                        data: chartData.successRates,
-                        backgroundColor: 'rgba(57, 255, 20, 0.6)',
-                        borderColor: '#39ff14',
-                        borderWidth: 2,
-                        yAxisID: 'y1',
-                        type: 'line',
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        title: {
-                            display: true,
-                            text: 'Response Time (seconds)',
-                            color: '#00d4ff',
-                        },
-                        ticks: {
-                            color: '#ffffff',
-                        },
-                        grid: {
-                            color: 'rgba(0, 212, 255, 0.2)',
-                        },
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        title: {
-                            display: true,
-                            text: 'Success Rate (%)',
-                            color: '#39ff14',
-                        },
-                        ticks: {
-                            color: '#ffffff',
-                        },
-                        grid: {
-                            drawOnChartArea: false,
-                        },
-                    },
-                    x: {
-                        ticks: {
-                            color: '#ffffff',
-                        },
-                        grid: {
-                            color: 'rgba(0, 212, 255, 0.2)',
-                        },
-                    },
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: '#ffffff',
-                        },
-                    },
-                },
-            },
-        });
     }
     // Handle metrics response
     chrome.runtime.onMessage.addListener((request) => {
@@ -765,4 +667,86 @@ document.addEventListener('DOMContentLoaded', function () {
     openaiApiKeyInput.addEventListener('input', () => debouncedValidate('openai', openaiApiKeyInput));
     geminiApiKeyInput.addEventListener('input', () => debouncedValidate('gemini', geminiApiKeyInput));
     anthropicApiKeyInput.addEventListener('input', () => debouncedValidate('anthropic', anthropicApiKeyInput));
+    // Theme functionality
+    function updatePreview() {
+        const selectedTheme = themeSelect.value;
+        const fontFamily = fontFamilySelect.value;
+        const fontSize = parseInt(fontSizeInput.value);
+        const fontStyle = fontStyleSelect.value;
+        const theme = optionsThemes[selectedTheme];
+        if (theme) {
+            themePreview.style.backgroundColor = theme.colors.backgroundColor;
+            themePreview.style.color = theme.colors.textColor;
+            themePreview.style.borderColor = theme.colors.borderColor;
+            themePreview.style.boxShadow = `0 0 10px ${theme.colors.shadowColor}`;
+            previewText.style.color = theme.colors.textColor;
+        }
+        previewText.style.fontFamily = fontFamily;
+        previewText.style.fontSize = `${fontSize}px`;
+        previewText.style.fontWeight = fontStyle === 'bold' ? 'bold' : 'normal';
+        previewText.style.fontStyle = fontStyle === 'italic' ? 'italic' : 'normal';
+    }
+    // Populate theme selector
+    for (const themeKey in optionsThemes) {
+        const option = document.createElement('option');
+        option.value = themeKey;
+        option.textContent = optionsThemes[themeKey].name;
+        themeSelect.appendChild(option);
+    }
+    // Load saved theme and font settings
+    chrome.storage.sync.get(['theme', 'fontFamily', 'fontSize', 'fontStyle'], function (result) {
+        if (result.theme) {
+            themeSelect.value = result.theme;
+        }
+        else {
+            themeSelect.value = 'dark'; // Default theme
+        }
+        if (result.fontFamily) {
+            fontFamilySelect.value = result.fontFamily;
+        }
+        else {
+            fontFamilySelect.value = 'Arial'; // Default font
+        }
+        if (result.fontSize !== undefined) {
+            fontSizeInput.value = result.fontSize.toString();
+        }
+        else {
+            fontSizeInput.value = '14'; // Default size
+        }
+        if (result.fontStyle) {
+            fontStyleSelect.value = result.fontStyle;
+        }
+        else {
+            fontStyleSelect.value = 'normal'; // Default style
+        }
+        updatePreview();
+    });
+    // Real-time preview updates
+    themeSelect.addEventListener('change', updatePreview);
+    fontFamilySelect.addEventListener('change', updatePreview);
+    fontSizeInput.addEventListener('input', updatePreview);
+    fontStyleSelect.addEventListener('change', updatePreview);
+    // Save theme settings
+    const themeForm = document.getElementById('theme-form');
+    themeForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const theme = themeSelect.value;
+        const fontFamily = fontFamilySelect.value;
+        const fontSize = parseInt(fontSizeInput.value);
+        const fontStyle = fontStyleSelect.value;
+        chrome.storage.sync.set({
+            theme: theme,
+            fontFamily: fontFamily,
+            fontSize: fontSize,
+            fontStyle: fontStyle,
+        }, function () {
+            themeStatusDiv.textContent = 'Theme settings saved successfully!';
+            themeStatusDiv.className = 'status success';
+            // Clear status after 3 seconds
+            setTimeout(() => {
+                themeStatusDiv.textContent = '';
+                themeStatusDiv.className = '';
+            }, 3000);
+        });
+    });
 });

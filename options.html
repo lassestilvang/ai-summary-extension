@@ -8,7 +8,6 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       * {
         margin: 0;
@@ -475,6 +474,12 @@
               </a>
             </li>
             <li class="nav-item">
+              <a href="#" class="nav-link" data-page="theme">
+                <i class="fas fa-palette"></i>
+                <span class="nav-text">Theme</span>
+              </a>
+            </li>
+            <li class="nav-item">
               <a href="#" class="nav-link" data-page="performance">
                 <i class="fas fa-chart-line"></i>
                 <span class="nav-text">Model Performance</span>
@@ -629,17 +634,101 @@
               >
             </div>
 
-            <div class="form-group">
-              <label class="form-label" for="theme">Theme:</label>
-              <select class="form-select" id="theme"></select>
-            </div>
-
             <button type="submit" class="btn btn-primary" id="save">
               Save Settings
             </button>
           </form>
 
           <div id="status"></div>
+        </div>
+
+        <!-- Theme Page -->
+        <div id="theme-page" class="page">
+          <h2 class="page-title">Theme</h2>
+
+          <div class="info-box">
+            <strong>Note:</strong> Customize the appearance of the summary
+            popup. Changes are applied in real-time to the preview below.
+          </div>
+
+          <form id="theme-form">
+            <div class="form-group">
+              <label class="form-label" for="theme">Theme:</label>
+              <select class="form-select" id="theme">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="high-contrast">High Contrast</option>
+                <option value="solarized">Solarized</option>
+                <option value="nord">Nord</option>
+                <option value="autumn">Autumn</option>
+                <option value="synthwave">Synthwave</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="fontFamily">Font Family:</label>
+              <select class="form-select" id="fontFamily">
+                <option value="Arial">Arial</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Helvetica">Helvetica</option>
+                <option value="Trebuchet MS">Trebuchet MS</option>
+                <option value="Comic Sans MS">Comic Sans MS</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="fontSize"
+                >Font Size (8-24px):</label
+              >
+              <input
+                type="number"
+                class="form-input"
+                id="fontSize"
+                min="8"
+                max="24"
+                value="14"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="fontStyle">Font Style:</label>
+              <select class="form-select" id="fontStyle">
+                <option value="normal">Normal</option>
+                <option value="italic">Italic</option>
+                <option value="bold">Bold</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="saveTheme">
+              Save Theme Settings
+            </button>
+          </form>
+
+          <div class="form-group">
+            <h3 style="color: #00d4ff; margin-bottom: 15px">Preview</h3>
+            <div
+              id="themePreview"
+              style="
+                width: 400px;
+                padding: 15px;
+                border-radius: 8px;
+                border: 2px solid rgba(0, 212, 255, 0.3);
+                min-height: 150px;
+              "
+            >
+              <p id="previewText" style="margin: 0; line-height: 1.5">
+                This is a sample summary text to demonstrate how the theme and
+                font settings will appear in the actual summary popup. The text
+                will update in real-time as you change the theme, font family,
+                size, and style options above.
+              </p>
+            </div>
+          </div>
+
+          <div id="themeStatus"></div>
         </div>
 
         <!-- Model Performance Page -->
@@ -654,10 +743,6 @@
 
           <div class="metrics-grid" id="metricsContainer">
             <p style="color: rgba(255, 255, 255, 0.7)">Loading metrics...</p>
-          </div>
-
-          <div class="chart-container">
-            <canvas id="performanceChart"></canvas>
           </div>
         </div>
 

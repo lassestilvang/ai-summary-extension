@@ -36,8 +36,6 @@ interface ValidationStatus {
   anthropic: { valid: boolean; checking: boolean; error?: string };
 }
 
-declare const Chart: any;
-
 // Inline utility functions to avoid ES6 import issues
 async function validateApiKey(
   provider: string,
@@ -366,8 +364,22 @@ document.addEventListener('DOMContentLoaded', function () {
   const anthropicApiKeyInput = document.getElementById(
     'anthropicApiKey'
   ) as HTMLInputElement;
-  const themeSelect = document.getElementById('theme') as HTMLSelectElement;
   const statusDiv = document.getElementById('status') as HTMLDivElement;
+
+  // Theme elements
+  const themeSelect = document.getElementById('theme') as HTMLSelectElement;
+  const fontFamilySelect = document.getElementById(
+    'fontFamily'
+  ) as HTMLSelectElement;
+  const fontSizeInput = document.getElementById('fontSize') as HTMLInputElement;
+  const fontStyleSelect = document.getElementById(
+    'fontStyle'
+  ) as HTMLSelectElement;
+  const themeStatusDiv = document.getElementById(
+    'themeStatus'
+  ) as HTMLDivElement;
+  const themePreview = document.getElementById('themePreview') as HTMLElement;
+  const previewText = document.getElementById('previewText') as HTMLElement;
 
   // Performance elements
   const refreshMetricsButton = document.getElementById(
@@ -376,9 +388,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const metricsContainer = document.getElementById(
     'metricsContainer'
   ) as HTMLDivElement;
-  const performanceChartCanvas = document.getElementById(
-    'performanceChart'
-  ) as HTMLCanvasElement;
 
   // History elements
   const searchInput = document.getElementById(
@@ -396,8 +405,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const historyContainer = document.getElementById(
     'historyContainer'
   ) as HTMLDivElement;
-
-  let performanceChart: any = null;
 
   // Navigation functionality
   function switchPage(pageId: string) {
@@ -429,14 +436,6 @@ document.addEventListener('DOMContentLoaded', function () {
     temperatureValue.textContent = temperatureInput.value;
   });
 
-  // Populate theme selector
-  for (const themeKey in optionsThemes) {
-    const option = document.createElement('option');
-    option.value = themeKey;
-    option.textContent = optionsThemes[themeKey].name;
-    themeSelect.appendChild(option);
-  }
-
   // Load saved settings
   chrome.storage.sync.get(
     [
@@ -447,7 +446,6 @@ document.addEventListener('DOMContentLoaded', function () {
       'openaiApiKey',
       'geminiApiKey',
       'anthropicApiKey',
-      'theme',
     ],
     function (result) {
       if (result.selectedModel) {
@@ -482,9 +480,6 @@ document.addEventListener('DOMContentLoaded', function () {
       if (result.anthropicApiKey) {
         anthropicApiKeyInput.value = result.anthropicApiKey;
       }
-      if (result.theme) {
-        themeSelect.value = result.theme;
-      }
     }
   );
 
@@ -501,7 +496,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const openaiApiKey = openaiApiKeyInput.value.trim();
     const geminiApiKey = geminiApiKeyInput.value.trim();
     const anthropicApiKey = anthropicApiKeyInput.value.trim();
-    const theme = themeSelect.value;
 
     // Check if selected model is available
     const apiKeys = {
@@ -526,7 +520,6 @@ document.addEventListener('DOMContentLoaded', function () {
         openaiApiKey: openaiApiKey,
         geminiApiKey: geminiApiKey,
         anthropicApiKey: anthropicApiKey,
-        theme: theme,
       },
       function () {
         statusDiv.textContent = 'Settings saved successfully!';
@@ -565,11 +558,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     let html = '';
-    const chartData = {
-      labels: [] as string[],
-      responseTimes: [] as number[],
-      successRates: [] as number[],
-    };
 
     Object.entries(metrics).forEach(([modelKey, stats]: [string, any]) => {
       const modelConfig = optionsGetModelConfig(modelKey);
@@ -582,10 +570,6 @@ document.addEventListener('DOMContentLoaded', function () {
       const lastUsed = stats.lastUsed
         ? new Date(stats.lastUsed).toLocaleDateString()
         : 'Never';
-
-      chartData.labels.push(modelName);
-      chartData.responseTimes.push(avgTime);
-      chartData.successRates.push(successRate);
 
       html += `
         <div class="metric-card">
@@ -613,90 +597,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     metricsContainer.innerHTML = html;
-
-    // Create chart
-    if (performanceChart) {
-      performanceChart.destroy();
-    }
-
-    performanceChart = new Chart(performanceChartCanvas, {
-      type: 'bar',
-      data: {
-        labels: chartData.labels,
-        datasets: [
-          {
-            label: 'Response Time (s)',
-            data: chartData.responseTimes,
-            backgroundColor: 'rgba(0, 212, 255, 0.6)',
-            borderColor: '#00d4ff',
-            borderWidth: 2,
-            yAxisID: 'y',
-          },
-          {
-            label: 'Success Rate (%)',
-            data: chartData.successRates,
-            backgroundColor: 'rgba(57, 255, 20, 0.6)',
-            borderColor: '#39ff14',
-            borderWidth: 2,
-            yAxisID: 'y1',
-            type: 'line',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            type: 'linear',
-            display: true,
-            position: 'left',
-            title: {
-              display: true,
-              text: 'Response Time (seconds)',
-              color: '#00d4ff',
-            },
-            ticks: {
-              color: '#ffffff',
-            },
-            grid: {
-              color: 'rgba(0, 212, 255, 0.2)',
-            },
-          },
-          y1: {
-            type: 'linear',
-            display: true,
-            position: 'right',
-            title: {
-              display: true,
-              text: 'Success Rate (%)',
-              color: '#39ff14',
-            },
-            ticks: {
-              color: '#ffffff',
-            },
-            grid: {
-              drawOnChartArea: false,
-            },
-          },
-          x: {
-            ticks: {
-              color: '#ffffff',
-            },
-            grid: {
-              color: 'rgba(0, 212, 255, 0.2)',
-            },
-          },
-        },
-        plugins: {
-          legend: {
-            labels: {
-              color: '#ffffff',
-            },
-          },
-        },
-      },
-    });
   }
 
   // Handle metrics response
@@ -979,4 +879,98 @@ document.addEventListener('DOMContentLoaded', function () {
   anthropicApiKeyInput.addEventListener('input', () =>
     debouncedValidate('anthropic', anthropicApiKeyInput)
   );
+
+  // Theme functionality
+  function updatePreview() {
+    const selectedTheme = themeSelect.value;
+    const fontFamily = fontFamilySelect.value;
+    const fontSize = parseInt(fontSizeInput.value);
+    const fontStyle = fontStyleSelect.value;
+
+    const theme = optionsThemes[selectedTheme];
+    if (theme) {
+      themePreview.style.backgroundColor = theme.colors.backgroundColor;
+      themePreview.style.color = theme.colors.textColor;
+      themePreview.style.borderColor = theme.colors.borderColor;
+      themePreview.style.boxShadow = `0 0 10px ${theme.colors.shadowColor}`;
+
+      previewText.style.color = theme.colors.textColor;
+    }
+
+    previewText.style.fontFamily = fontFamily;
+    previewText.style.fontSize = `${fontSize}px`;
+    previewText.style.fontWeight = fontStyle === 'bold' ? 'bold' : 'normal';
+    previewText.style.fontStyle = fontStyle === 'italic' ? 'italic' : 'normal';
+  }
+
+  // Populate theme selector
+  for (const themeKey in optionsThemes) {
+    const option = document.createElement('option');
+    option.value = themeKey;
+    option.textContent = optionsThemes[themeKey].name;
+    themeSelect.appendChild(option);
+  }
+
+  // Load saved theme and font settings
+  chrome.storage.sync.get(
+    ['theme', 'fontFamily', 'fontSize', 'fontStyle'],
+    function (result) {
+      if (result.theme) {
+        themeSelect.value = result.theme;
+      } else {
+        themeSelect.value = 'dark'; // Default theme
+      }
+      if (result.fontFamily) {
+        fontFamilySelect.value = result.fontFamily;
+      } else {
+        fontFamilySelect.value = 'Arial'; // Default font
+      }
+      if (result.fontSize !== undefined) {
+        fontSizeInput.value = result.fontSize.toString();
+      } else {
+        fontSizeInput.value = '14'; // Default size
+      }
+      if (result.fontStyle) {
+        fontStyleSelect.value = result.fontStyle;
+      } else {
+        fontStyleSelect.value = 'normal'; // Default style
+      }
+      updatePreview();
+    }
+  );
+
+  // Real-time preview updates
+  themeSelect.addEventListener('change', updatePreview);
+  fontFamilySelect.addEventListener('change', updatePreview);
+  fontSizeInput.addEventListener('input', updatePreview);
+  fontStyleSelect.addEventListener('change', updatePreview);
+
+  // Save theme settings
+  const themeForm = document.getElementById('theme-form') as HTMLFormElement;
+  themeForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const theme = themeSelect.value;
+    const fontFamily = fontFamilySelect.value;
+    const fontSize = parseInt(fontSizeInput.value);
+    const fontStyle = fontStyleSelect.value;
+
+    chrome.storage.sync.set(
+      {
+        theme: theme,
+        fontFamily: fontFamily,
+        fontSize: fontSize,
+        fontStyle: fontStyle,
+      },
+      function () {
+        themeStatusDiv.textContent = 'Theme settings saved successfully!';
+        themeStatusDiv.className = 'status success';
+
+        // Clear status after 3 seconds
+        setTimeout(() => {
+          themeStatusDiv.textContent = '';
+          themeStatusDiv.className = '';
+        }, 3000);
+      }
+    );
+  });
 });

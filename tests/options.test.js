@@ -27,7 +27,19 @@ describe('Options Script Comprehensive Tests', () => {
         addEventListener: jest.fn(),
       },
       save: { addEventListener: jest.fn() },
-      theme: { value: 'light', appendChild: jest.fn() },
+      theme: {
+        value: 'light',
+        appendChild: jest.fn(),
+        addEventListener: jest.fn(),
+      },
+      fontFamily: { value: 'Arial', addEventListener: jest.fn() },
+      fontSize: { value: '14', addEventListener: jest.fn() },
+      fontStyle: { value: 'normal', addEventListener: jest.fn() },
+      saveTheme: { addEventListener: jest.fn() },
+      themeStatus: { textContent: '', className: '', style: {} },
+      themePreview: { style: {} },
+      previewTitle: { style: {} },
+      previewText: { style: {} },
       status: { textContent: '', className: '', style: {} },
 
       // Performance elements
@@ -49,6 +61,7 @@ describe('Options Script Comprehensive Tests', () => {
 
       // Form
       'settings-form': { addEventListener: jest.fn() },
+      'theme-form': { addEventListener: jest.fn() },
     };
 
     // Mock document.getElementById
@@ -106,7 +119,6 @@ describe('Options Script Comprehensive Tests', () => {
       openaiApiKey: 'test-openai-key',
       geminiApiKey: 'test-gemini-key',
       anthropicApiKey: 'test-anthropic-key',
-      theme: 'light',
     });
 
     chrome.storage.sync.set.mockImplementation((items, callback) => {
@@ -170,8 +182,15 @@ describe('Options Script Comprehensive Tests', () => {
       expect(document.getElementById).toHaveBeenCalledWith('openaiApiKey');
       expect(document.getElementById).toHaveBeenCalledWith('geminiApiKey');
       expect(document.getElementById).toHaveBeenCalledWith('anthropicApiKey');
-      expect(document.getElementById).toHaveBeenCalledWith('theme');
       expect(document.getElementById).toHaveBeenCalledWith('status');
+      expect(document.getElementById).toHaveBeenCalledWith('theme');
+      expect(document.getElementById).toHaveBeenCalledWith('fontFamily');
+      expect(document.getElementById).toHaveBeenCalledWith('fontSize');
+      expect(document.getElementById).toHaveBeenCalledWith('fontStyle');
+      expect(document.getElementById).toHaveBeenCalledWith('themeStatus');
+      expect(document.getElementById).toHaveBeenCalledWith('themePreview');
+      expect(document.getElementById).toHaveBeenCalledWith('previewTitle');
+      expect(document.getElementById).toHaveBeenCalledWith('previewText');
       expect(document.getElementById).toHaveBeenCalledWith('settings-form');
       expect(document.getElementById).toHaveBeenCalledWith('refreshMetrics');
       expect(document.getElementById).toHaveBeenCalledWith('metricsContainer');
@@ -199,7 +218,6 @@ describe('Options Script Comprehensive Tests', () => {
           'openaiApiKey',
           'geminiApiKey',
           'anthropicApiKey',
-          'theme',
         ],
         expect.any(Function)
       );
@@ -227,7 +245,6 @@ describe('Options Script Comprehensive Tests', () => {
       mockDOM.openaiApiKey.value = 'new-openai-key';
       mockDOM.geminiApiKey.value = 'new-gemini-key';
       mockDOM.anthropicApiKey.value = 'new-anthropic-key';
-      mockDOM.theme.value = 'dark';
 
       // Trigger save
       submitHandler({ preventDefault: jest.fn() });
@@ -241,7 +258,6 @@ describe('Options Script Comprehensive Tests', () => {
           openaiApiKey: 'new-openai-key',
           geminiApiKey: 'new-gemini-key',
           anthropicApiKey: 'new-anthropic-key',
-          theme: 'dark',
         },
         expect.any(Function)
       );
@@ -670,18 +686,24 @@ describe('Options Script Comprehensive Tests', () => {
       expect(themeSelect.appendChild).toHaveBeenCalled();
     });
 
-    it('should handle theme selection changes', () => {
+    it('should save theme and font settings', () => {
       mockDOM.theme.value = 'dark';
+      mockDOM.fontFamily.value = 'Times New Roman';
+      mockDOM.fontSize.value = '16';
+      mockDOM.fontStyle.value = 'bold';
 
-      const settingsForm = mockDOM['settings-form'];
-      const submitHandler = settingsForm.addEventListener.mock.calls[0][1];
+      const themeForm = mockDOM['theme-form'];
+      const submitHandler = themeForm.addEventListener.mock.calls[0][1];
 
       submitHandler({ preventDefault: jest.fn() });
 
       expect(chrome.storage.sync.set).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           theme: 'dark',
-        }),
+          fontFamily: 'Times New Roman',
+          fontSize: 16,
+          fontStyle: 'bold',
+        },
         expect.any(Function)
       );
     });
