@@ -47,6 +47,9 @@ describe('Extension Integration Tests', () => {
       selectedModel: 'chrome-builtin',
       enableFallback: true,
       theme: 'light',
+      openaiApiKey: 'test-openai-key',
+      geminiApiKey: 'test-gemini-key',
+      anthropicApiKey: 'test-anthropic-key',
     });
     chrome.storage.local.get.mockReset().mockResolvedValue({
       modelMetrics: {},
@@ -54,6 +57,7 @@ describe('Extension Integration Tests', () => {
     });
     chrome.storage.sync.set.mockReset().mockResolvedValue();
     chrome.storage.local.set.mockReset().mockResolvedValue();
+    chrome.runtime.sendMessage.mockReset().mockResolvedValue();
 
     // Mock Summarizer API
     globalThis.Summarizer = {
@@ -133,11 +137,7 @@ describe('Extension Integration Tests', () => {
       };
 
       // Mock OpenAI API response
-      fetchMock.mockResponseOnce(
-        JSON.stringify({
-          choices: [{ message: { content: 'OpenAI summary' } }],
-        })
-      );
+      global.mockExternalAPIs.openai.success();
 
       chrome.runtime.onMessage.addListener.mock.calls.forEach(([listener]) => {
         listener(processMessage, mockSender);
@@ -151,7 +151,7 @@ describe('Extension Integration Tests', () => {
         expect.objectContaining({
           action: 'display_inline_summary',
           model: 'gpt-3.5-turbo',
-          summary: 'OpenAI summary',
+          summary: 'OpenAI-powered summary response.',
         })
       );
     });
@@ -162,11 +162,7 @@ describe('Extension Integration Tests', () => {
         new Error('Chrome AI failed')
       );
 
-      fetchMock.mockResponseOnce(
-        JSON.stringify({
-          choices: [{ message: { content: 'Fallback summary' } }],
-        })
-      );
+      global.mockExternalAPIs.openai.success();
 
       const processMessage = {
         action: 'process_content',
@@ -185,7 +181,7 @@ describe('Extension Integration Tests', () => {
         expect.objectContaining({
           action: 'display_inline_summary',
           model: 'gpt-3.5-turbo',
-          summary: 'Fallback summary',
+          summary: 'OpenAI-powered summary response.',
         })
       );
     });
@@ -317,10 +313,10 @@ describe('Extension Integration Tests', () => {
 
     it('should persist and retrieve summary history', async () => {
       const summaryData = {
-        summary: 'Test summary',
+        summary: 'This is a mock summary of the content.',
         model: 'chrome-builtin',
-        time: '1.50',
-        metrics: { attempts: [], totalTime: 1.5 },
+        time: '0.00',
+        metrics: { attempts: [], totalTime: 0 },
       };
 
       // Process content and store history
@@ -455,6 +451,7 @@ describe('Extension Integration Tests', () => {
     });
 
     it('should provide metrics data to options page', () => {
+      chrome.runtime.sendMessage.mockReset();
       const metricsMessage = { action: 'get_model_metrics' };
 
       chrome.runtime.onMessage.addListener.mock.calls.forEach(([listener]) => {

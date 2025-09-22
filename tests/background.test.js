@@ -42,7 +42,7 @@ describe('Background Script Comprehensive Tests', () => {
       url: 'https://example.com',
       title: 'Test Page',
     });
-    chrome.runtime.sendMessage.mockResolvedValue();
+    chrome.runtime.sendMessage.mockReset().mockResolvedValue();
     chrome.runtime.openOptionsPage.mockResolvedValue();
   });
 
@@ -586,9 +586,10 @@ describe('Background Script Comprehensive Tests', () => {
         metrics: { attempts: [], totalTime: 1.0 },
       }));
 
-      chrome.storage.local.get.mockImplementationOnce((keys, callback) => {
-        if (callback) callback({ summaryHistory: existingHistory });
-        return Promise.resolve({ summaryHistory: existingHistory });
+      // Mock get to return existing history
+      chrome.storage.local.get.mockReset();
+      chrome.storage.local.get.mockResolvedValue({
+        summaryHistory: existingHistory,
       });
 
       await storeSummaryHistory(123, 'New summary', 'chrome-builtin', '1.50', {
@@ -688,14 +689,13 @@ describe('Background Script Comprehensive Tests', () => {
       );
     });
 
-    it('should handle get_model_metrics message', async () => {
+    it('should handle get_model_metrics message', () => {
+      chrome.runtime.sendMessage.mockReset();
       const message = { action: 'get_model_metrics' };
 
       chrome.runtime.onMessage.addListener.mock.calls.forEach(([listener]) => {
         listener(message, mockSender);
       });
-
-      await new Promise((resolve) => setTimeout(resolve, 0));
 
       expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
         action: 'model_metrics_response',

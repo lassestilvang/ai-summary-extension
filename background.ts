@@ -514,6 +514,7 @@ chrome.runtime.onMessage.addListener(function (
   request: any,
   sender: chrome.runtime.MessageSender
 ) {
+  if (!request || !request.action) return;
   if (request.action === 'process_content') {
     const tabId = sender.tab!.id!;
 

@@ -85,10 +85,12 @@ describe('Options Script Comprehensive Tests', () => {
       if (callback) callback(result);
       return Promise.resolve(result);
     });
-    chrome.storage.local.set.mockImplementation((items, callback) => {
-      if (callback) callback();
-      return Promise.resolve();
-    });
+    chrome.storage.local.set
+      .mockReset()
+      .mockImplementation((items, callback) => {
+        if (callback) callback();
+        return Promise.resolve();
+      });
 
     // Mock chrome.runtime.sendMessage
     chrome.runtime.sendMessage.mockResolvedValue();
@@ -469,8 +471,8 @@ describe('Options Script Comprehensive Tests', () => {
 
     it('should not clear history when not confirmed', () => {
       // Mock confirm
-      const originalConfirm = global.confirm;
-      global.confirm = jest.fn().mockReturnValue(false);
+      const originalConfirm = window.confirm;
+      window.confirm = jest.fn().mockReturnValue(false);
 
       const clearButton = mockDOM.clearHistory;
       const clickHandler = clearButton.addEventListener.mock.calls[0][1];
@@ -480,7 +482,7 @@ describe('Options Script Comprehensive Tests', () => {
       expect(chrome.storage.local.set).not.toHaveBeenCalled();
 
       // Restore
-      global.confirm = originalConfirm;
+      window.confirm = originalConfirm;
     });
 
     it('should limit history to 50 entries', () => {
