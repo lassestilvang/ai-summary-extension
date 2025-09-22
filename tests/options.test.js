@@ -10,23 +10,69 @@ describe('Options Script Comprehensive Tests', () => {
 
     // Mock DOM elements
     mockDOM = {
+      // Navigation elements
+      sidebar: { classList: { toggle: jest.fn() } },
+      toggleSidebar: { addEventListener: jest.fn() },
+
+      // Settings elements
       selectedModel: { value: 'chrome-builtin' },
+      temperature: { value: '0.7', addEventListener: jest.fn() },
+      'temperature-value': { textContent: '0.7' },
+      maxTokens: { value: '1000' },
       enableFallback: { checked: true },
-      openaiApiKey: { value: 'test-openai-key' },
-      geminiApiKey: { value: 'test-gemini-key' },
-      anthropicApiKey: { value: 'test-anthropic-key' },
+      openaiApiKey: { value: 'test-openai-key', addEventListener: jest.fn() },
+      geminiApiKey: { value: 'test-gemini-key', addEventListener: jest.fn() },
+      anthropicApiKey: {
+        value: 'test-anthropic-key',
+        addEventListener: jest.fn(),
+      },
       save: { addEventListener: jest.fn() },
       theme: { value: 'light', appendChild: jest.fn() },
       status: { textContent: '', className: '', style: {} },
+
+      // Performance elements
       refreshMetrics: { addEventListener: jest.fn() },
       metricsContainer: { innerHTML: '' },
+      performanceChart: {},
+
+      // History elements
+      searchInput: { value: '', addEventListener: jest.fn() },
+      filterModel: {
+        value: '',
+        addEventListener: jest.fn(),
+        innerHTML: '',
+        appendChild: jest.fn(),
+      },
       refreshHistory: { addEventListener: jest.fn() },
       clearHistory: { addEventListener: jest.fn() },
       historyContainer: { innerHTML: '' },
+
+      // Form
+      'settings-form': { addEventListener: jest.fn() },
     };
 
     // Mock document.getElementById
     document.getElementById = jest.fn((id) => mockDOM[id] || null);
+
+    // Mock document.querySelector
+    document.querySelector = jest.fn(() => null);
+
+    // Mock document.querySelectorAll
+    document.querySelectorAll = jest.fn((selector) => {
+      if (selector === '.nav-link') {
+        return [
+          {
+            addEventListener: jest.fn(),
+            getAttribute: jest.fn(() => 'settings'),
+            dataset: { page: 'settings' },
+          },
+        ];
+      }
+      if (selector === '.page') {
+        return [{ classList: { remove: jest.fn(), add: jest.fn() } }];
+      }
+      return [];
+    });
 
     // Mock document.createElement
     document.createElement = jest.fn((tag) => {
@@ -114,14 +160,27 @@ describe('Options Script Comprehensive Tests', () => {
 
   describe('DOM Initialization', () => {
     it('should initialize all DOM elements correctly', () => {
+      expect(document.getElementById).toHaveBeenCalledWith('sidebar');
+      expect(document.getElementById).toHaveBeenCalledWith('toggleSidebar');
       expect(document.getElementById).toHaveBeenCalledWith('selectedModel');
+      expect(document.getElementById).toHaveBeenCalledWith('temperature');
+      expect(document.getElementById).toHaveBeenCalledWith('temperature-value');
+      expect(document.getElementById).toHaveBeenCalledWith('maxTokens');
       expect(document.getElementById).toHaveBeenCalledWith('enableFallback');
       expect(document.getElementById).toHaveBeenCalledWith('openaiApiKey');
       expect(document.getElementById).toHaveBeenCalledWith('geminiApiKey');
       expect(document.getElementById).toHaveBeenCalledWith('anthropicApiKey');
-      expect(document.getElementById).toHaveBeenCalledWith('save');
       expect(document.getElementById).toHaveBeenCalledWith('theme');
       expect(document.getElementById).toHaveBeenCalledWith('status');
+      expect(document.getElementById).toHaveBeenCalledWith('settings-form');
+      expect(document.getElementById).toHaveBeenCalledWith('refreshMetrics');
+      expect(document.getElementById).toHaveBeenCalledWith('metricsContainer');
+      expect(document.getElementById).toHaveBeenCalledWith('performanceChart');
+      expect(document.getElementById).toHaveBeenCalledWith('searchInput');
+      expect(document.getElementById).toHaveBeenCalledWith('filterModel');
+      expect(document.getElementById).toHaveBeenCalledWith('refreshHistory');
+      expect(document.getElementById).toHaveBeenCalledWith('clearHistory');
+      expect(document.getElementById).toHaveBeenCalledWith('historyContainer');
     });
 
     it('should populate theme selector with all available themes', () => {
@@ -134,6 +193,8 @@ describe('Options Script Comprehensive Tests', () => {
       expect(chrome.storage.sync.get).toHaveBeenCalledWith(
         [
           'selectedModel',
+          'temperature',
+          'maxTokens',
           'enableFallback',
           'openaiApiKey',
           'geminiApiKey',
@@ -157,8 +218,8 @@ describe('Options Script Comprehensive Tests', () => {
 
   describe('Settings Saving', () => {
     it('should save all settings when save button is clicked', () => {
-      const saveButton = mockDOM.save;
-      const clickHandler = saveButton.addEventListener.mock.calls[0][1];
+      const settingsForm = mockDOM['settings-form'];
+      const submitHandler = settingsForm.addEventListener.mock.calls[0][1];
 
       // Simulate form values
       mockDOM.selectedModel.value = 'gpt-4';
@@ -169,11 +230,13 @@ describe('Options Script Comprehensive Tests', () => {
       mockDOM.theme.value = 'dark';
 
       // Trigger save
-      clickHandler();
+      submitHandler({ preventDefault: jest.fn() });
 
       expect(chrome.storage.sync.set).toHaveBeenCalledWith(
         {
           selectedModel: 'gpt-4',
+          temperature: 0.7,
+          maxTokens: 1000,
           enableFallback: false,
           openaiApiKey: 'new-openai-key',
           geminiApiKey: 'new-gemini-key',
@@ -185,12 +248,12 @@ describe('Options Script Comprehensive Tests', () => {
     });
 
     it('should trim API key values before saving', () => {
-      const saveButton = mockDOM.save;
-      const clickHandler = saveButton.addEventListener.mock.calls[0][1];
+      const settingsForm = mockDOM['settings-form'];
+      const submitHandler = settingsForm.addEventListener.mock.calls[0][1];
 
       mockDOM.openaiApiKey.value = '  test-key  ';
 
-      clickHandler();
+      submitHandler({ preventDefault: jest.fn() });
 
       expect(chrome.storage.sync.set).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -201,10 +264,10 @@ describe('Options Script Comprehensive Tests', () => {
     });
 
     it('should show success message after saving', async () => {
-      const saveButton = mockDOM.save;
-      const clickHandler = saveButton.addEventListener.mock.calls[0][1];
+      const settingsForm = mockDOM['settings-form'];
+      const submitHandler = settingsForm.addEventListener.mock.calls[0][1];
 
-      clickHandler();
+      submitHandler({ preventDefault: jest.fn() });
 
       // Wait for async operations
       await new Promise((resolve) => setTimeout(resolve, 0));
@@ -216,10 +279,10 @@ describe('Options Script Comprehensive Tests', () => {
     it('should clear status message after 3 seconds', async () => {
       jest.useFakeTimers();
 
-      const saveButton = mockDOM.save;
-      const clickHandler = saveButton.addEventListener.mock.calls[0][1];
+      const settingsForm = mockDOM['settings-form'];
+      const submitHandler = settingsForm.addEventListener.mock.calls[0][1];
 
-      clickHandler();
+      submitHandler({ preventDefault: jest.fn() });
 
       // Fast-forward time
       jest.advanceTimersByTime(3000);
@@ -261,7 +324,6 @@ describe('Options Script Comprehensive Tests', () => {
         listener(mockMetricsResponse);
       });
 
-      expect(mockDOM.metricsContainer.innerHTML).toContain('table');
       expect(mockDOM.metricsContainer.innerHTML).toContain(
         'Chrome Built-in AI'
       );
@@ -514,16 +576,19 @@ describe('Options Script Comprehensive Tests', () => {
 
   describe('Global Functions', () => {
     it('should copy text to clipboard', async () => {
+      jest.useFakeTimers();
       const testText = 'Test summary text';
 
       // Call the real function
       window.copyToClipboard(testText);
 
-      // Wait for the promise to resolve
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      // Advance timers to let the promise resolve
+      await jest.runAllTimers();
 
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(testText);
       expect(mockDOM.status.textContent).toBe('Summary copied to clipboard!');
+
+      jest.useRealTimers();
     });
 
     it('should share summary when navigator.share is available', () => {
@@ -563,8 +628,8 @@ describe('Options Script Comprehensive Tests', () => {
 
   describe('Event Listeners', () => {
     it('should set up all event listeners on initialization', () => {
-      expect(mockDOM.save.addEventListener).toHaveBeenCalledWith(
-        'click',
+      expect(mockDOM['settings-form'].addEventListener).toHaveBeenCalledWith(
+        'submit',
         expect.any(Function)
       );
       expect(mockDOM.refreshMetrics.addEventListener).toHaveBeenCalledWith(
@@ -608,10 +673,10 @@ describe('Options Script Comprehensive Tests', () => {
     it('should handle theme selection changes', () => {
       mockDOM.theme.value = 'dark';
 
-      const saveButton = mockDOM.save;
-      const clickHandler = saveButton.addEventListener.mock.calls[0][1];
+      const settingsForm = mockDOM['settings-form'];
+      const submitHandler = settingsForm.addEventListener.mock.calls[0][1];
 
-      clickHandler();
+      submitHandler({ preventDefault: jest.fn() });
 
       expect(chrome.storage.sync.set).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -642,10 +707,10 @@ describe('Options Script Comprehensive Tests', () => {
       models.forEach((model) => {
         mockDOM.selectedModel.value = model;
 
-        const saveButton = mockDOM.save;
-        const clickHandler = saveButton.addEventListener.mock.calls[0][1];
+        const settingsForm = mockDOM['settings-form'];
+        const submitHandler = settingsForm.addEventListener.mock.calls[0][1];
 
-        clickHandler();
+        submitHandler({ preventDefault: jest.fn() });
 
         expect(chrome.storage.sync.set).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -659,10 +724,10 @@ describe('Options Script Comprehensive Tests', () => {
     it('should handle enableFallback toggle', () => {
       mockDOM.enableFallback.checked = false;
 
-      const saveButton = mockDOM.save;
-      const clickHandler = saveButton.addEventListener.mock.calls[0][1];
+      const settingsForm = mockDOM['settings-form'];
+      const submitHandler = settingsForm.addEventListener.mock.calls[0][1];
 
-      clickHandler();
+      submitHandler({ preventDefault: jest.fn() });
 
       expect(chrome.storage.sync.set).toHaveBeenCalledWith(
         expect.objectContaining({

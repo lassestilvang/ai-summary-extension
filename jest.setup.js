@@ -231,6 +231,11 @@ global.showdown = {
   })),
 };
 
+// Mock Chart.js
+global.Chart = jest.fn().mockImplementation(() => ({
+  destroy: jest.fn(),
+}));
+
 // Enhanced navigator mocks
 Object.defineProperty(navigator, 'clipboard', {
   value: {
@@ -254,6 +259,36 @@ Object.defineProperty(window, 'alert', {
   value: jest.fn(),
   writable: true,
 });
+
+// Mock document globally to prevent errors during module import
+const documentListeners = {};
+global.document = {
+  addEventListener: jest.fn((event, listener) => {
+    if (!documentListeners[event]) documentListeners[event] = [];
+    documentListeners[event].push(listener);
+  }),
+  dispatchEvent: jest.fn((event) => {
+    const listeners = documentListeners[event.type] || [];
+    listeners.forEach((listener) => listener(event));
+  }),
+  getElementById: jest.fn(() => null),
+  createElement: jest.fn(() => ({
+    appendChild: jest.fn(),
+    addEventListener: jest.fn(),
+    setAttribute: jest.fn(),
+    style: {},
+    className: '',
+    textContent: '',
+    innerHTML: '',
+    parentElement: null,
+    querySelector: jest.fn(() => null),
+  })),
+  querySelector: jest.fn(() => null),
+  querySelectorAll: jest.fn(() => []),
+  body: {
+    appendChild: jest.fn(),
+  },
+};
 
 // Mock DOM elements and events
 global.createMockElement = (tagName, properties = {}) => {

@@ -762,14 +762,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const filteredHistory = allHistory.filter((item) => {
       const matchesSearch =
-        item.title.toLowerCase().includes(searchTerm) ||
-        item.summary.toLowerCase().includes(searchTerm) ||
-        item.url.toLowerCase().includes(searchTerm);
+        (item.title || '').toLowerCase().includes(searchTerm) ||
+        (item.summary || '').toLowerCase().includes(searchTerm) ||
+        (item.url || '').toLowerCase().includes(searchTerm);
 
       const matchesModel = !selectedModel || item.model === selectedModel;
 
       return matchesSearch && matchesModel;
     });
+
+    if (allHistory.length === 0) {
+      historyContainer.innerHTML =
+        '<p style="color: rgba(255, 255, 255, 0.7)">No summary history available yet.</p>';
+      return;
+    }
 
     if (filteredHistory.length === 0) {
       historyContainer.innerHTML =
