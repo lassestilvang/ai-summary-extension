@@ -1,20 +1,94 @@
 let summaryDiv = null;
 
-function getProviderDisplayName(provider) {
-  const names = {
-    chrome: 'Chrome Built-in AI',
-    openai: 'OpenAI',
-    gemini: 'Google Gemini',
-    'N/A': 'N/A',
+function getModelDisplayName(model) {
+  const modelConfig = getModelConfig(model);
+  return modelConfig ? modelConfig.name : model;
+}
+
+function getModelConfig(model) {
+  const models = {
+    'chrome-builtin': {
+      provider: 'chrome',
+      modelId: null,
+      name: 'Chrome Built-in AI',
+      cost: 0,
+    },
+    'gpt-3.5-turbo': {
+      provider: 'openai',
+      modelId: 'gpt-3.5-turbo',
+      name: 'GPT-3.5 Turbo',
+      cost: 0.002,
+    },
+    'gpt-4': {
+      provider: 'openai',
+      modelId: 'gpt-4',
+      name: 'GPT-4',
+      cost: 0.03,
+    },
+    'gpt-4-turbo': {
+      provider: 'openai',
+      modelId: 'gpt-4-turbo',
+      name: 'GPT-4 Turbo',
+      cost: 0.01,
+    },
+    'gpt-4o': {
+      provider: 'openai',
+      modelId: 'gpt-4o',
+      name: 'GPT-4o',
+      cost: 0.005,
+    },
+    'gemini-1.5-pro': {
+      provider: 'gemini',
+      modelId: 'gemini-1.5-pro',
+      name: 'Gemini 1.5 Pro',
+      cost: 0.00125,
+    },
+    'gemini-1.5-flash': {
+      provider: 'gemini',
+      modelId: 'gemini-1.5-flash',
+      name: 'Gemini 1.5 Flash',
+      cost: 0.000075,
+    },
+    'gemini-2.0-flash-exp': {
+      provider: 'gemini',
+      modelId: 'gemini-2.0-flash-exp',
+      name: 'Gemini 2.0 Flash (Exp)',
+      cost: 0,
+    },
+    'claude-3-haiku': {
+      provider: 'anthropic',
+      modelId: 'claude-3-haiku-20240307',
+      name: 'Claude 3 Haiku',
+      cost: 0.00025,
+    },
+    'claude-3-sonnet': {
+      provider: 'anthropic',
+      modelId: 'claude-3-sonnet-20240229',
+      name: 'Claude 3 Sonnet',
+      cost: 0.003,
+    },
+    'claude-3-opus': {
+      provider: 'anthropic',
+      modelId: 'claude-3-opus-20240229',
+      name: 'Claude 3 Opus',
+      cost: 0.015,
+    },
+    'claude-3.5-sonnet': {
+      provider: 'anthropic',
+      modelId: 'claude-3-5-sonnet-20240620',
+      name: 'Claude 3.5 Sonnet',
+      cost: 0.003,
+    },
   };
-  return names[provider] || provider;
+  return models[model];
 }
 
 function createOrUpdateSummaryDiv(
   summaryText,
   theme,
-  provider = null,
-  time = null
+  model = null,
+  time = null,
+  metrics = null
 ) {
   const themeColors = themes[theme]?.colors || themes.light.colors;
 
@@ -151,7 +225,7 @@ function createOrUpdateSummaryDiv(
     summaryTitleContainer.appendChild(summaryTitle);
 
     const actionButtons = document.createElement('div');
-    actionButtons.style.cssText = `display: flex !important;`;
+    actionButtons.style.cssText = `display: flex !important; align-items: center !important;`;
 
     const copyButton = document.createElement('span');
     copyButton.textContent = '📋'; // Clipboard emoji
@@ -334,18 +408,84 @@ function createOrUpdateSummaryDiv(
     const footerDiv = document.createElement('div');
     footerDiv.id = 'ai-summary-extension-footer-div';
     footerDiv.style.cssText = `
-      height: 24px !important;
-      padding: 4px 15px !important;
+      height: 32px !important;
+      padding: 4px 8px !important;
       font-size: 12px !important;
       color: ${themeColors.titleColor} !important;
       background-color: ${themeColors.borderColor} !important;
       font-family: Arial, sans-serif !important;
-      text-align: right !important;
       flex-shrink: 0 !important;
       display: flex !important;
       align-items: center !important;
-      justify-content: flex-end !important;
+      justify-content: space-between !important;
     `;
+
+    // Model selector in footer
+    const modelSelect = document.createElement('select');
+    modelSelect.id = 'ai-summary-model-selector';
+    modelSelect.style.cssText = `
+      padding: 2px 4px !important;
+      font-size: 11px !important;
+      border: 1px solid ${themeColors.borderColor} !important;
+      border-radius: 3px !important;
+      background-color: ${themeColors.backgroundColor} !important;
+      color: ${themeColors.textColor} !important;
+      max-width: 140px !important;
+      flex-shrink: 0 !important;
+    `;
+
+    // Populate model selector
+    const modelOptions = [
+      { value: 'chrome-builtin', label: 'Chrome AI (Free)' },
+      { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
+      { value: 'gpt-4', label: 'GPT-4' },
+      { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
+      { value: 'gpt-4o', label: 'GPT-4o' },
+      { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
+      { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+      { value: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash' },
+      { value: 'claude-3-haiku', label: 'Claude 3 Haiku' },
+      { value: 'claude-3-sonnet', label: 'Claude 3 Sonnet' },
+      { value: 'claude-3-opus', label: 'Claude 3 Opus' },
+      { value: 'claude-3.5-sonnet', label: 'Claude 3.5 Sonnet' },
+    ];
+
+    modelOptions.forEach((option) => {
+      const opt = document.createElement('option');
+      opt.value = option.value;
+      opt.textContent = option.label;
+      modelSelect.appendChild(opt);
+    });
+
+    // Load current selected model
+    chrome.storage.sync.get('selectedModel', (result) => {
+      if (result.selectedModel) {
+        modelSelect.value = result.selectedModel;
+      }
+    });
+
+    // Handle model change
+    modelSelect.addEventListener('change', () => {
+      chrome.runtime.sendMessage({
+        action: 'switch_model',
+        model: modelSelect.value,
+      });
+    });
+
+    // Status text container
+    const statusText = document.createElement('div');
+    statusText.id = 'ai-summary-status-text';
+    statusText.style.cssText = `
+      flex-grow: 1 !important;
+      text-align: right !important;
+      padding-right: 8px !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+    `;
+
+    footerDiv.appendChild(modelSelect);
+    footerDiv.appendChild(statusText);
     summaryDiv.appendChild(footerDiv);
 
     document.body.prepend(summaryDiv);
@@ -373,11 +513,9 @@ function createOrUpdateSummaryDiv(
     // Show spinner, hide content
     if (loadingSpinner) loadingSpinner.style.display = 'block';
     if (summaryContent) summaryContent.style.display = 'none';
-    // Clear footer
-    const footerDiv = document.getElementById(
-      'ai-summary-extension-footer-div'
-    );
-    if (footerDiv) footerDiv.textContent = '';
+    // Clear status text
+    const statusText = document.getElementById('ai-summary-status-text');
+    if (statusText) statusText.textContent = '';
     summaryDiv.style.display = 'flex';
   } else {
     // Hide spinner, show content
@@ -388,12 +526,15 @@ function createOrUpdateSummaryDiv(
       summaryContent.innerHTML = htmlSummary;
       summaryContent.style.display = 'block';
     }
-    // Update footer with provider and time
-    const footerDiv = document.getElementById(
-      'ai-summary-extension-footer-div'
-    );
-    if (footerDiv && provider && time) {
-      footerDiv.textContent = `${getProviderDisplayName(provider)} • ${time}s`;
+    // Update status text with model and time
+    const statusText = document.getElementById('ai-summary-status-text');
+    if (statusText && model && time) {
+      const modelName = getModelDisplayName(model);
+      let statusContent = `${modelName} • ${time}s`;
+      if (metrics && metrics.attempts && metrics.attempts.length > 1) {
+        statusContent += ` • ${metrics.attempts.length} attempts`;
+      }
+      statusText.textContent = statusContent;
     }
     summaryDiv.style.display = 'flex';
     adjustHeight();
@@ -408,11 +549,15 @@ function adjustHeight() {
     'ai-summary-extension-summary-div'
   );
   const titleBarHeight = 30;
+  const footerHeight = 32;
   const padding = 30;
   const maxHeight = window.innerHeight * 0.9;
 
   const contentHeight = summaryContent.scrollHeight + padding;
-  const newHeight = Math.min(contentHeight + titleBarHeight, maxHeight);
+  const newHeight = Math.min(
+    contentHeight + titleBarHeight + footerHeight,
+    maxHeight
+  );
 
   summaryDiv.style.height = newHeight + 'px';
 }
@@ -500,8 +645,9 @@ chrome.runtime.onMessage.addListener(function (request) {
       createOrUpdateSummaryDiv(
         request.summary,
         result.theme || 'light',
-        request.provider,
-        request.time
+        request.model,
+        request.time,
+        request.metrics
       );
     });
   } else if (request.action === 'show_loading_spinner') {
@@ -525,6 +671,12 @@ chrome.runtime.onMessage.addListener(function (request) {
         action: 'process_content',
         content: pageContent,
       });
+    }
+  } else if (request.action === 'model_switched') {
+    // Update the model selector if it exists
+    const modelSelect = document.getElementById('ai-summary-model-selector');
+    if (modelSelect) {
+      modelSelect.value = request.model;
     }
   }
 });

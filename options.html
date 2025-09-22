@@ -1,96 +1,170 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <title>AI Page Summarizer Options</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 400px;
-      margin: 20px;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    input[type="password"], select {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    button {
-      background-color: #4CAF50;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    .info {
-      background-color: #f0f8ff;
-      padding: 10px;
-      border-radius: 4px;
-      margin-bottom: 15px;
-      font-size: 14px;
-    }
-    .status {
-      margin-top: 10px;
-      padding: 8px;
-      border-radius: 4px;
-    }
-    .success {
-      background-color: #d4edda;
-      color: #155724;
-    }
-  </style>
-</head>
-<body>
-  <h2>AI Page Summarizer Settings</h2>
-  
-  <div class="info">
-    <strong>Note:</strong> Choose your preferred AI provider. If your selected provider is unavailable, 
-    the extension will automatically try other providers as fallbacks.
-  </div>
+  <head>
+    <meta charset="utf-8" />
+    <title>AI Page Summarizer Options</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 400px;
+        margin: 20px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input[type='password'],
+      select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      .info {
+        background-color: #f0f8ff;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        font-size: 14px;
+      }
+      .status {
+        margin-top: 10px;
+        padding: 8px;
+        border-radius: 4px;
+      }
+      .success {
+        background-color: #d4edda;
+        color: #155724;
+      }
+      .metrics-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      .metrics-table th,
+      .metrics-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      .metrics-table th {
+        background-color: #f2f2f2;
+      }
+      .metrics-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>AI Page Summarizer Settings</h2>
 
-  <div class="form-group">
-    <label for="aiProvider">Preferred AI Provider:</label>
-    <select id="aiProvider">
-      <option value="chrome">Chrome Built-in AI (Free)</option>
-      <option value="openai">OpenAI (GPT-3.5)</option>
-      <option value="gemini">Google Gemini 2.0</option>
-    </select>
-  </div>
+    <div class="info">
+      <strong>Note:</strong> Choose your preferred AI provider. If your selected
+      provider is unavailable, the extension will automatically try other
+      providers as fallbacks.
+    </div>
 
-  <div class="form-group">
-    <label for="openaiApiKey">OpenAI API Key:</label>
-    <input type="password" id="openaiApiKey" placeholder="sk-...">
-  </div>
+    <div class="form-group">
+      <label for="selectedModel">AI Model:</label>
+      <select id="selectedModel">
+        <optgroup label="Free Models">
+          <option value="chrome-builtin">Chrome Built-in AI (Free)</option>
+          <option value="gemini-2.0-flash-exp">
+            Gemini 2.0 Flash (Experimental, Free)
+          </option>
+        </optgroup>
+        <optgroup label="OpenAI Models">
+          <option value="gpt-3.5-turbo">
+            GPT-3.5 Turbo ($0.002/1K tokens)
+          </option>
+          <option value="gpt-4">GPT-4 ($0.03/1K tokens)</option>
+          <option value="gpt-4-turbo">GPT-4 Turbo ($0.01/1K tokens)</option>
+          <option value="gpt-4o">GPT-4o ($0.005/1K tokens)</option>
+        </optgroup>
+        <optgroup label="Google Gemini Models">
+          <option value="gemini-1.5-pro">
+            Gemini 1.5 Pro ($0.00125/1K tokens)
+          </option>
+          <option value="gemini-1.5-flash">
+            Gemini 1.5 Flash ($0.000075/1K tokens)
+          </option>
+        </optgroup>
+        <optgroup label="Anthropic Claude Models">
+          <option value="claude-3-haiku">
+            Claude 3 Haiku ($0.00025/1K tokens)
+          </option>
+          <option value="claude-3-sonnet">
+            Claude 3 Sonnet ($0.003/1K tokens)
+          </option>
+          <option value="claude-3-opus">
+            Claude 3 Opus ($0.015/1K tokens)
+          </option>
+          <option value="claude-3.5-sonnet">
+            Claude 3.5 Sonnet ($0.003/1K tokens)
+          </option>
+        </optgroup>
+      </select>
+    </div>
 
-  <div class="form-group">
-    <label for="geminiApiKey">Gemini API Key:</label>
-    <input type="password" id="geminiApiKey" placeholder="AIza...">
-  </div>
+    <div class="form-group">
+      <label for="enableFallback">
+        <input type="checkbox" id="enableFallback" checked />
+        Enable automatic fallback to other models if primary fails
+      </label>
+    </div>
 
-  <div class="form-group">
-    <label for="theme">Theme:</label>
-    <select id="theme">
-    </select>
-  </div>
+    <div class="form-group">
+      <label for="openaiApiKey">OpenAI API Key:</label>
+      <input type="password" id="openaiApiKey" placeholder="sk-..." />
+      <small>Optional - only needed for OpenAI models</small>
+    </div>
 
-  <button id="save">Save Settings</button>
-  
-  <div id="status"></div>
+    <div class="form-group">
+      <label for="geminiApiKey">Google Gemini API Key:</label>
+      <input type="password" id="geminiApiKey" placeholder="AIza..." />
+      <small>Optional - only needed for Gemini models</small>
+    </div>
 
-  <script src="themes.js"></script>
-  <script src="options.js"></script>
-</body>
+    <div class="form-group">
+      <label for="anthropicApiKey">Anthropic API Key:</label>
+      <input type="password" id="anthropicApiKey" placeholder="sk-ant-..." />
+      <small>Optional - only needed for Claude models</small>
+    </div>
+
+    <div class="form-group">
+      <label for="theme">Theme:</label>
+      <select id="theme"></select>
+    </div>
+
+    <button id="save">Save Settings</button>
+
+    <div id="status"></div>
+
+    <h3>Model Performance</h3>
+    <div class="form-group">
+      <button id="refreshMetrics">Refresh Model Metrics</button>
+    </div>
+    <div id="metricsContainer">
+      <p>Loading metrics...</p>
+    </div>
+
+    <script src="themes.js"></script>
+    <script src="options.js"></script>
+  </body>
 </html>
