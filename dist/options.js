@@ -272,19 +272,60 @@ function optionsGetModelConfig(model) {
     return models[model];
 }
 document.addEventListener('DOMContentLoaded', function () {
+    // Navigation elements
+    const navLinks = document.querySelectorAll('.nav-link');
+    const pages = document.querySelectorAll('.page');
+    const sidebar = document.getElementById('sidebar');
+    const toggleSidebarBtn = document.getElementById('toggleSidebar');
+    // Settings elements
     const selectedModelSelect = document.getElementById('selectedModel');
+    const temperatureInput = document.getElementById('temperature');
+    const temperatureValue = document.getElementById('temperature-value');
+    const maxTokensInput = document.getElementById('maxTokens');
     const enableFallbackCheckbox = document.getElementById('enableFallback');
     const openaiApiKeyInput = document.getElementById('openaiApiKey');
     const geminiApiKeyInput = document.getElementById('geminiApiKey');
     const anthropicApiKeyInput = document.getElementById('anthropicApiKey');
-    const saveButton = document.getElementById('save');
     const themeSelect = document.getElementById('theme');
     const statusDiv = document.getElementById('status');
+    // Performance elements
     const refreshMetricsButton = document.getElementById('refreshMetrics');
     const metricsContainer = document.getElementById('metricsContainer');
+    const performanceChartCanvas = document.getElementById('performanceChart');
+    // History elements
+    const searchInput = document.getElementById('searchInput');
+    const filterModelSelect = document.getElementById('filterModel');
     const refreshHistoryButton = document.getElementById('refreshHistory');
     const clearHistoryButton = document.getElementById('clearHistory');
     const historyContainer = document.getElementById('historyContainer');
+    let performanceChart = null;
+    // Navigation functionality
+    function switchPage(pageId) {
+        pages.forEach((page) => page.classList.remove('active'));
+        navLinks.forEach((link) => link.classList.remove('active'));
+        const targetPage = document.getElementById(pageId + '-page');
+        const targetLink = document.querySelector(`[data-page="${pageId}"]`);
+        if (targetPage)
+            targetPage.classList.add('active');
+        if (targetLink)
+            targetLink.classList.add('active');
+    }
+    navLinks.forEach((link) => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const page = link.getAttribute('data-page');
+            if (page)
+                switchPage(page);
+        });
+    });
+    // Mobile sidebar toggle
+    toggleSidebarBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+    });
+    // Temperature slider
+    temperatureInput.addEventListener('input', () => {
+        temperatureValue.textContent = temperatureInput.value;
+    });
     // Populate theme selector
     for (const themeKey in optionsThemes) {
         const option = document.createElement('option');
@@ -295,6 +336,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // Load saved settings
     chrome.storage.sync.get([
         'selectedModel',
+        'temperature',
+        'maxTokens',
         'enableFallback',
         'openaiApiKey',
         'geminiApiKey',
@@ -307,6 +350,20 @@ document.addEventListener('DOMContentLoaded', function () {
         else {
             // Set default to chrome-builtin if no model selected
             selectedModelSelect.value = 'chrome-builtin';
+        }
+        if (result.temperature !== undefined) {
+            temperatureInput.value = result.temperature.toString();
+            temperatureValue.textContent = result.temperature.toString();
+        }
+        else {
+            temperatureInput.value = '0.7';
+            temperatureValue.textContent = '0.7';
+        }
+        if (result.maxTokens !== undefined) {
+            maxTokensInput.value = result.maxTokens.toString();
+        }
+        else {
+            maxTokensInput.value = '1000';
         }
         if (result.enableFallback !== undefined) {
             enableFallbackCheckbox.checked = result.enableFallback;
@@ -328,8 +385,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
     // Save settings
-    saveButton.addEventListener('click', async function () {
+    const settingsForm = document.getElementById('settings-form');
+    settingsForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
         const selectedModel = selectedModelSelect.value;
+        const temperature = parseFloat(temperatureInput.value);
+        const maxTokens = parseInt(maxTokensInput.value);
         const enableFallback = enableFallbackCheckbox.checked;
         const openaiApiKey = openaiApiKeyInput.value.trim();
         const geminiApiKey = geminiApiKeyInput.value.trim();
@@ -349,6 +410,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         chrome.storage.sync.set({
             selectedModel: selectedModel,
+            temperature: temperature,
+            maxTokens: maxTokens,
             enableFallback: enableFallback,
             openaiApiKey: openaiApiKey,
             geminiApiKey: geminiApiKey,
@@ -371,30 +434,135 @@ document.addEventListener('DOMContentLoaded', function () {
     function displayMetrics(metrics) {
         if (!metrics || Object.keys(metrics).length === 0) {
             metricsContainer.innerHTML =
-                '<p>No performance data available yet. Use the extension to generate summaries and metrics will appear here.</p>';
+                '<p style="color: rgba(255, 255, 255, 0.7)">No performance data available yet. Use the extension to generate summaries and metrics will appear here.</p>';
             return;
         }
-        let html = '<table class="metrics-table"><thead><tr><th>Model</th><th>Requests</th><th>Success Rate</th><th>Avg Time</th><th>Last Used</th></tr></thead><tbody>';
+        let html = '';
+        const chartData = {
+            labels: [],
+            responseTimes: [],
+            successRates: [],
+        };
         Object.entries(metrics).forEach(([modelKey, stats]) => {
             const modelConfig = optionsGetModelConfig(modelKey);
             const modelName = modelConfig ? modelConfig.name : modelKey;
             const successRate = stats.totalRequests > 0
-                ? ((stats.successfulRequests / stats.totalRequests) * 100).toFixed(1)
-                : '0.0';
-            const avgTime = stats.avgTime ? stats.avgTime.toFixed(2) : 'N/A';
+                ? (stats.successfulRequests / stats.totalRequests) * 100
+                : 0;
+            const avgTime = stats.avgTime || 0;
             const lastUsed = stats.lastUsed
                 ? new Date(stats.lastUsed).toLocaleDateString()
                 : 'Never';
-            html += `<tr>
-        <td>${modelName}</td>
-        <td>${stats.totalRequests}</td>
-        <td>${successRate}%</td>
-        <td>${avgTime}s</td>
-        <td>${lastUsed}</td>
-      </tr>`;
+            chartData.labels.push(modelName);
+            chartData.responseTimes.push(avgTime);
+            chartData.successRates.push(successRate);
+            html += `
+        <div class="metric-card">
+          <h3 class="metric-title">${modelName}</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+            <div>
+              <div style="color: #00d4ff; font-weight: 600;">Total Requests</div>
+              <div style="font-size: 1.5rem; color: #39ff14;">${stats.totalRequests}</div>
+            </div>
+            <div>
+              <div style="color: #00d4ff; font-weight: 600;">Success Rate</div>
+              <div style="font-size: 1.5rem; color: #39ff14;">${successRate.toFixed(1)}%</div>
+            </div>
+            <div>
+              <div style="color: #00d4ff; font-weight: 600;">Avg Response Time</div>
+              <div style="font-size: 1.5rem; color: #39ff14;">${avgTime.toFixed(2)}s</div>
+            </div>
+            <div>
+              <div style="color: #00d4ff; font-weight: 600;">Last Used</div>
+              <div style="font-size: 1rem; color: rgba(255,255,255,0.8);">${lastUsed}</div>
+            </div>
+          </div>
+        </div>
+      `;
         });
-        html += '</tbody></table>';
         metricsContainer.innerHTML = html;
+        // Create chart
+        if (performanceChart) {
+            performanceChart.destroy();
+        }
+        performanceChart = new Chart(performanceChartCanvas, {
+            type: 'bar',
+            data: {
+                labels: chartData.labels,
+                datasets: [
+                    {
+                        label: 'Response Time (s)',
+                        data: chartData.responseTimes,
+                        backgroundColor: 'rgba(0, 212, 255, 0.6)',
+                        borderColor: '#00d4ff',
+                        borderWidth: 2,
+                        yAxisID: 'y',
+                    },
+                    {
+                        label: 'Success Rate (%)',
+                        data: chartData.successRates,
+                        backgroundColor: 'rgba(57, 255, 20, 0.6)',
+                        borderColor: '#39ff14',
+                        borderWidth: 2,
+                        yAxisID: 'y1',
+                        type: 'line',
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Response Time (seconds)',
+                            color: '#00d4ff',
+                        },
+                        ticks: {
+                            color: '#ffffff',
+                        },
+                        grid: {
+                            color: 'rgba(0, 212, 255, 0.2)',
+                        },
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Success Rate (%)',
+                            color: '#39ff14',
+                        },
+                        ticks: {
+                            color: '#ffffff',
+                        },
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                    },
+                    x: {
+                        ticks: {
+                            color: '#ffffff',
+                        },
+                        grid: {
+                            color: 'rgba(0, 212, 255, 0.2)',
+                        },
+                    },
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff',
+                        },
+                    },
+                },
+            },
+        });
     }
     // Handle metrics response
     chrome.runtime.onMessage.addListener((request) => {
@@ -410,14 +578,39 @@ document.addEventListener('DOMContentLoaded', function () {
             displayHistory(result.summaryHistory || []);
         });
     }
+    let allHistory = [];
     function displayHistory(history) {
-        if (!history || history.length === 0) {
+        allHistory = history || [];
+        // Populate filter dropdown
+        const models = new Set(allHistory.map((item) => item.model));
+        filterModelSelect.innerHTML = '<option value="">All Models</option>';
+        models.forEach((model) => {
+            const modelConfig = optionsGetModelConfig(model);
+            const modelName = modelConfig ? modelConfig.name : model;
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = modelName;
+            filterModelSelect.appendChild(option);
+        });
+        filterAndDisplayHistory();
+    }
+    function filterAndDisplayHistory() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedModel = filterModelSelect.value;
+        const filteredHistory = allHistory.filter((item) => {
+            const matchesSearch = item.title.toLowerCase().includes(searchTerm) ||
+                item.summary.toLowerCase().includes(searchTerm) ||
+                item.url.toLowerCase().includes(searchTerm);
+            const matchesModel = !selectedModel || item.model === selectedModel;
+            return matchesSearch && matchesModel;
+        });
+        if (filteredHistory.length === 0) {
             historyContainer.innerHTML =
-                '<p>No summary history available yet. Use the extension to generate summaries and they will appear here.</p>';
+                '<p style="color: rgba(255, 255, 255, 0.7)">No matching history items found.</p>';
             return;
         }
         let html = '';
-        history.forEach((item) => {
+        filteredHistory.forEach((item) => {
             const date = new Date(item.timestamp).toLocaleString();
             const modelConfig = optionsGetModelConfig(item.model);
             const modelName = modelConfig ? modelConfig.name : item.model;
@@ -434,14 +627,17 @@ document.addEventListener('DOMContentLoaded', function () {
           </div>
           <div class="history-summary">${item.summary}</div>
           <div class="history-actions">
-            <button onclick="copyToClipboard('${item.summary.replace(/'/g, "\\'")}')">Copy</button>
-            <button onclick="shareSummary('${item.title || 'Untitled'}', '${item.summary.replace(/'/g, "\\'")}')">Share</button>
+            <button class="btn btn-secondary" onclick="copyToClipboard('${item.summary.replace(/'/g, "\\'")}')">Copy</button>
+            <button class="btn btn-secondary" onclick="shareSummary('${(item.title || 'Untitled').replace(/'/g, "\\'")}', '${item.summary.replace(/'/g, "\\'")}')">Share</button>
           </div>
         </div>
       `;
         });
         historyContainer.innerHTML = html;
     }
+    // Add search and filter event listeners
+    searchInput.addEventListener('input', filterAndDisplayHistory);
+    filterModelSelect.addEventListener('change', filterAndDisplayHistory);
     function clearHistory() {
         if (confirm('Are you sure you want to clear all summary history? This action cannot be undone.')) {
             chrome.storage.local.set({ summaryHistory: [] }, () => {
