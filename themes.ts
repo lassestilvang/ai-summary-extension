@@ -1,7 +1,19 @@
-/* exported themes */
-/* exported themes */
-// eslint-disable-next-line no-unused-vars
-const themes = {
+export interface ThemeColors {
+  backgroundColor: string;
+  textColor: string;
+  borderColor: string;
+  shadowColor: string;
+  closeButtonColor: string;
+  copyButtonColor: string;
+  titleColor: string;
+}
+
+export interface Theme {
+  name: string;
+  colors: ThemeColors;
+}
+
+export const themes: Record<string, Theme> = {
   light: {
     name: 'Light',
     colors: {

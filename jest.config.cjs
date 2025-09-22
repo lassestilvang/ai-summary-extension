@@ -3,11 +3,17 @@ module.exports = {
   roots: ['<rootDir>/tests'],
   transform: {
     '^.+\\.js$': 'babel-jest',
+    '^.+\\.ts$': 'ts-jest',
+  },
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   collectCoverageFrom: [
-    'background.js',
-    'options.js',
+    'background.ts',
+    'options.ts',
+    'utils.ts',
+    'themes.ts',
     '!jest.config.cjs',
     '!jest.setup.js',
     '!babel.config.cjs',

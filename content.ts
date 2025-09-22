@@ -1,12 +1,114 @@
-let summaryDiv = null;
+declare const showdown: any; // Assuming showdown is loaded globally
 
-function getModelDisplayName(model) {
-  const modelConfig = getModelConfig(model);
-  return modelConfig ? modelConfig.name : model;
+let summaryDiv: HTMLDivElement | null = null;
+
+interface ThemeColors {
+  backgroundColor: string;
+  textColor: string;
+  borderColor: string;
+  shadowColor: string;
+  closeButtonColor: string;
+  copyButtonColor: string;
+  titleColor: string;
 }
 
-function getModelConfig(model) {
-  const models = {
+interface Theme {
+  name: string;
+  colors: ThemeColors;
+}
+
+interface ModelConfig {
+  provider: 'chrome' | 'openai' | 'gemini' | 'anthropic';
+  modelId: string | null;
+  name: string;
+  cost: number;
+}
+
+interface ProgressUpdate {
+  step: string;
+  percentage: number;
+  estimatedTimeRemaining: number;
+  currentModel: string;
+  success?: boolean;
+}
+
+const contentThemes: Record<string, Theme> = {
+  light: {
+    name: 'Light',
+    colors: {
+      backgroundColor: '#ffffff',
+      textColor: '#333333',
+      borderColor: '#cccccc',
+      shadowColor: 'rgba(0, 0, 0, 0.2)',
+      closeButtonColor: '#666666',
+      copyButtonColor: '#666666',
+      titleColor: '#333333',
+    },
+  },
+  dark: {
+    name: 'Dark',
+    colors: {
+      backgroundColor: '#2d2d2d',
+      textColor: '#f1f1f1',
+      borderColor: '#555555',
+      shadowColor: 'rgba(255, 255, 255, 0.2)',
+      closeButtonColor: '#cccccc',
+      copyButtonColor: '#cccccc',
+      titleColor: '#f1f1f1',
+    },
+  },
+  solarized: {
+    name: 'Solarized',
+    colors: {
+      backgroundColor: '#fdf6e3',
+      textColor: '#657b83',
+      borderColor: '#93a1a1',
+      shadowColor: 'rgba(0, 0, 0, 0.1)',
+      closeButtonColor: '#93a1a1',
+      copyButtonColor: '#93a1a1',
+      titleColor: '#586e75',
+    },
+  },
+  nord: {
+    name: 'Nord',
+    colors: {
+      backgroundColor: '#2e3440',
+      textColor: '#d8dee9',
+      borderColor: '#4c566a',
+      shadowColor: 'rgba(0, 0, 0, 0.2)',
+      closeButtonColor: '#d8dee9',
+      copyButtonColor: '#d8dee9',
+      titleColor: '#eceff4',
+    },
+  },
+  autumn: {
+    name: 'Autumn',
+    colors: {
+      backgroundColor: '#f3e9d2',
+      textColor: '#4a403a',
+      borderColor: '#c8a083',
+      shadowColor: 'rgba(0, 0, 0, 0.15)',
+      closeButtonColor: '#8c6d5e',
+      copyButtonColor: '#8c6d5e',
+      titleColor: '#4a403a',
+    },
+  },
+  synthwave: {
+    name: 'Synthwave',
+    colors: {
+      backgroundColor: '#261b3e',
+      textColor: '#f0d4f7',
+      borderColor: '#ff6ac1',
+      shadowColor: 'rgba(255, 106, 193, 0.3)',
+      closeButtonColor: '#f0d4f7',
+      copyButtonColor: '#f0d4f7',
+      titleColor: '#f0d4f7',
+    },
+  },
+};
+
+function contentGetModelConfig(model: string): ModelConfig | undefined {
+  const models: Record<string, ModelConfig> = {
     'chrome-builtin': {
       provider: 'chrome',
       modelId: null,
@@ -83,14 +185,20 @@ function getModelConfig(model) {
   return models[model];
 }
 
+function getModelDisplayName(model: string): string {
+  const modelConfig = contentGetModelConfig(model);
+  return modelConfig ? modelConfig.name : model;
+}
+
 function createOrUpdateSummaryDiv(
-  summaryText,
-  theme,
-  model = null,
-  time = null,
-  metrics = null
-) {
-  const themeColors = themes[theme]?.colors || themes.light.colors;
+  summaryText: string | null,
+  theme: string,
+  model?: string,
+  time?: string,
+  metrics?: any
+): void {
+  const themeColors: ThemeColors =
+    contentThemes[theme]?.colors || contentThemes.light.colors;
 
   if (!summaryDiv) {
     summaryDiv = document.createElement('div');
@@ -136,7 +244,9 @@ function createOrUpdateSummaryDiv(
       cursor: pointer !important;
     `;
     closeButton.addEventListener('click', () => {
-      summaryDiv.style.display = 'none';
+      if (summaryDiv) {
+        summaryDiv.style.display = 'none';
+      }
       chrome.runtime.sendMessage({
         action: 'update_summary_visibility',
         visible: false,
@@ -154,15 +264,22 @@ function createOrUpdateSummaryDiv(
       cursor: pointer !important;
     `;
     let isMinimized = false;
+    const originalSize: { height: string } = { height: '' };
     minimizeButton.addEventListener('click', () => {
       if (isMinimized) {
-        summaryDiv.style.height = originalSize.height;
-        summaryContent.style.display = 'block';
+        summaryDiv!.style.height = originalSize.height;
+        const summaryContent = document.getElementById(
+          'ai-summary-extension-summary-content'
+        );
+        if (summaryContent) summaryContent.style.display = 'block';
         isMinimized = false;
       } else {
-        originalSize.height = summaryDiv.style.height;
-        summaryDiv.style.height = '30px';
-        summaryContent.style.display = 'none';
+        originalSize.height = summaryDiv!.style.height;
+        summaryDiv!.style.height = '30px';
+        const summaryContent = document.getElementById(
+          'ai-summary-extension-summary-content'
+        );
+        if (summaryContent) summaryContent.style.display = 'none';
         isMinimized = true;
       }
     });
@@ -177,27 +294,35 @@ function createOrUpdateSummaryDiv(
       cursor: pointer !important;
     `;
     let isMaximized = false;
-    let originalSize = {};
+    let originalSizeMax: {
+      width: string;
+      height: string;
+      top: string;
+      left: string;
+    } = { width: '', height: '', top: '', left: '' };
     maximizeButton.addEventListener('click', () => {
       if (isMaximized) {
-        summaryDiv.style.width = originalSize.width;
-        summaryDiv.style.height = originalSize.height;
-        summaryDiv.style.top = originalSize.top;
-        summaryDiv.style.left = originalSize.left;
+        summaryDiv!.style.width = originalSizeMax.width;
+        summaryDiv!.style.height = originalSizeMax.height;
+        summaryDiv!.style.top = originalSizeMax.top;
+        summaryDiv!.style.left = originalSizeMax.left;
         isMaximized = false;
       } else {
-        originalSize = {
-          width: summaryDiv.style.width,
-          height: summaryDiv.style.height,
-          top: summaryDiv.style.top,
-          left: summaryDiv.style.left,
+        originalSizeMax = {
+          width: summaryDiv!.style.width,
+          height: summaryDiv!.style.height,
+          top: summaryDiv!.style.top,
+          left: summaryDiv!.style.left,
         };
-        summaryDiv.style.width = '90vw';
-        summaryDiv.style.height = '90vh';
-        summaryDiv.style.top = '5vh';
-        summaryDiv.style.left = '5vw';
+        summaryDiv!.style.width = '90vw';
+        summaryDiv!.style.height = '90vh';
+        summaryDiv!.style.top = '5vh';
+        summaryDiv!.style.left = '5vw';
         isMaximized = true;
-        summaryContent.style.display = 'block';
+        const summaryContent = document.getElementById(
+          'ai-summary-extension-summary-content'
+        );
+        if (summaryContent) summaryContent.style.display = 'block';
         isMinimized = false;
       }
     });
@@ -237,10 +362,12 @@ function createOrUpdateSummaryDiv(
       margin-left: 8px !important;
     `;
     copyButton.addEventListener('click', () => {
-      const summaryText = document.getElementById(
+      const summaryContent = document.getElementById(
         'ai-summary-extension-summary-content'
-      ).textContent;
-      navigator.clipboard.writeText(summaryText);
+      );
+      if (summaryContent) {
+        navigator.clipboard.writeText(summaryContent.textContent || '');
+      }
     });
     copyButton.title = 'Copy summary to clipboard';
 
@@ -253,14 +380,14 @@ function createOrUpdateSummaryDiv(
       display: inline-block !important;
     `;
     shareButton.addEventListener('click', () => {
-      const summaryText = document.getElementById(
+      const summaryContent = document.getElementById(
         'ai-summary-extension-summary-content'
-      ).textContent;
-      if (navigator.share) {
+      );
+      if (summaryContent && navigator.share) {
         navigator
           .share({
             title: document.title,
-            text: summaryText,
+            text: summaryContent.textContent || '',
           })
           .catch(console.error);
       }
@@ -373,7 +500,7 @@ function createOrUpdateSummaryDiv(
     `;
     document.head.appendChild(style);
 
-    // const resizeHandles = document.createElement('div');
+    // Resize handles
     const directions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
     directions.forEach((dir) => {
       const handle = document.createElement('div');
@@ -384,8 +511,8 @@ function createOrUpdateSummaryDiv(
         height: 10px;
         z-index: 100000;
       `;
-      summaryDiv.appendChild(handle);
-      makeResizable(summaryDiv, summaryContent, handle, dir);
+      summaryDiv!.appendChild(handle);
+      makeResizable(summaryDiv!, summaryContent, handle, dir);
     });
 
     summaryDiv.appendChild(titleBar);
@@ -560,7 +687,7 @@ function createOrUpdateSummaryDiv(
 
       // Extract page content and regenerate summary
       const paragraphs = Array.from(document.querySelectorAll('p')).map(
-        (p) => p.textContent
+        (p) => p.textContent || ''
       );
       const pageContent = paragraphs.join('\n');
 
@@ -625,7 +752,7 @@ function createOrUpdateSummaryDiv(
     // Clear status text
     const statusText = document.getElementById('ai-summary-status-text');
     if (statusText) statusText.textContent = '';
-    summaryDiv.style.display = 'flex';
+    if (summaryDiv) summaryDiv.style.display = 'flex';
   } else {
     // Hide loading container, show content
     if (loadingContainer) loadingContainer.style.display = 'none';
@@ -645,12 +772,12 @@ function createOrUpdateSummaryDiv(
       }
       statusText.textContent = statusContent;
     }
-    summaryDiv.style.display = 'flex';
+    if (summaryDiv) summaryDiv.style.display = 'flex';
     adjustHeight();
   }
 }
 
-function adjustHeight() {
+function adjustHeight(): void {
   const summaryContent = document.getElementById(
     'ai-summary-extension-summary-content'
   );
@@ -662,23 +789,25 @@ function adjustHeight() {
   const padding = 30;
   const maxHeight = window.innerHeight * 0.9;
 
-  const contentHeight = summaryContent.scrollHeight + padding;
-  const newHeight = Math.min(
-    contentHeight + titleBarHeight + footerHeight,
-    maxHeight
-  );
+  if (summaryContent && summaryDiv) {
+    const contentHeight = summaryContent.scrollHeight + padding;
+    const newHeight = Math.min(
+      contentHeight + titleBarHeight + footerHeight,
+      maxHeight
+    );
 
-  summaryDiv.style.height = newHeight + 'px';
+    summaryDiv.style.height = newHeight + 'px';
+  }
 }
 
-function makeDraggable(element, handle) {
+function makeDraggable(element: HTMLElement, handle: HTMLElement): void {
   let pos1 = 0,
     pos2 = 0,
     pos3 = 0,
     pos4 = 0;
   handle.onmousedown = dragMouseDown;
 
-  function dragMouseDown(e) {
+  function dragMouseDown(e: MouseEvent): void {
     e = e || window.event;
     e.preventDefault();
     pos3 = e.clientX;
@@ -687,7 +816,7 @@ function makeDraggable(element, handle) {
     document.onmousemove = elementDrag;
   }
 
-  function elementDrag(e) {
+  function elementDrag(e: MouseEvent): void {
     e = e || window.event;
     e.preventDefault();
     pos1 = pos3 - e.clientX;
@@ -698,29 +827,34 @@ function makeDraggable(element, handle) {
     element.style.left = element.offsetLeft - pos1 + 'px';
   }
 
-  function closeDragElement() {
+  function closeDragElement(): void {
     document.onmouseup = null;
     document.onmousemove = null;
   }
 }
 
-function makeResizable(element, content, handle, direction) {
-  handle.onmousedown = function (e) {
+function makeResizable(
+  element: HTMLElement,
+  content: HTMLElement,
+  handle: HTMLElement,
+  direction: string
+): void {
+  handle.onmousedown = function (e: MouseEvent) {
     e.preventDefault();
-    let startX = e.clientX;
-    let startY = e.clientY;
-    let startWidth = parseInt(
-      document.defaultView.getComputedStyle(element).width,
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startWidth = parseInt(
+      document.defaultView!.getComputedStyle(element).width,
       10
     );
-    let startHeight = parseInt(
-      document.defaultView.getComputedStyle(element).height,
+    const startHeight = parseInt(
+      document.defaultView!.getComputedStyle(element).height,
       10
     );
-    let startTop = element.offsetTop;
-    let startLeft = element.offsetLeft;
+    const startTop = element.offsetTop;
+    const startLeft = element.offsetLeft;
 
-    document.onmousemove = function (e) {
+    document.onmousemove = function (e: MouseEvent) {
       const dx = e.clientX - startX;
       const dy = e.clientY - startY;
 
@@ -748,7 +882,7 @@ function makeResizable(element, content, handle, direction) {
 }
 
 // Function to update loading progress display
-function updateLoadingProgress(progress) {
+function updateLoadingProgress(progress: ProgressUpdate): void {
   const progressBar = document.getElementById(
     'ai-summary-extension-progress-bar'
   );
@@ -786,7 +920,7 @@ function updateLoadingProgress(progress) {
 }
 
 // Listener for messages from background.js
-chrome.runtime.onMessage.addListener(function (request) {
+chrome.runtime.onMessage.addListener(function (request: any) {
   if (request.action === 'display_inline_summary') {
     chrome.storage.sync.get('theme', function (result) {
       createOrUpdateSummaryDiv(
@@ -813,7 +947,7 @@ chrome.runtime.onMessage.addListener(function (request) {
       });
     } else {
       const paragraphs = Array.from(document.querySelectorAll('p')).map(
-        (p) => p.textContent
+        (p) => p.textContent || ''
       );
       const pageContent = paragraphs.join('\n');
       chrome.runtime.sendMessage({
@@ -823,7 +957,9 @@ chrome.runtime.onMessage.addListener(function (request) {
     }
   } else if (request.action === 'model_switched') {
     // Update the model selector if it exists
-    const modelSelect = document.getElementById('ai-summary-model-selector');
+    const modelSelect = document.getElementById(
+      'ai-summary-model-selector'
+    ) as HTMLSelectElement;
     if (modelSelect) {
       modelSelect.value = request.model;
     }
