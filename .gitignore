@@ -1,9 +1,5 @@
 # Node.js
 node_modules/
-package-lock.json
-
-# Server specific
-server/node_modules/
 
 # Environment variables
 .env
