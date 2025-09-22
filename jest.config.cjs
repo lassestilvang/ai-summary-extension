@@ -1,6 +1,7 @@
 module.exports = {
   testEnvironment: 'jsdom',
   roots: ['<rootDir>/tests'],
+  testMatch: ['<rootDir>/tests/**/*.test.js', '<rootDir>/tests/**/*.test.ts'],
   transform: {
     '^.+\\.js$': 'babel-jest',
     '^.+\\.ts$': 'ts-jest',
@@ -12,6 +13,7 @@ module.exports = {
   collectCoverageFrom: [
     'background.ts',
     'options.ts',
+    'content.ts',
     'utils.ts',
     'themes.ts',
     '!jest.config.cjs',
@@ -19,14 +21,43 @@ module.exports = {
     '!babel.config.cjs',
     '!**/node_modules/**',
     '!**/coverage/**',
+    '!**/*.d.ts',
   ],
   coverageThreshold: {
     global: {
-      branches: 0,
-      functions: 0,
-      lines: 0,
-      statements: 0,
+      branches: 70,
+      functions: 75,
+      lines: 75,
+      statements: 75,
+    },
+    './background.ts': {
+      branches: 60,
+      functions: 50,
+      lines: 75,
+      statements: 75,
+    },
+    './options.ts': {
+      branches: 25,
+      functions: 50,
+      lines: 60,
+      statements: 60,
+    },
+    './content.ts': {
+      branches: 40,
+      functions: 60,
+      lines: 65,
+      statements: 65,
+    },
+    './utils.ts': {
+      branches: 90,
+      functions: 95,
+      lines: 95,
+      statements: 95,
     },
   },
-  coverageReporters: ['text', 'lcov', 'html'],
+  coverageReporters: ['text', 'lcov', 'html', 'json'],
+  testTimeout: 10000,
+  verbose: true,
+  forceExit: true,
+  detectOpenHandles: true,
 };

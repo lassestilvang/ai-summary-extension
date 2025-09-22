@@ -11,7 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "types": ["chrome"]
+    "types": ["chrome", "jest"]
   },
   "include": ["*.ts"],
   "exclude": ["node_modules", "dist"]

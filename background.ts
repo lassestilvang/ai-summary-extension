@@ -64,7 +64,7 @@ chrome.action.onClicked.addListener((tab: chrome.tabs.Tab) => {
   chrome.tabs.sendMessage(tab.id!, { action: 'toggle_summary_visibility' });
 });
 
-async function summarizeWithAI(
+export async function summarizeWithAI(
   content: string,
   forceModel: string | null = null,
   progressCallback?: (progress: ProgressUpdate) => void
@@ -225,7 +225,7 @@ async function summarizeWithAI(
   }
 }
 
-async function tryModel(
+export async function tryModel(
   model: string,
   content: string,
   apiKeys: ApiKeys
@@ -261,7 +261,7 @@ async function tryModel(
   }
 }
 
-function getFallbackModels(primaryModel: string): string[] {
+export function getFallbackModels(primaryModel: string): string[] {
   const modelConfig = getModelConfig(primaryModel);
   if (!modelConfig) return [];
 
@@ -275,7 +275,7 @@ function getFallbackModels(primaryModel: string): string[] {
   return fallbacks[modelConfig.provider] || [];
 }
 
-async function storeModelMetrics(
+export async function storeModelMetrics(
   model: string,
   metrics: Metrics
 ): Promise<void> {
@@ -309,7 +309,7 @@ async function storeModelMetrics(
   }
 }
 
-async function storeSummaryHistory(
+export async function storeSummaryHistory(
   tabId: number,
   summary: string,
   model: string,
