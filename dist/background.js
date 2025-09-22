@@ -4,7 +4,7 @@ chrome.action.onClicked.addListener((tab) => {
     // When the action button is clicked, send a message to the content script to toggle the summary visibility
     chrome.tabs.sendMessage(tab.id, { action: 'toggle_summary_visibility' });
 });
-async function summarizeWithAI(content, forceModel = null, progressCallback) {
+export async function summarizeWithAI(content, forceModel = null, progressCallback) {
     const startTime = Date.now();
     const { selectedModel, openaiApiKey, geminiApiKey, anthropicApiKey, enableFallback, } = await chrome.storage.sync.get([
         'selectedModel',
@@ -135,7 +135,7 @@ async function summarizeWithAI(content, forceModel = null, progressCallback) {
         };
     }
 }
-async function tryModel(model, content, apiKeys) {
+export async function tryModel(model, content, apiKeys) {
     const modelConfig = getModelConfig(model);
     if (!modelConfig) {
         return { success: false, error: 'Unknown model' };
@@ -153,7 +153,7 @@ async function tryModel(model, content, apiKeys) {
             return { success: false, error: 'Unknown provider' };
     }
 }
-function getFallbackModels(primaryModel) {
+export function getFallbackModels(primaryModel) {
     const modelConfig = getModelConfig(primaryModel);
     if (!modelConfig)
         return [];
@@ -165,7 +165,7 @@ function getFallbackModels(primaryModel) {
     };
     return fallbacks[modelConfig.provider] || [];
 }
-async function storeModelMetrics(model, metrics) {
+export async function storeModelMetrics(model, metrics) {
     try {
         const { modelMetrics = {} } = await chrome.storage.local.get('modelMetrics');
         if (!modelMetrics[model]) {
@@ -192,7 +192,7 @@ async function storeModelMetrics(model, metrics) {
         console.error('Error storing model metrics:', error);
     }
 }
-async function storeSummaryHistory(tabId, summary, model, time, metrics) {
+export async function storeSummaryHistory(tabId, summary, model, time, metrics) {
     try {
         const { summaryHistory = [] } = await chrome.storage.local.get('summaryHistory');
         // Get tab info for URL and title

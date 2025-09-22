@@ -978,6 +978,7 @@ function updateLoadingProgress(progress: ProgressUpdate): void {
 
 // Listener for messages from background.js
 chrome.runtime.onMessage.addListener(function (request: any) {
+  if (!request || !request.action) return;
   if (request.action === 'display_inline_summary') {
     chrome.storage.sync.get('theme', function (result) {
       createOrUpdateSummaryDiv(
