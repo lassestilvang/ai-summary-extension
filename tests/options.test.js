@@ -63,7 +63,29 @@ describe('Options Script Comprehensive Tests', () => {
       },
       refreshHistory: { addEventListener: jest.fn() },
       clearHistory: { addEventListener: jest.fn() },
-      historyContainer: { innerHTML: '' },
+      historyContainer: {
+        innerHTML: '',
+        querySelectorAll: jest.fn((selector) => {
+          if (selector === '.copy-btn') {
+            return [
+              {
+                addEventListener: jest.fn(),
+                dataset: { summary: 'Test summary' },
+              },
+            ];
+          }
+          if (selector === '.share-btn') {
+            return [
+              {
+                addEventListener: jest.fn(),
+                dataset: { title: 'Test Title', summary: 'Test summary' },
+              },
+            ];
+          }
+          return [];
+        }),
+      },
+      historyStatus: { textContent: '', className: '', style: {} },
 
       // Form
       'settings-form': { addEventListener: jest.fn() },
@@ -557,7 +579,9 @@ describe('Options Script Comprehensive Tests', () => {
         },
         expect.any(Function)
       );
-      expect(mockDOM.status.textContent).toBe('History cleared successfully!');
+      expect(mockDOM.historyStatus.textContent).toBe(
+        'History cleared successfully!'
+      );
 
       // Restore
       global.confirm = originalConfirm;
@@ -612,7 +636,7 @@ describe('Options Script Comprehensive Tests', () => {
       const testText = 'Test summary text';
 
       // Call the real function
-      window.copyToClipboard(testText);
+      window.copyToClipboard(testText, 'status');
 
       // Advance timers to let the promise resolve
       await jest.runAllTimers();
@@ -627,7 +651,7 @@ describe('Options Script Comprehensive Tests', () => {
       const title = 'Test Title';
       const text = 'Test summary text';
 
-      global.shareSummary(title, text);
+      global.shareSummary(title, text, 'status');
 
       expect(navigator.share).toHaveBeenCalledWith({
         title: title,
@@ -646,7 +670,7 @@ describe('Options Script Comprehensive Tests', () => {
       const title = 'Test Title';
       const text = 'Test summary text';
 
-      global.shareSummary(title, text);
+      global.shareSummary(title, text, 'status');
 
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(text);
 

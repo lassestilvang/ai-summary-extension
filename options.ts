@@ -829,14 +829,33 @@ document.addEventListener('DOMContentLoaded', function () {
           </div>
           <div class="history-summary">${item.summary}</div>
           <div class="history-actions">
-            <button class="btn btn-secondary" onclick="copyToClipboard('${item.summary.replace(/'/g, "\\'")}')">Copy</button>
-            <button class="btn btn-secondary" onclick="shareSummary('${(item.title || 'Untitled').replace(/'/g, "\\'")}', '${item.summary.replace(/'/g, "\\'")}')">Share</button>
+            <button class="btn btn-secondary copy-btn" data-summary="${item.summary.replace(/'/g, "\\'")}">Copy</button>
+            <button class="btn btn-secondary share-btn" data-title="${(item.title || 'Untitled').replace(/'/g, "\\'")}" data-summary="${item.summary.replace(/'/g, "\\'")}">Share</button>
           </div>
         </div>
       `;
     });
 
     historyContainer.innerHTML = html;
+
+    // Add event listeners to the dynamically created buttons
+    const copyButtons = historyContainer.querySelectorAll('.copy-btn');
+    const shareButtons = historyContainer.querySelectorAll('.share-btn');
+
+    copyButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const summary = (button as HTMLElement).dataset.summary || '';
+        (window as any).copyToClipboard(summary, 'historyStatus');
+      });
+    });
+
+    shareButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const title = (button as HTMLElement).dataset.title || '';
+        const summary = (button as HTMLElement).dataset.summary || '';
+        (window as any).shareSummary(title, summary, 'historyStatus');
+      });
+    });
   }
 
   // Add search and filter event listeners
@@ -851,19 +870,26 @@ document.addEventListener('DOMContentLoaded', function () {
     ) {
       chrome.storage.local.set({ summaryHistory: [] }, () => {
         displayHistory([]);
-        statusDiv.textContent = 'History cleared successfully!';
-        statusDiv.className = 'status success';
+        const historyStatusDiv = document.getElementById(
+          'historyStatus'
+        ) as HTMLDivElement;
+        historyStatusDiv.textContent = 'History cleared successfully!';
+        historyStatusDiv.className = 'status success';
         setTimeout(() => {
-          statusDiv.textContent = '';
-          statusDiv.className = '';
+          historyStatusDiv.textContent = '';
+          historyStatusDiv.className = '';
         }, 3000);
       });
     }
   }
 
   // Global functions for button onclick handlers
-  (window as any).copyToClipboard = function (text: string) {
+  (window as any).copyToClipboard = function (
+    text: string,
+    statusDivId: string
+  ) {
     navigator.clipboard.writeText(text).then(() => {
+      const statusDiv = document.getElementById(statusDivId) as HTMLDivElement;
       statusDiv.textContent = 'Summary copied to clipboard!';
       statusDiv.className = 'status success';
       setTimeout(() => {
@@ -873,7 +899,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   };
 
-  (window as any).shareSummary = function (title: string, text: string) {
+  (window as any).shareSummary = function (
+    title: string,
+    text: string,
+    statusDivId: string
+  ) {
     if (navigator.share) {
       navigator
         .share({
@@ -882,7 +912,7 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(console.error);
     } else {
-      (window as any).copyToClipboard(text);
+      (window as any).copyToClipboard(text, statusDivId);
     }
   };
 

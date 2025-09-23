@@ -18,10 +18,10 @@ To run the Chrome extension:
 
 ## Development Conventions
 
-*   **Extension Structure:** The `manifest.json` defines the extension's metadata, permissions, and entry points (`background.js`, `content.js`).
-*   **Content Script (`content.js`):** Responsible for directly interacting with the DOM of the active web page.
-*   **Background Script (`background.js`):** Handles browser events, manages communication with the backend server, and orchestrates data flow within the extension.
-*   **Options Page (`options.html`, `options.js`):** Provides a user interface for configuring extension settings.
-*   **Theming (`themes.js`):** Suggests that the extension supports different visual themes.
-*   **Code Quality:** After making changes, run `npm run lint` to ensure code adheres to style guidelines and fix issues with `npm run lint:fix`. Run `npm test` to execute unit tests.
-*   **Documentation:** Product and steering documents are located in `AGENTS.md` and `.kiro/steering/product.md`, providing insights into the project's goals and design principles.
+- **Extension Structure:** The `manifest.json` defines the extension's metadata, permissions, and entry points (`background.js`, `content.js`).
+- **Content Script (`content.js`):** Responsible for directly interacting with the DOM of the active web page.
+- **Background Script (`background.js`):** Handles browser events, manages communication with the backend server, and orchestrates data flow within the extension.
+- **Options Page (`options.html`, `options.js`):** Provides a user interface for configuring extension settings.
+- **Theming (`themes.js`):** Suggests that the extension supports different visual themes.
+- **Code Quality:** IMPORTANT: After making changes, run `npm run lint` to ensure code adheres to style guidelines and fix issues with `npm run lint:fix`. Run `npm test` to execute unit tests.
+- **Documentation:** Product and steering documents are located in `AGENTS.md` and `.kiro/steering/product.md`, providing insights into the project's goals and design principles.

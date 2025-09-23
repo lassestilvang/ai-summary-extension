@@ -382,7 +382,6 @@ function createOrUpdateSummaryDiv(
     summaryTitle.textContent = 'Summary';
     summaryTitle.style.cssText = `
       color: ${themeColors.titleColor} !important;
-      font-family: ${fontFamily}, sans-serif !important;
       font-size: ${fontSize + 4}px !important;
       font-weight: ${fontStyle === 'bold' ? 'bold' : 'normal'} !important;
       font-style: ${fontStyle === 'italic' ? 'italic' : 'normal'} !important;
@@ -650,7 +649,6 @@ function createOrUpdateSummaryDiv(
       font-size: ${Math.max(fontSize - 2, 10)}px !important;
       color: ${themeColors.titleColor} !important;
       background-color: ${themeColors.borderColor} !important;
-      font-family: ${fontFamily}, sans-serif !important;
       font-weight: ${fontStyle === 'bold' ? 'bold' : 'normal'} !important;
       font-style: ${fontStyle === 'italic' ? 'italic' : 'normal'} !important;
       border-top: 1px solid ${themeColors.borderColor} !important;
