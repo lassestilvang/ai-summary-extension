@@ -1,8 +1,12 @@
 // Comprehensive unit tests for options.ts
+// Import the options script to execute it during tests
 import '../options.ts';
 
 describe('Options Script Comprehensive Tests', () => {
   let mockDOM;
+
+  // Utility functions are tested indirectly through integration tests
+  // since they are internal to the options.ts module and not exported
 
   beforeEach(() => {
     // Reset fetch mocks
@@ -453,6 +457,367 @@ describe('Options Script Comprehensive Tests', () => {
       });
 
       expect(mockDOM.metricsContainer.innerHTML).toContain('unknown-model');
+    });
+  });
+
+  describe('Utility Functions', () => {
+    beforeEach(() => {
+      fetchMock.resetMocks();
+    });
+
+    describe('window.validateApiKey', () => {
+      it('should return error for empty API key', async () => {
+        const result = await window.validateApiKey('openai', '');
+        expect(result).toEqual({ valid: false, error: 'API key is required' });
+      });
+
+      it('should return error for whitespace-only API key', async () => {
+        const result = await window.validateApiKey('openai', '   ');
+        expect(result).toEqual({ valid: false, error: 'API key is required' });
+      });
+
+      it('should validate OpenAI API key successfully', async () => {
+        fetchMock.mockResponseOnce('', { status: 200 });
+        const result = await window.validateApiKey('openai', 'valid-key');
+        expect(result).toEqual({ valid: true });
+      });
+
+      it('should validate Gemini API key successfully', async () => {
+        fetchMock.mockResponseOnce('', { status: 200 });
+        const result = await window.validateApiKey('gemini', 'valid-key');
+        expect(result).toEqual({ valid: true });
+      });
+
+      it('should validate Anthropic API key successfully', async () => {
+        fetchMock.mockResponseOnce('', { status: 200 });
+        const result = await window.validateApiKey('anthropic', 'valid-key');
+        expect(result).toEqual({ valid: true });
+      });
+
+      it('should return error for unknown provider', async () => {
+        const result = await window.validateApiKey('unknown', 'key');
+        expect(result).toEqual({ valid: false, error: 'Unknown provider' });
+      });
+
+      it('should handle network errors', async () => {
+        fetchMock.mockRejectOnce(new Error('Network error'));
+        const result = await window.validateApiKey('openai', 'key');
+        expect(result).toEqual({
+          valid: false,
+          error: 'Network error during validation',
+        });
+      });
+    });
+
+    describe('window.validateOpenAIApiKey', () => {
+      it('should return valid for successful response', async () => {
+        fetchMock.mockResponseOnce('', { status: 200 });
+        const result = await window.validateOpenAIApiKey('valid-key');
+        expect(result).toEqual({ valid: true });
+      });
+
+      it('should return invalid for 401 status', async () => {
+        fetchMock.mockResponseOnce('', { status: 401 });
+        const result = await window.validateOpenAIApiKey('invalid-key');
+        expect(result).toEqual({ valid: false, error: 'Invalid API key' });
+      });
+
+      it('should return invalid for other error status', async () => {
+        fetchMock.mockResponseOnce('', { status: 500 });
+        const result = await window.validateOpenAIApiKey('key');
+        expect(result).toEqual({
+          valid: false,
+          error: 'API validation failed: 500',
+        });
+      });
+
+      it('should handle network errors', async () => {
+        fetchMock.mockRejectOnce(new Error('Network error'));
+        const result = await window.validateOpenAIApiKey('key');
+        expect(result).toEqual({
+          valid: false,
+          error: 'Network error during validation',
+        });
+      });
+    });
+
+    describe('window.validateGeminiApiKey', () => {
+      it('should return valid for successful response', async () => {
+        fetchMock.mockResponseOnce('', { status: 200 });
+        const result = await window.validateGeminiApiKey('valid-key');
+        expect(result).toEqual({ valid: true });
+      });
+
+      it('should return invalid for 400 status', async () => {
+        fetchMock.mockResponseOnce('', { status: 400 });
+        const result = await window.validateGeminiApiKey('invalid-key');
+        expect(result).toEqual({ valid: false, error: 'Invalid API key' });
+      });
+
+      it('should return invalid for 403 status', async () => {
+        fetchMock.mockResponseOnce('', { status: 403 });
+        const result = await window.validateGeminiApiKey('invalid-key');
+        expect(result).toEqual({ valid: false, error: 'Invalid API key' });
+      });
+
+      it('should return invalid for other error status', async () => {
+        fetchMock.mockResponseOnce('', { status: 500 });
+        const result = await window.validateGeminiApiKey('key');
+        expect(result).toEqual({
+          valid: false,
+          error: 'API validation failed: 500',
+        });
+      });
+
+      it('should handle network errors', async () => {
+        fetchMock.mockRejectOnce(new Error('Network error'));
+        const result = await window.validateGeminiApiKey('key');
+        expect(result).toEqual({
+          valid: false,
+          error: 'Network error during validation',
+        });
+      });
+    });
+
+    describe('window.validateAnthropicApiKey', () => {
+      it('should return valid for successful response', async () => {
+        fetchMock.mockResponseOnce('', { status: 200 });
+        const result = await window.validateAnthropicApiKey('valid-key');
+        expect(result).toEqual({ valid: true });
+      });
+
+      it('should return invalid for 401 status', async () => {
+        fetchMock.mockResponseOnce('', { status: 401 });
+        const result = await window.validateAnthropicApiKey('invalid-key');
+        expect(result).toEqual({ valid: false, error: 'Invalid API key' });
+      });
+
+      it('should return invalid for other error status', async () => {
+        fetchMock.mockResponseOnce('', { status: 500 });
+        const result = await window.validateAnthropicApiKey('key');
+        expect(result).toEqual({
+          valid: false,
+          error: 'API validation failed: 500',
+        });
+      });
+
+      it('should handle network errors', async () => {
+        fetchMock.mockRejectOnce(new Error('Network error'));
+        const result = await window.validateAnthropicApiKey('key');
+        expect(result).toEqual({
+          valid: false,
+          error: 'Network error during validation',
+        });
+      });
+    });
+
+    describe('window.isModelAvailable', () => {
+      it('should return false for unknown model', () => {
+        const result = window.isModelAvailable('unknown-model', {});
+        expect(result).toBe(false);
+      });
+
+      it('should return true for chrome-builtin', () => {
+        const result = window.isModelAvailable('chrome-builtin', {});
+        expect(result).toBe(true);
+      });
+
+      it('should return true for openai model with valid key', () => {
+        const apiKeys = {
+          openaiApiKey: 'key',
+          geminiApiKey: '',
+          anthropicApiKey: '',
+        };
+        const result = window.isModelAvailable('gpt-3.5-turbo', apiKeys);
+        expect(result).toBe(true);
+      });
+
+      it('should return false for openai model without key', () => {
+        const apiKeys = {
+          openaiApiKey: '',
+          geminiApiKey: '',
+          anthropicApiKey: '',
+        };
+        const result = window.isModelAvailable('gpt-3.5-turbo', apiKeys);
+        expect(result).toBe(false);
+      });
+
+      it('should return false for openai model with whitespace key', () => {
+        const apiKeys = {
+          openaiApiKey: '   ',
+          geminiApiKey: '',
+          anthropicApiKey: '',
+        };
+        const result = window.isModelAvailable('gpt-3.5-turbo', apiKeys);
+        expect(result).toBe(false);
+      });
+
+      it('should return true for gemini model with valid key', () => {
+        const apiKeys = {
+          openaiApiKey: '',
+          geminiApiKey: 'key',
+          anthropicApiKey: '',
+        };
+        const result = window.isModelAvailable('gemini-1.5-pro', apiKeys);
+        expect(result).toBe(true);
+      });
+
+      it('should return false for gemini model without key', () => {
+        const apiKeys = {
+          openaiApiKey: '',
+          geminiApiKey: '',
+          anthropicApiKey: '',
+        };
+        const result = window.isModelAvailable('gemini-1.5-pro', apiKeys);
+        expect(result).toBe(false);
+      });
+
+      it('should return true for anthropic model with valid key', () => {
+        const apiKeys = {
+          openaiApiKey: '',
+          geminiApiKey: '',
+          anthropicApiKey: 'key',
+        };
+        const result = window.isModelAvailable('claude-3-haiku', apiKeys);
+        expect(result).toBe(true);
+      });
+
+      it('should return false for anthropic model without key', () => {
+        const apiKeys = {
+          openaiApiKey: '',
+          geminiApiKey: '',
+          anthropicApiKey: '',
+        };
+        const result = window.isModelAvailable('claude-3-haiku', apiKeys);
+        expect(result).toBe(false);
+      });
+    });
+
+    describe('window.optionsGetModelConfig', () => {
+      it('should return undefined for unknown model', () => {
+        const result = window.optionsGetModelConfig('unknown-model');
+        expect(result).toBeUndefined();
+      });
+
+      it('should return config for chrome-builtin', () => {
+        const result = window.optionsGetModelConfig('chrome-builtin');
+        expect(result).toEqual({
+          provider: 'chrome',
+          modelId: null,
+          name: 'Chrome Built-in AI',
+          cost: 0,
+        });
+      });
+
+      it('should return config for gpt-3.5-turbo', () => {
+        const result = window.optionsGetModelConfig('gpt-3.5-turbo');
+        expect(result).toEqual({
+          provider: 'openai',
+          modelId: 'gpt-3.5-turbo',
+          name: 'GPT-3.5 Turbo',
+          cost: 0.002,
+        });
+      });
+
+      it('should return config for gpt-4', () => {
+        const result = window.optionsGetModelConfig('gpt-4');
+        expect(result).toEqual({
+          provider: 'openai',
+          modelId: 'gpt-4',
+          name: 'GPT-4',
+          cost: 0.03,
+        });
+      });
+
+      it('should return config for gpt-4-turbo', () => {
+        const result = window.optionsGetModelConfig('gpt-4-turbo');
+        expect(result).toEqual({
+          provider: 'openai',
+          modelId: 'gpt-4-turbo',
+          name: 'GPT-4 Turbo',
+          cost: 0.01,
+        });
+      });
+
+      it('should return config for gpt-4o', () => {
+        const result = window.optionsGetModelConfig('gpt-4o');
+        expect(result).toEqual({
+          provider: 'openai',
+          modelId: 'gpt-4o',
+          name: 'GPT-4o',
+          cost: 0.005,
+        });
+      });
+
+      it('should return config for gemini-1.5-pro', () => {
+        const result = window.optionsGetModelConfig('gemini-1.5-pro');
+        expect(result).toEqual({
+          provider: 'gemini',
+          modelId: 'gemini-1.5-pro',
+          name: 'Gemini 1.5 Pro',
+          cost: 0.00125,
+        });
+      });
+
+      it('should return config for gemini-1.5-flash', () => {
+        const result = window.optionsGetModelConfig('gemini-1.5-flash');
+        expect(result).toEqual({
+          provider: 'gemini',
+          modelId: 'gemini-1.5-flash',
+          name: 'Gemini 1.5 Flash',
+          cost: 0.000075,
+        });
+      });
+
+      it('should return config for gemini-2.0-flash-exp', () => {
+        const result = window.optionsGetModelConfig('gemini-2.0-flash-exp');
+        expect(result).toEqual({
+          provider: 'gemini',
+          modelId: 'gemini-2.0-flash-exp',
+          name: 'Gemini 2.0 Flash (Exp)',
+          cost: 0,
+        });
+      });
+
+      it('should return config for claude-3-haiku', () => {
+        const result = window.optionsGetModelConfig('claude-3-haiku');
+        expect(result).toEqual({
+          provider: 'anthropic',
+          modelId: 'claude-3-haiku-20240307',
+          name: 'Claude 3 Haiku',
+          cost: 0.00025,
+        });
+      });
+
+      it('should return config for claude-3-sonnet', () => {
+        const result = window.optionsGetModelConfig('claude-3-sonnet');
+        expect(result).toEqual({
+          provider: 'anthropic',
+          modelId: 'claude-3-sonnet-20240229',
+          name: 'Claude 3 Sonnet',
+          cost: 0.003,
+        });
+      });
+
+      it('should return config for claude-3-opus', () => {
+        const result = window.optionsGetModelConfig('claude-3-opus');
+        expect(result).toEqual({
+          provider: 'anthropic',
+          modelId: 'claude-3-opus-20240229',
+          name: 'Claude 3 Opus',
+          cost: 0.015,
+        });
+      });
+
+      it('should return config for claude-3.5-sonnet', () => {
+        const result = window.optionsGetModelConfig('claude-3.5-sonnet');
+        expect(result).toEqual({
+          provider: 'anthropic',
+          modelId: 'claude-3-5-sonnet-20240620',
+          name: 'Claude 3.5 Sonnet',
+          cost: 0.003,
+        });
+      });
     });
   });
 
