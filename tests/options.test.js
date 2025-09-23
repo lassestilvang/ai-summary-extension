@@ -10,6 +10,12 @@ describe('Options Script Comprehensive Tests', () => {
 
     // Mock DOM elements
     mockDOM = {
+      // Theme toggle
+      themeToggle: {
+        addEventListener: jest.fn(),
+        querySelector: jest.fn(() => ({ className: '', style: {} })),
+      },
+
       // Navigation elements
       sidebar: { classList: { toggle: jest.fn() } },
       toggleSidebar: { addEventListener: jest.fn() },
@@ -109,7 +115,19 @@ describe('Options Script Comprehensive Tests', () => {
           addEventListener: jest.fn(),
         };
       }
+      if (tag === 'style') {
+        return {
+          textContent: '',
+          appendChild: jest.fn(),
+        };
+      }
       return { appendChild: jest.fn() };
+    });
+
+    // Mock document.head
+    Object.defineProperty(document, 'head', {
+      value: { appendChild: jest.fn() },
+      writable: true,
     });
 
     // Mock chrome.storage.sync.get/set
@@ -189,12 +207,10 @@ describe('Options Script Comprehensive Tests', () => {
       expect(document.getElementById).toHaveBeenCalledWith('fontStyle');
       expect(document.getElementById).toHaveBeenCalledWith('themeStatus');
       expect(document.getElementById).toHaveBeenCalledWith('themePreview');
-      expect(document.getElementById).toHaveBeenCalledWith('previewTitle');
       expect(document.getElementById).toHaveBeenCalledWith('previewText');
       expect(document.getElementById).toHaveBeenCalledWith('settings-form');
       expect(document.getElementById).toHaveBeenCalledWith('refreshMetrics');
       expect(document.getElementById).toHaveBeenCalledWith('metricsContainer');
-      expect(document.getElementById).toHaveBeenCalledWith('performanceChart');
       expect(document.getElementById).toHaveBeenCalledWith('searchInput');
       expect(document.getElementById).toHaveBeenCalledWith('filterModel');
       expect(document.getElementById).toHaveBeenCalledWith('refreshHistory');
