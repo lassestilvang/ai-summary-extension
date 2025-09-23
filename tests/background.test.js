@@ -57,6 +57,9 @@ describe('Background Script Comprehensive Tests', () => {
       expect(chrome.tabs.onRemoved.addListener).toHaveBeenCalledWith(
         expect.any(Function)
       );
+      expect(chrome.tabs.onUpdated.addListener).toHaveBeenCalledWith(
+        expect.any(Function)
+      );
     });
   });
 
@@ -75,6 +78,7 @@ describe('Background Script Comprehensive Tests', () => {
       });
       expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(123, {
         action: 'toggle_summary_visibility',
+        hasSummary: false,
       });
     });
 

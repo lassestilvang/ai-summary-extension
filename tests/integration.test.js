@@ -92,6 +92,7 @@ describe('Extension Integration Tests', () => {
       });
       expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(123, {
         action: 'toggle_summary_visibility',
+        hasSummary: false,
       });
 
       // Step 2: Content script receives toggle message and extracts content
