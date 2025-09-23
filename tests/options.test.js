@@ -61,6 +61,12 @@ describe('Options Script Comprehensive Tests', () => {
         innerHTML: '',
         appendChild: jest.fn(),
       },
+      exportFormat: { value: '', addEventListener: jest.fn() },
+      exportHistory: {
+        disabled: false,
+        innerHTML: '<i class="fas fa-download"></i> Export',
+        addEventListener: jest.fn(),
+      },
       refreshHistory: { addEventListener: jest.fn() },
       clearHistory: { addEventListener: jest.fn() },
       historyContainer: {
@@ -235,6 +241,8 @@ describe('Options Script Comprehensive Tests', () => {
       expect(document.getElementById).toHaveBeenCalledWith('metricsContainer');
       expect(document.getElementById).toHaveBeenCalledWith('searchInput');
       expect(document.getElementById).toHaveBeenCalledWith('filterModel');
+      expect(document.getElementById).toHaveBeenCalledWith('exportFormat');
+      expect(document.getElementById).toHaveBeenCalledWith('exportHistory');
       expect(document.getElementById).toHaveBeenCalledWith('refreshHistory');
       expect(document.getElementById).toHaveBeenCalledWith('clearHistory');
       expect(document.getElementById).toHaveBeenCalledWith('historyContainer');
@@ -689,6 +697,14 @@ describe('Options Script Comprehensive Tests', () => {
         expect.any(Function)
       );
       expect(mockDOM.refreshMetrics.addEventListener).toHaveBeenCalledWith(
+        'click',
+        expect.any(Function)
+      );
+      expect(mockDOM.exportFormat.addEventListener).toHaveBeenCalledWith(
+        'change',
+        expect.any(Function)
+      );
+      expect(mockDOM.exportHistory.addEventListener).toHaveBeenCalledWith(
         'click',
         expect.any(Function)
       );

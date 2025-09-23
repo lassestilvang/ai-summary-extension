@@ -330,6 +330,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // History elements
     const searchInput = document.getElementById('searchInput');
     const filterModelSelect = document.getElementById('filterModel');
+    const exportFormatSelect = document.getElementById('exportFormat');
+    const exportHistoryButton = document.getElementById('exportHistory');
     const refreshHistoryButton = document.getElementById('refreshHistory');
     const clearHistoryButton = document.getElementById('clearHistory');
     const historyContainer = document.getElementById('historyContainer');
@@ -602,7 +604,14 @@ document.addEventListener('DOMContentLoaded', function () {
             option.textContent = modelName;
             filterModelSelect.appendChild(option);
         });
+        // Update export button state
+        updateExportButtonState();
         filterAndDisplayHistory();
+    }
+    function updateExportButtonState() {
+        const hasHistory = allHistory.length > 0;
+        const hasFormat = exportFormatSelect.value !== '';
+        exportHistoryButton.disabled = !hasHistory || !hasFormat;
     }
     function filterAndDisplayHistory() {
         const searchTerm = searchInput.value.toLowerCase();
@@ -617,11 +626,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (allHistory.length === 0) {
             historyContainer.innerHTML =
                 '<p style="color: rgba(255, 255, 255, 0.7)">No summary history available yet.</p>';
+            exportHistoryButton.disabled = true;
             return;
         }
         if (filteredHistory.length === 0) {
             historyContainer.innerHTML =
                 '<p style="color: rgba(255, 255, 255, 0.7)">No matching history items found.</p>';
+            exportHistoryButton.disabled = true;
             return;
         }
         let html = '';
@@ -649,6 +660,8 @@ document.addEventListener('DOMContentLoaded', function () {
       `;
         });
         historyContainer.innerHTML = html;
+        // Enable export button if there are items to export
+        exportHistoryButton.disabled = false;
         // Add event listeners to the dynamically created buttons
         const copyButtons = historyContainer.querySelectorAll('.copy-btn');
         const shareButtons = historyContainer.querySelectorAll('.share-btn');
@@ -666,9 +679,196 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     }
+    // Export functions
+    function exportHistory(format) {
+        if (allHistory.length === 0) {
+            const historyStatusDiv = document.getElementById('historyStatus');
+            historyStatusDiv.textContent = 'No history to export.';
+            historyStatusDiv.className = 'status error';
+            setTimeout(() => {
+                historyStatusDiv.textContent = '';
+                historyStatusDiv.className = '';
+            }, 3000);
+            return;
+        }
+        const filteredHistory = getFilteredHistory();
+        if (filteredHistory.length === 0) {
+            const historyStatusDiv = document.getElementById('historyStatus');
+            historyStatusDiv.textContent = 'No matching history items to export.';
+            historyStatusDiv.className = 'status error';
+            setTimeout(() => {
+                historyStatusDiv.textContent = '';
+                historyStatusDiv.className = '';
+            }, 3000);
+            return;
+        }
+        // Show progress
+        const originalText = exportHistoryButton.innerHTML;
+        exportHistoryButton.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+        exportHistoryButton.disabled = true;
+        try {
+            let content;
+            let mimeType;
+            let filename;
+            switch (format) {
+                case 'csv':
+                    content = exportToCSV(filteredHistory);
+                    mimeType = 'text/csv';
+                    filename = 'summary-history.csv';
+                    break;
+                case 'json':
+                    content = exportToJSON(filteredHistory);
+                    mimeType = 'application/json';
+                    filename = 'summary-history.json';
+                    break;
+                case 'html':
+                    content = exportToHTML(filteredHistory);
+                    mimeType = 'text/html';
+                    filename = 'summary-history.html';
+                    break;
+                default:
+                    throw new Error('Invalid export format');
+            }
+            // Create download
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            const historyStatusDiv = document.getElementById('historyStatus');
+            historyStatusDiv.textContent = `History exported successfully as ${format.toUpperCase()}.`;
+            historyStatusDiv.className = 'status success';
+            setTimeout(() => {
+                historyStatusDiv.textContent = '';
+                historyStatusDiv.className = '';
+            }, 3000);
+        }
+        catch {
+            const historyStatusDiv = document.getElementById('historyStatus');
+            historyStatusDiv.textContent = 'Export failed. Please try again.';
+            historyStatusDiv.className = 'status error';
+            setTimeout(() => {
+                historyStatusDiv.textContent = '';
+                historyStatusDiv.className = '';
+            }, 3000);
+        }
+        finally {
+            // Restore button
+            exportHistoryButton.innerHTML = originalText;
+            exportHistoryButton.disabled = false;
+        }
+    }
+    function getFilteredHistory() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedModel = filterModelSelect.value;
+        return allHistory.filter((item) => {
+            const matchesSearch = (item.title || '').toLowerCase().includes(searchTerm) ||
+                (item.summary || '').toLowerCase().includes(searchTerm) ||
+                (item.url || '').toLowerCase().includes(searchTerm);
+            const matchesModel = !selectedModel || item.model === selectedModel;
+            return matchesSearch && matchesModel;
+        });
+    }
+    function exportToCSV(history) {
+        const headers = [
+            'Date',
+            'Title',
+            'URL',
+            'Summary',
+            'Model',
+            'Time',
+            'Total Time',
+        ];
+        const rows = history.map((item) => [
+            new Date(item.timestamp).toLocaleString(),
+            item.title || 'Untitled',
+            item.url,
+            item.summary.replace(/"/g, '""'), // Escape quotes
+            item.model,
+            item.time,
+            item.metrics?.totalTime || 0,
+        ]);
+        const csvContent = [headers, ...rows]
+            .map((row) => row.map((field) => `"${field}"`).join(','))
+            .join('\n');
+        return csvContent;
+    }
+    function exportToJSON(history) {
+        return JSON.stringify(history, null, 2);
+    }
+    function exportToHTML(history) {
+        const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Summary History</title>
+   <style>
+       body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+       .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+       h1 { color: #333; text-align: center; margin-bottom: 30px; }
+       table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+       th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+       th { background-color: #f8f9fa; font-weight: bold; }
+       tr:hover { background-color: #f5f5f5; }
+       .summary { max-width: 400px; word-wrap: break-word; }
+       .url { max-width: 300px; word-wrap: break-word; }
+       .date { white-space: nowrap; }
+   </style>
+</head>
+<body>
+   <div class="container">
+       <h1>Summary History</h1>
+       <table>
+           <thead>
+               <tr>
+                   <th>Date</th>
+                   <th>Title</th>
+                   <th>URL</th>
+                   <th>Summary</th>
+                   <th>Model</th>
+                   <th>Time (s)</th>
+                   <th>Total Time (s)</th>
+               </tr>
+           </thead>
+           <tbody>
+               ${history
+            .map((item) => `
+                   <tr>
+                       <td class="date">${new Date(item.timestamp).toLocaleString()}</td>
+                       <td>${item.title || 'Untitled'}</td>
+                       <td class="url"><a href="${item.url}" target="_blank">${item.url}</a></td>
+                       <td class="summary">${item.summary}</td>
+                       <td>${item.model}</td>
+                       <td>${item.time}</td>
+                       <td>${item.metrics?.totalTime || 0}</td>
+                   </tr>
+               `)
+            .join('')}
+           </tbody>
+       </table>
+   </div>
+</body>
+</html>`;
+        return html;
+    }
     // Add search and filter event listeners
     searchInput.addEventListener('input', filterAndDisplayHistory);
     filterModelSelect.addEventListener('change', filterAndDisplayHistory);
+    // Add export event listeners
+    exportFormatSelect.addEventListener('change', updateExportButtonState);
+    exportHistoryButton.addEventListener('click', () => {
+        const format = exportFormatSelect.value;
+        if (format) {
+            exportHistory(format);
+        }
+    });
     function clearHistory() {
         if (confirm('Are you sure you want to clear all summary history? This action cannot be undone.')) {
             chrome.storage.local.set({ summaryHistory: [] }, () => {

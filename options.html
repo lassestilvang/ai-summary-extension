@@ -1445,6 +1445,24 @@
             <select class="form-select filter-select" id="filterModel">
               <option value="">All Models</option>
             </select>
+            <select
+              class="form-select filter-select"
+              id="exportFormat"
+              aria-label="Export format"
+            >
+              <option value="">Export Format</option>
+              <option value="csv">CSV</option>
+              <option value="json">JSON</option>
+              <option value="html">HTML</option>
+            </select>
+            <button
+              class="btn btn-secondary"
+              id="exportHistory"
+              disabled
+              aria-label="Export history"
+            >
+              <i class="fas fa-download"></i> Export
+            </button>
             <button class="btn btn-secondary" id="refreshHistory">
               Refresh History
             </button>
