@@ -413,7 +413,16 @@ async function tryOpenAI(
         messages: [
           {
             role: 'user',
-            content: `Please provide a concise summary of the following text in 2-3 sentences:\n\n${content.substring(0, 12000)}`,
+            content: `Please analyze the following web page content and provide a structured summary using these 5 key points:
+
+• **Core Purpose**: What is the main objective or primary goal of this content?
+• **Key Information**: What are the most important facts, data, or evidence presented?
+• **Main Arguments**: What are the central claims or positions being made?
+• **Critical Details**: What specific information requires careful attention or has significant implications?
+• **Essential Context**: What background or situational factors are crucial for understanding this content?
+
+Content to summarize:
+${content.substring(0, 12000)}`,
           },
         ],
         max_tokens: 300,
@@ -455,7 +464,16 @@ async function tryGeminiAPI(
             {
               parts: [
                 {
-                  text: `Please provide a concise summary of the following text in 2-3 sentences:\n\n${content.substring(0, 12000)}`,
+                  text: `Please analyze the following web page content and provide a structured summary using these 5 key points:
+
+• **Core Purpose**: What is the main objective or primary goal of this content?
+• **Key Information**: What are the most important facts, data, or evidence presented?
+• **Main Arguments**: What are the central claims or positions being made?
+• **Critical Details**: What specific information requires careful attention or has significant implications?
+• **Essential Context**: What background or situational factors are crucial for understanding this content?
+
+Content to summarize:
+${content.substring(0, 12000)}`,
                 },
               ],
             },
@@ -512,7 +530,16 @@ async function tryAnthropicAPI(
         messages: [
           {
             role: 'user',
-            content: `Please provide a concise summary of the following text in 2-3 sentences:\n\n${content.substring(0, 12000)}`,
+            content: `Please analyze the following web page content and provide a structured summary using these 5 key points:
+
+• **Core Purpose**: What is the main objective or primary goal of this content?
+• **Key Information**: What are the most important facts, data, or evidence presented?
+• **Main Arguments**: What are the central claims or positions being made?
+• **Critical Details**: What specific information requires careful attention or has significant implications?
+• **Essential Context**: What background or situational factors are crucial for understanding this content?
+
+Content to summarize:
+${content.substring(0, 12000)}`,
           },
         ],
       }),
