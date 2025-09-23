@@ -1,7 +1,12 @@
 import { getModelConfig, } from './utils.js';
 const summaryState = {}; // Stores { tabId: { summary: "...", visible: true/false } }
-chrome.action.onClicked.addListener((tab) => {
-    // When the action button is clicked, send a message to the content script to toggle the summary visibility
+chrome.action.onClicked.addListener(async (tab) => {
+    // Inject content scripts dynamically
+    await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['Readability.js', 'showdown.min.js', 'dist/content.js'],
+    });
+    // Then send message to toggle the summary visibility
     chrome.tabs.sendMessage(tab.id, { action: 'toggle_summary_visibility' });
 });
 export async function summarizeWithAI(content, forceModel = null, progressCallback) {

@@ -16,15 +16,5 @@
     "service_worker": "dist/background.js",
     "type": "module"
   },
-  "options_page": "options.html",
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": [
-        "Readability.js",
-        "showdown.min.js",
-        "dist/content.js"
-      ]
-    }
-  ]
+  "options_page": "options.html"
 }

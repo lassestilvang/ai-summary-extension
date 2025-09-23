@@ -302,6 +302,7 @@ function createOrUpdateSummaryDiv(
       display: flex !important;
       flex-direction: column !important;
       padding-bottom: 32px !important;
+      font-family: sans-serif;
     `;
 
     const titleBar = document.createElement('div');

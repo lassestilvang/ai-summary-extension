@@ -59,8 +59,13 @@ interface SummaryHistoryEntry {
 
 const summaryState: SummaryState = {}; // Stores { tabId: { summary: "...", visible: true/false } }
 
-chrome.action.onClicked.addListener((tab: chrome.tabs.Tab) => {
-  // When the action button is clicked, send a message to the content script to toggle the summary visibility
+chrome.action.onClicked.addListener(async (tab: chrome.tabs.Tab) => {
+  // Inject content scripts dynamically
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id! },
+    files: ['Readability.js', 'showdown.min.js', 'dist/content.js'],
+  });
+  // Then send message to toggle the summary visibility
   chrome.tabs.sendMessage(tab.id!, { action: 'toggle_summary_visibility' });
 });
 

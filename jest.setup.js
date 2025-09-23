@@ -155,6 +155,9 @@ const createChromeMock = () => ({
       return Promise.resolve(true);
     }),
   },
+  scripting: {
+    executeScript: jest.fn().mockResolvedValue(),
+  },
 });
 
 // Mock Chrome Summarizer API with different behaviors

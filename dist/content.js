@@ -431,6 +431,7 @@ function createOrUpdateSummaryDiv(summaryText, theme, fontFamily, fontSize, font
       font-style: ${fontStyle === 'italic' ? 'italic' : 'normal'} !important;
       color: ${themeColors.textColor} !important;
       background-color: ${themeColors.backgroundColor} !important;
+      text-align: left;
     `;
         const style = document.createElement('style');
         style.textContent = `

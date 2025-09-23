@@ -61,14 +61,18 @@ describe('Background Script Comprehensive Tests', () => {
   });
 
   describe('Action Button Click Handler', () => {
-    it('should send toggle message when action button is clicked', () => {
+    it('should inject scripts and send toggle message when action button is clicked', async () => {
       const mockTab = { id: 123 };
 
       // Trigger the action click listener
-      chrome.action.onClicked.addListener.mock.calls.forEach(([listener]) => {
-        listener(mockTab);
-      });
+      for (const [listener] of chrome.action.onClicked.addListener.mock.calls) {
+        await listener(mockTab);
+      }
 
+      expect(chrome.scripting.executeScript).toHaveBeenCalledWith({
+        target: { tabId: 123 },
+        files: ['Readability.js', 'showdown.min.js', 'dist/content.js'],
+      });
       expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(123, {
         action: 'toggle_summary_visibility',
       });

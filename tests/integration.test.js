@@ -82,10 +82,14 @@ describe('Extension Integration Tests', () => {
   describe('End-to-End Summarization Flow', () => {
     it('should complete full summarization workflow from action click to display', async () => {
       // Step 1: User clicks extension action button
-      chrome.action.onClicked.addListener.mock.calls.forEach(([listener]) => {
-        listener(mockTab);
-      });
+      for (const [listener] of chrome.action.onClicked.addListener.mock.calls) {
+        await listener(mockTab);
+      }
 
+      expect(chrome.scripting.executeScript).toHaveBeenCalledWith({
+        target: { tabId: 123 },
+        files: ['Readability.js', 'showdown.min.js', 'dist/content.js'],
+      });
       expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(123, {
         action: 'toggle_summary_visibility',
       });
