@@ -29,7 +29,6 @@ chrome.action.onClicked.addListener(async (tab) => {
 });
 export async function summarizeWithAI(content, forceModel = null, progressCallback) {
     const startTime = Date.now();
-    console.log(`[DEBUG] summarizeWithAI started with content length: ${content.length}, forceModel: ${forceModel}`);
     const { selectedModel, openaiApiKey, geminiApiKey, anthropicApiKey, enableFallback, } = await chrome.storage.sync.get([
         'selectedModel',
         'openaiApiKey',
@@ -38,7 +37,6 @@ export async function summarizeWithAI(content, forceModel = null, progressCallba
         'enableFallback',
     ]);
     const preferredModel = forceModel || selectedModel || 'chrome-builtin';
-    console.log(`[DEBUG] Using preferred model: ${preferredModel}`);
     const metrics = { attempts: [], totalTime: 0 };
     // Get stored metrics for time estimation
     const { modelMetrics = {} } = await chrome.storage.local.get('modelMetrics');
@@ -143,7 +141,6 @@ export async function summarizeWithAI(content, forceModel = null, progressCallba
             success: result.success,
         });
     }
-    console.log(`[DEBUG] summarizeWithAI completed successfully using model ${usedModel} in ${timeTaken}s`);
     if (result.success) {
         return {
             summary: result.summary,
@@ -153,7 +150,6 @@ export async function summarizeWithAI(content, forceModel = null, progressCallba
         };
     }
     else {
-        console.log(`[DEBUG] summarizeWithAI failed, returning error message`);
         return {
             summary: 'Unable to summarize content. Please check your settings and try again.',
             model: 'N/A',
@@ -392,10 +388,8 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
         return;
     if (request.action === 'process_content') {
         const tabId = sender.tab.id;
-        console.log(`[DEBUG] Received process_content for tab ${tabId}, content length: ${request.content?.length || 0}`);
         // Check if already processing for this tab
         if (summaryState[tabId]?.isProcessing) {
-            console.log(`[DEBUG] Already processing summary for tab ${tabId}, ignoring duplicate request`);
             return;
         }
         // Set processing flag
@@ -403,10 +397,8 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
             summaryState[tabId] = { summary: '', visible: false };
         }
         summaryState[tabId].isProcessing = true;
-        console.log(`[DEBUG] Set processing flag for tab ${tabId}`);
         // Show loading state
         chrome.tabs.sendMessage(tabId, { action: 'show_loading_spinner' });
-        console.log(`[DEBUG] Sent show_loading_spinner to tab ${tabId}`);
         // Progress callback to send updates to content script
         const progressCallback = (progress) => {
             chrome.tabs.sendMessage(tabId, {
@@ -416,7 +408,6 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
         };
         summarizeWithAI(request.content, request.forceModel, progressCallback)
             .then(async ({ summary, model, time, metrics }) => {
-            console.log(`[DEBUG] Summary generation completed for tab ${tabId} using model ${model}`);
             summaryState[tabId] = {
                 summary,
                 visible: true,
@@ -425,7 +416,6 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
                 metrics,
                 isProcessing: false,
             };
-            console.log(`[DEBUG] Updated summary state for tab ${tabId}, isProcessing: false`);
             chrome.tabs.sendMessage(tabId, {
                 action: 'display_inline_summary',
                 summary,
@@ -433,7 +423,6 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
                 time,
                 metrics,
             });
-            console.log(`[DEBUG] Sent display_inline_summary to tab ${tabId}`);
             // Store summary in history
             await storeSummaryHistory(tabId, summary, model, time, metrics);
         })

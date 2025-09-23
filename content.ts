@@ -620,7 +620,7 @@ declare const showdown: {
         position: absolute;
         width: 20px;
         height: 20px;
-        z-index: 100000;
+        z-index: 100001;
       `;
         summaryDiv!.appendChild(handle);
         makeResizable(summaryDiv!, summaryContent, handle, dir);
@@ -791,9 +791,6 @@ declare const showdown: {
       // Handle model change - trigger automatic regeneration
       modelSelect.addEventListener('change', () => {
         const newModel = modelSelect.value;
-        console.log(
-          `[DEBUG] Model changed to ${newModel}, triggering regeneration`
-        );
 
         // Update stored preference
         chrome.runtime.sendMessage({
@@ -823,27 +820,15 @@ declare const showdown: {
 
         // Extract page content and regenerate summary
         const pageContent = extractPageContent();
-        console.log(
-          `[DEBUG] Model switch regeneration - extracted content length: ${pageContent.length}`
-        );
 
         if (pageContent.trim()) {
-          console.log(
-            `[DEBUG] Sending process_content for model switch to ${newModel}`
-          );
           isGeneratingSummary = true;
-          console.log(
-            `[DEBUG] Set isGeneratingSummary = true for model switch`
-          );
           chrome.runtime.sendMessage({
             action: 'process_content',
             content: pageContent,
             forceModel: newModel, // Force the specific model for regeneration
           });
         } else {
-          console.log(
-            `[DEBUG] No content available for model switch regeneration`
-          );
           // Handle case where no content is available
           if (statusText) {
             statusText.textContent = 'No content available to summarize';
@@ -1074,9 +1059,6 @@ declare const showdown: {
     if (contentObserver) return;
 
     contentObserver = new MutationObserver((mutations) => {
-      console.log(
-        `[DEBUG] MutationObserver triggered with ${mutations.length} mutations`
-      );
       let hasSignificantChange = false;
       mutations.forEach((mutation) => {
         // Skip mutations that involve our extension elements
@@ -1132,46 +1114,28 @@ declare const showdown: {
 
         if (!skipMutation) {
           hasSignificantChange = true;
-        } else {
-          console.log(`[DEBUG] Skipping mutation involving extension elements`);
         }
       });
 
       if (hasSignificantChange) {
-        console.log(
-          `[DEBUG] Significant content change detected, scheduling re-extraction`
-        );
         // Debounce content re-extraction
         setTimeout(() => {
           const newContent = extractPageContent();
           const lengthDiff = Math.abs(newContent.length - lastContentLength);
-          console.log(
-            `[DEBUG] Content length changed by ${lengthDiff} characters (last: ${lastContentLength}, new: ${newContent.length})`
-          );
 
           if (lengthDiff > 50) {
             // Significant change
             lastContentLength = newContent.length;
-            console.log(
-              `[DEBUG] Triggering re-summarization due to significant content change`
-            );
             // Optionally, trigger re-summarization if summary is visible AND not currently generating
             if (
               summaryDiv &&
               summaryDiv.style.display !== 'none' &&
               !isGeneratingSummary
             ) {
-              console.log(
-                `[DEBUG] Sending process_content message for re-summarization`
-              );
               chrome.runtime.sendMessage({
                 action: 'process_content',
                 content: newContent,
               });
-            } else if (isGeneratingSummary) {
-              console.log(
-                `[DEBUG] Skipping re-summarization because summary is currently being generated`
-              );
             }
           }
         }, 2000); // Wait 2 seconds after changes
@@ -1189,12 +1153,8 @@ declare const showdown: {
 
   // Listener for messages from background.js
   chrome.runtime.onMessage.addListener(function (request: any) {
-    console.log(`[DEBUG] Content script received message: ${request.action}`);
     if (!request || !request.action) return;
     if (request.action === 'display_inline_summary') {
-      console.log(
-        `[DEBUG] Received display_inline_summary, setting isGeneratingSummary = false`
-      );
       isGeneratingSummary = false;
       chrome.storage.sync.get(
         ['theme', 'fontFamily', 'fontSize', 'fontStyle'],
@@ -1227,11 +1187,7 @@ declare const showdown: {
     } else if (request.action === 'update_loading_progress') {
       updateLoadingProgress(request.progress);
     } else if (request.action === 'toggle_summary_visibility') {
-      console.log(
-        `[DEBUG] toggle_summary_visibility called, hasSummary: ${request.hasSummary}`
-      );
       if (request.hasSummary) {
-        console.log(`[DEBUG] Toggling existing summary visibility`);
         // Toggle visibility of existing summary
         if (summaryDiv && summaryDiv.style.display !== 'none') {
           summaryDiv.style.display = 'none';
@@ -1240,7 +1196,6 @@ declare const showdown: {
             visible: false,
           });
         } else {
-          console.log(`[DEBUG] Showing existing summary`);
           // Show existing summary
           chrome.storage.sync.get(
             ['theme', 'fontFamily', 'fontSize', 'fontStyle'],
@@ -1259,14 +1214,9 @@ declare const showdown: {
           );
         }
       } else {
-        console.log(`[DEBUG] Generating new summary`);
         // Generate new summary
         isGeneratingSummary = true;
-        console.log(`[DEBUG] Set isGeneratingSummary = true`);
         const pageContent = extractPageContent();
-        console.log(
-          `[DEBUG] Extracted page content length: ${pageContent.length}`
-        );
         chrome.runtime.sendMessage({
           action: 'process_content',
           content: pageContent,
