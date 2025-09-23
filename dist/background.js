@@ -279,13 +279,15 @@ async function tryOpenAI(content, apiKey, model = 'gpt-3.5-turbo') {
                 messages: [
                     {
                         role: 'user',
-                        content: `Please analyze the following web page content and provide a structured summary using these 5 key points:
+                        content: `IMPORTANT: Provide ONLY a <ul> list with 5 <li> items and no introduction, titles, or extra text. Format like this:
 
-• **Core Purpose**: What is the main objective or primary goal of this content?
-• **Key Information**: What are the most important facts, data, or evidence presented?
-• **Main Arguments**: What are the central claims or positions being made?
-• **Critical Details**: What specific information requires careful attention or has significant implications?
-• **Essential Context**: What background or situational factors are crucial for understanding this content?
+<ul>
+<li>[First bullet content]</li>
+<li>[Second bullet content]</li>
+<li>[Third bullet content]</li>
+<li>[Fourth bullet content]</li>
+<li>[Fifth bullet content]</li>
+</ul>
 
 Content to summarize:
 ${content.substring(0, 12000)}`,
@@ -321,13 +323,15 @@ async function tryGeminiAPI(content, apiKey, model = 'gemini-2.0-flash-exp') {
                     {
                         parts: [
                             {
-                                text: `Please analyze the following web page content and provide a structured summary using these 5 key points:
+                                text: `IMPORTANT: Provide ONLY a <ul> list with 5 <li> items and no introduction, titles, or extra text. Format like this:
 
-• **Core Purpose**: What is the main objective or primary goal of this content?
-• **Key Information**: What are the most important facts, data, or evidence presented?
-• **Main Arguments**: What are the central claims or positions being made?
-• **Critical Details**: What specific information requires careful attention or has significant implications?
-• **Essential Context**: What background or situational factors are crucial for understanding this content?
+<ul>
+<li>[First bullet content]</li>
+<li>[Second bullet content]</li>
+<li>[Third bullet content]</li>
+<li>[Fourth bullet content]</li>
+<li>[Fifth bullet content]</li>
+</ul>
 
 Content to summarize:
 ${content.substring(0, 12000)}`,
@@ -380,13 +384,15 @@ async function tryAnthropicAPI(content, apiKey, model = 'claude-3-haiku-20240307
                 messages: [
                     {
                         role: 'user',
-                        content: `Please analyze the following web page content and provide a structured summary using these 5 key points:
+                        content: `IMPORTANT: Provide ONLY a <ul> list with 5 <li> items and no introduction, titles, or extra text. Format like this:
 
-• **Core Purpose**: What is the main objective or primary goal of this content?
-• **Key Information**: What are the most important facts, data, or evidence presented?
-• **Main Arguments**: What are the central claims or positions being made?
-• **Critical Details**: What specific information requires careful attention or has significant implications?
-• **Essential Context**: What background or situational factors are crucial for understanding this content?
+<ul>
+<li>[First bullet content]</li>
+<li>[Second bullet content]</li>
+<li>[Third bullet content]</li>
+<li>[Fourth bullet content]</li>
+<li>[Fifth bullet content]</li>
+</ul>
 
 Content to summarize:
 ${content.substring(0, 12000)}`,
