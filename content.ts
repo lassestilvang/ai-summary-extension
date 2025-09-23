@@ -382,9 +382,8 @@ function createOrUpdateSummaryDiv(
     summaryTitle.textContent = 'Summary';
     summaryTitle.style.cssText = `
       color: ${themeColors.titleColor} !important;
-      font-size: ${fontSize + 4}px !important;
-      font-weight: ${fontStyle === 'bold' ? 'bold' : 'normal'} !important;
-      font-style: ${fontStyle === 'italic' ? 'italic' : 'normal'} !important;
+      font-size: 14px !important;
+      font-weight: bold !important;
       display: inline-block !important;
     `;
 
@@ -646,11 +645,9 @@ function createOrUpdateSummaryDiv(
       right: 0 !important;
       height: 32px !important;
       padding: 4px 8px !important;
-      font-size: ${Math.max(fontSize - 2, 10)}px !important;
+      font-size: 12px !important;
       color: ${themeColors.titleColor} !important;
       background-color: ${themeColors.borderColor} !important;
-      font-weight: ${fontStyle === 'bold' ? 'bold' : 'normal'} !important;
-      font-style: ${fontStyle === 'italic' ? 'italic' : 'normal'} !important;
       border-top: 1px solid ${themeColors.borderColor} !important;
       display: flex !important;
       align-items: center !important;
