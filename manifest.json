@@ -4,7 +4,7 @@
   "version": "1.0",
   "description": "Summarizes the current page using AI.",
   "permissions": ["activeTab", "scripting", "storage"],
-  "host_permissions": [
+  "optional_host_permissions": [
     "https://api.openai.com/*",
     "https://generativelanguage.googleapis.com/*",
     "https://api.anthropic.com/*"

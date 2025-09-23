@@ -1,6 +1,11 @@
 import { getModelConfig, } from './utils.js';
 const summaryState = {}; // Stores { tabId: { summary: "...", visible: true/false } }
 chrome.action.onClicked.addListener(async (tab) => {
+    console.log('Extension clicked on tab URL:', tab.url);
+    if (tab.url && tab.url.startsWith('chrome://')) {
+        console.log('Skipping chrome:// URL - extension does not work on Chrome internal pages');
+        return;
+    }
     // Inject content scripts dynamically
     await chrome.scripting.executeScript({
         target: { tabId: tab.id },
@@ -268,6 +273,20 @@ async function tryOpenAI(content, apiKey, model = 'gpt-3.5-turbo') {
         if (!apiKey) {
             return { success: false, error: 'No OpenAI API key configured' };
         }
+        const hasPermission = await chrome.permissions.contains({
+            origins: ['https://api.openai.com/*'],
+        });
+        if (!hasPermission) {
+            const granted = await chrome.permissions.request({
+                origins: ['https://api.openai.com/*'],
+            });
+            if (!granted) {
+                return {
+                    success: false,
+                    error: 'Permission denied for OpenAI API access. Please grant permission in extension settings.',
+                };
+            }
+        }
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -312,6 +331,20 @@ async function tryGeminiAPI(content, apiKey, model = 'gemini-2.0-flash-exp') {
     try {
         if (!apiKey) {
             return { success: false, error: 'No Gemini API key configured' };
+        }
+        const hasPermission = await chrome.permissions.contains({
+            origins: ['https://generativelanguage.googleapis.com/*'],
+        });
+        if (!hasPermission) {
+            const granted = await chrome.permissions.request({
+                origins: ['https://generativelanguage.googleapis.com/*'],
+            });
+            if (!granted) {
+                return {
+                    success: false,
+                    error: 'Permission denied for Gemini API access. Please grant permission in extension settings.',
+                };
+            }
         }
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
             method: 'POST',
@@ -368,6 +401,20 @@ async function tryAnthropicAPI(content, apiKey, model = 'claude-3-haiku-20240307
     try {
         if (!apiKey) {
             return { success: false, error: 'No Anthropic API key configured' };
+        }
+        const hasPermission = await chrome.permissions.contains({
+            origins: ['https://api.anthropic.com/*'],
+        });
+        if (!hasPermission) {
+            const granted = await chrome.permissions.request({
+                origins: ['https://api.anthropic.com/*'],
+            });
+            if (!granted) {
+                return {
+                    success: false,
+                    error: 'Permission denied for Anthropic API access. Please grant permission in extension settings.',
+                };
+            }
         }
         const response = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
