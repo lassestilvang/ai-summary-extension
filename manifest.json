@@ -20,7 +20,11 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["showdown.min.js", "dist/content.js"]
+      "js": [
+        "Readability.js",
+        "showdown.min.js",
+        "dist/content.js"
+      ]
     }
   ]
 }

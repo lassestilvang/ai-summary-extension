@@ -1,4 +1,57 @@
 declare const showdown: any; // Assuming showdown is loaded globally
+declare const Readability: any; // Assuming Readability is loaded globally
+
+// Function to extract page content using multiple strategies
+function extractPageContent(): string {
+  // Strategy 1: Try Readability.js for article parsing
+  try {
+    const documentClone = document.cloneNode(true);
+    const reader = new Readability(documentClone);
+    const article = reader.parse();
+    if (
+      article &&
+      article.textContent &&
+      article.textContent.trim().length > 100
+    ) {
+      return article.textContent.trim();
+    }
+  } catch (error) {
+    console.log('Readability extraction failed:', error);
+  }
+
+  // Strategy 2: Expanded element selection
+  const contentSelectors =
+    'p, h1, h2, h3, h4, h5, h6, li, blockquote, article, section, main, div[role="main"]';
+  const elements = Array.from(document.querySelectorAll(contentSelectors));
+
+  // Filter and extract text, removing duplicates and short fragments
+  const extractedTexts = elements
+    .map((el) => el.textContent?.trim())
+    .filter((text) => text && text.length > 10)
+    .filter((text, index, arr) => arr.indexOf(text) === index); // Remove duplicates
+
+  let pageContent = extractedTexts.join('\n');
+
+  // Strategy 3: Fallback to body text with filtering
+  if (pageContent.trim().length < 100) {
+    const bodyText = document.body.textContent || '';
+    const excludedSelectors =
+      'nav, footer, aside, .ad, .sidebar, .menu, .header, .footer, script, style';
+    const excludedElements = Array.from(
+      document.querySelectorAll(excludedSelectors)
+    );
+    let filteredText = bodyText;
+
+    excludedElements.forEach((el) => {
+      const elText = el.textContent || '';
+      filteredText = filteredText.replace(elText, '');
+    });
+
+    pageContent = filteredText.trim();
+  }
+
+  return pageContent;
+}
 
 // Inline utility function to check if a model is available
 function contentIsModelAvailable(
@@ -477,6 +530,7 @@ function createOrUpdateSummaryDiv(
       font-style: ${fontStyle === 'italic' ? 'italic' : 'normal'} !important;
       color: ${themeColors.textColor} !important;
       background-color: ${themeColors.backgroundColor} !important;
+      text-align: left;
     `;
 
     const style = document.createElement('style');
@@ -750,10 +804,7 @@ function createOrUpdateSummaryDiv(
       }
 
       // Extract page content and regenerate summary
-      const paragraphs = Array.from(document.querySelectorAll('p')).map(
-        (p) => p.textContent || ''
-      );
-      const pageContent = paragraphs.join('\n');
+      const pageContent = extractPageContent();
 
       if (pageContent.trim()) {
         chrome.runtime.sendMessage({
@@ -983,6 +1034,49 @@ function updateLoadingProgress(progress: ProgressUpdate): void {
   }
 }
 
+// Handle dynamic content with MutationObserver
+let contentObserver: MutationObserver | null = null;
+let lastContentLength = 0;
+
+function setupContentObserver(): void {
+  if (contentObserver) return;
+
+  contentObserver = new MutationObserver((mutations) => {
+    let hasSignificantChange = false;
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+        hasSignificantChange = true;
+      }
+    });
+
+    if (hasSignificantChange) {
+      // Debounce content re-extraction
+      setTimeout(() => {
+        const newContent = extractPageContent();
+        if (Math.abs(newContent.length - lastContentLength) > 50) {
+          // Significant change
+          lastContentLength = newContent.length;
+          // Optionally, trigger re-summarization if summary is visible
+          if (summaryDiv && summaryDiv.style.display !== 'none') {
+            chrome.runtime.sendMessage({
+              action: 'process_content',
+              content: newContent,
+            });
+          }
+        }
+      }, 2000); // Wait 2 seconds after changes
+    }
+  });
+
+  contentObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
+}
+
+// Initialize observer when content script loads
+setupContentObserver();
+
 // Listener for messages from background.js
 chrome.runtime.onMessage.addListener(function (request: any) {
   if (!request || !request.action) return;
@@ -1026,10 +1120,7 @@ chrome.runtime.onMessage.addListener(function (request: any) {
         visible: summaryDiv.style.display !== 'none',
       });
     } else {
-      const paragraphs = Array.from(document.querySelectorAll('p')).map(
-        (p) => p.textContent || ''
-      );
-      const pageContent = paragraphs.join('\n');
+      const pageContent = extractPageContent();
       chrome.runtime.sendMessage({
         action: 'process_content',
         content: pageContent,

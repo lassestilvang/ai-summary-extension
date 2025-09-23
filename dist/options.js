@@ -1075,4 +1075,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 3000);
         });
     });
+    // Attach utility functions to window for testing
+    window.validateApiKey = validateApiKey;
+    window.validateOpenAIApiKey = validateOpenAIApiKey;
+    window.validateGeminiApiKey = validateGeminiApiKey;
+    window.validateAnthropicApiKey = validateAnthropicApiKey;
+    window.isModelAvailable = isModelAvailable;
+    window.optionsGetModelConfig = optionsGetModelConfig;
 });
+window.optionsThemes = optionsThemes;
