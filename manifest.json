@@ -3,6 +3,9 @@
   "name": "AI Page Summarizer",
   "version": "1.0",
   "description": "Summarizes the current page using AI.",
+  "icons": {
+    "128": "icon.png"
+  },
   "permissions": ["activeTab", "scripting", "storage"],
   "optional_host_permissions": [
     "https://api.openai.com/*",
