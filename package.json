@@ -7,7 +7,8 @@
     "lint": "eslint . --ext .js,.ts",
     "lint:fix": "eslint . --ext .js,.ts --fix",
     "format": "prettier --write .",
-    "build": "tsc",
+    "build": "npm run copy-readability && tsc",
+    "copy-readability": "cp node_modules/@mozilla/readability/Readability.js ./Readability.js",
     "dev": "tsc --watch",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -35,5 +36,8 @@
     "prettier": "^3.2.5",
     "ts-jest": "^29.4.4",
     "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@mozilla/readability": "^0.6.0"
   }
 }
