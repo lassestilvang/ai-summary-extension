@@ -1,4 +1,4 @@
-# AI Page Summarizer
+# AI Summary
 
 [![CI](https://github.com/lassestilvang/ai-summary-extension/workflows/CI/badge.svg)](https://github.com/lassestilvang/ai-summary-extension/actions)
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/lassestilvang/ai-summary-extension)
@@ -22,7 +22,7 @@
 
 ## Project Description and Overview
 
-AI Page Summarizer is a powerful Chrome extension that leverages artificial intelligence to generate concise summaries of web pages. Built with JavaScript, HTML, and CSS, this extension integrates seamlessly with your browser to provide instant, AI-powered insights from any webpage.
+AI Summary is a powerful Chrome extension that leverages artificial intelligence to generate concise summaries of web pages. Built with JavaScript, HTML, and CSS, this extension integrates seamlessly with your browser to provide instant, AI-powered insights from any webpage.
 
 The extension supports multiple AI providers including OpenAI's GPT models, Google's Gemini, Anthropic's Claude, and even Chrome's built-in AI capabilities. It features automatic fallback mechanisms, customizable themes, and performance tracking to ensure reliable and efficient summarization.
 
@@ -114,7 +114,7 @@ _Note: Chrome Built-in AI models don't require API keys but may have limited ava
    - Open any website you want to summarize
 
 2. **Activate the Extension**
-   - Click the AI Page Summarizer icon in your browser toolbar
+   - Click the AI Summary icon in your browser toolbar
    - The extension will analyze the current page content
 
 3. **View Summary**
@@ -266,7 +266,7 @@ Enable debug logging by opening Chrome DevTools (F12) and checking the Console t
 To reset all settings:
 
 1. Go to `chrome://extensions`
-2. Find AI Page Summarizer
+2. Find AI Summary
 3. Click "Details"
 4. Scroll to "Site access" and click "Clear storage"
 

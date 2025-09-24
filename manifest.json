@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "AI Page Summarizer",
-  "version": "1.0",
-  "description": "Summarizes the current page using AI.",
+  "name": "AI Summary",
+  "version": "1.0.0",
+  "description": "🚀 One-click AI summaries of any web page! Supports GPT-4, Gemini, Claude, and free Chrome AI (v138+). Instant, secure, and customizable for efficient browsing.",
   "icons": {
     "128": "icon.png"
   },
@@ -13,7 +13,7 @@
     "https://api.anthropic.com/*"
   ],
   "action": {
-    "default_title": "AI Page Summarizer"
+    "default_title": "AI Summary"
   },
   "background": {
     "service_worker": "dist/background.js",

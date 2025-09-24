@@ -1,4 +1,4 @@
-# AI Page Summarizer Extension - Improvement Suggestions
+# AI Summary Extension - Improvement Suggestions
 
 ## Overview
 

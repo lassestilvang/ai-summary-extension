@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Page Summarizer Options</title>
+    <title>AI Summary Options</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -1128,7 +1128,7 @@
     <div class="app-container">
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-          <h1 class="sidebar-title">AI Summarizer</h1>
+          <h1 class="sidebar-title">AI Summary</h1>
         </div>
         <nav>
           <ul class="nav-menu">
@@ -1174,6 +1174,17 @@
               >
                 <i class="fas fa-history"></i>
                 <span class="nav-text">History</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                href="#"
+                class="nav-link"
+                data-page="feedback"
+                aria-label="Feedback"
+              >
+                <i class="fas fa-comments"></i>
+                <span class="nav-text">Feedback</span>
               </a>
             </li>
           </ul>
@@ -1476,6 +1487,38 @@
           </div>
 
           <div id="historyStatus"></div>
+        </div>
+
+        <!-- Feedback Page -->
+        <div id="feedback-page" class="page">
+          <h2 class="page-title">Feedback</h2>
+
+          <div class="info-box">
+            <p>
+              We value your feedback! Help us improve the AI Summary extension
+              by sharing your thoughts, suggestions, or reporting issues.
+            </p>
+            <p>
+              Your feedback is submitted through a secure Typeform. Click the
+              button below to access the feedback form.
+            </p>
+            <a
+              href="https://form.typeform.com/to/h0LsiE2n"
+              target="_blank"
+              class="btn btn-primary"
+              style="
+                margin: var(--space-2xl) 0;
+                display: inline-block;
+                text-decoration: none;
+              "
+            >
+              Submit Feedback via Typeform
+            </a>
+            <p style="font-size: 0.9em; color: rgba(255, 255, 255, 0.7)">
+              Privacy note: Your feedback is collected anonymously and used only
+              to improve our extension.
+            </p>
+          </div>
         </div>
       </main>
     </div>

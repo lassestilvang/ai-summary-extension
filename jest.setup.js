@@ -171,7 +171,7 @@ global.Summarizer = jest.fn().mockImplementation(() => ({
   }),
 }));
 
-// Mock AI Summarizer API for different scenarios
+// Mock AI Summary API for different scenarios
 global.createMockSummarizer = (options = {}) => ({
   create: jest.fn().mockResolvedValue({
     summarize: jest
