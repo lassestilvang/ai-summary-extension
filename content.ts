@@ -447,7 +447,7 @@ declare const showdown: {
     `;
 
       const summaryTitle = document.createElement('div');
-      summaryTitle.textContent = 'Summary';
+      summaryTitle.textContent = 'AI Summary';
       summaryTitle.style.cssText = `
       color: ${themeColors.titleColor} !important;
       font-size: 14px !important;
@@ -1161,7 +1161,7 @@ declare const showdown: {
         function (result) {
           createOrUpdateSummaryDiv(
             request.summary,
-            result.theme || 'light',
+            result.theme || 'nord',
             result.fontFamily || 'Arial',
             result.fontSize || 14,
             result.fontStyle || 'normal',
@@ -1177,7 +1177,7 @@ declare const showdown: {
         function (result) {
           createOrUpdateSummaryDiv(
             null,
-            result.theme || 'light',
+            result.theme || 'nord',
             result.fontFamily || 'Arial',
             result.fontSize || 14,
             result.fontStyle || 'normal'
@@ -1202,7 +1202,7 @@ declare const showdown: {
             function (result) {
               createOrUpdateSummaryDiv(
                 request.summary,
-                result.theme || 'light',
+                result.theme || 'nord',
                 result.fontFamily || 'Arial',
                 result.fontSize || 14,
                 result.fontStyle || 'normal',

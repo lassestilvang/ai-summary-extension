@@ -950,12 +950,12 @@
         if (request.action === 'display_inline_summary') {
             isGeneratingSummary = false;
             chrome.storage.sync.get(['theme', 'fontFamily', 'fontSize', 'fontStyle'], function (result) {
-                createOrUpdateSummaryDiv(request.summary, result.theme || 'light', result.fontFamily || 'Arial', result.fontSize || 14, result.fontStyle || 'normal', request.model, request.time, request.metrics);
+                createOrUpdateSummaryDiv(request.summary, result.theme || 'nord', result.fontFamily || 'Arial', result.fontSize || 14, result.fontStyle || 'normal', request.model, request.time, request.metrics);
             });
         }
         else if (request.action === 'show_loading_spinner') {
             chrome.storage.sync.get(['theme', 'fontFamily', 'fontSize', 'fontStyle'], function (result) {
-                createOrUpdateSummaryDiv(null, result.theme || 'light', result.fontFamily || 'Arial', result.fontSize || 14, result.fontStyle || 'normal');
+                createOrUpdateSummaryDiv(null, result.theme || 'nord', result.fontFamily || 'Arial', result.fontSize || 14, result.fontStyle || 'normal');
             });
         }
         else if (request.action === 'update_loading_progress') {
@@ -974,7 +974,7 @@
                 else {
                     // Show existing summary
                     chrome.storage.sync.get(['theme', 'fontFamily', 'fontSize', 'fontStyle'], function (result) {
-                        createOrUpdateSummaryDiv(request.summary, result.theme || 'light', result.fontFamily || 'Arial', result.fontSize || 14, result.fontStyle || 'normal', request.model, request.time, request.metrics);
+                        createOrUpdateSummaryDiv(request.summary, result.theme || 'nord', result.fontFamily || 'Arial', result.fontSize || 14, result.fontStyle || 'normal', request.model, request.time, request.metrics);
                     });
                 }
             }
