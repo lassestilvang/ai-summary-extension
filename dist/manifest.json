@@ -16,7 +16,7 @@
     "default_title": "AI Summary"
   },
   "background": {
-    "service_worker": "dist/background.js",
+    "service_worker": "background.js",
     "type": "module"
   },
   "options_page": "options.html"

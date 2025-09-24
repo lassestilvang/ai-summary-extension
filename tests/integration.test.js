@@ -88,7 +88,7 @@ describe('Extension Integration Tests', () => {
 
       expect(chrome.scripting.executeScript).toHaveBeenCalledWith({
         target: { tabId: 123 },
-        files: ['Readability.js', 'showdown.min.js', 'dist/content.js'],
+        files: ['Readability.js', 'showdown.min.js', 'content.js'],
       });
       expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(123, {
         action: 'toggle_summary_visibility',

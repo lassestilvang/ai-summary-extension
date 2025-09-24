@@ -9,7 +9,7 @@ chrome.action.onClicked.addListener(async (tab) => {
     // Inject content scripts dynamically
     await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        files: ['Readability.js', 'showdown.min.js', 'dist/content.js'],
+        files: ['Readability.js', 'showdown.min.js', 'content.js'],
     });
     // Check if summary exists for this tab
     const existingSummary = summaryState[tab.id];
