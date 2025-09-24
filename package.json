@@ -7,7 +7,9 @@
     "lint": "eslint . --ext .js,.ts",
     "lint:fix": "eslint . --ext .js,.ts --fix",
     "format": "prettier --write .",
-    "build": "npm run copy-readability && tsc",
+    "prebuild": "rimraf dist",
+    "build": "npm run copy-readability && tsc && npm run copy-assets",
+    "copy-assets": "cpy manifest.json options.html icon.png showdown.min.js Readability.js dist/ --flat",
     "copy-readability": "cp node_modules/@mozilla/readability/Readability.js ./Readability.js",
     "dev": "tsc --watch",
     "test": "jest",
@@ -35,7 +37,9 @@
     "jest-fetch-mock": "^3.0.3",
     "prettier": "^3.2.5",
     "ts-jest": "^29.4.4",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "cpy-cli": "^4.2.0",
+    "rimraf": "^5.0.0"
   },
   "dependencies": {
     "@mozilla/readability": "^0.6.0"
