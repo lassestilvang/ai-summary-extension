@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "AI Summary",
   "version": "1.0.0",
-  "description": "🚀 One-click AI summaries of any web page! Supports GPT-4, Gemini, Claude, and free Chrome AI (v138+). Instant, secure, and customizable for efficient browsing.",
+  "description": "🚀 One-click AI summary of any web page! Supports GPT-4, Gemini, Claude, and free Chrome AI. Instant, secure, and customizable",
   "icons": {
     "128": "icon.png"
   },
