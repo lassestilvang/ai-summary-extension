@@ -162,6 +162,12 @@ describe('Options Script Comprehensive Tests', () => {
       writable: true,
     });
 
+    // Mock chrome.permissions
+    chrome.permissions = {
+      contains: jest.fn().mockResolvedValue(true), // Assume permissions are already granted for tests
+      request: jest.fn().mockResolvedValue(true),
+    };
+
     // Mock chrome.storage.sync.get/set
     chrome.storage.sync.get.mockResolvedValue({
       selectedModel: 'chrome-builtin',
@@ -285,7 +291,7 @@ describe('Options Script Comprehensive Tests', () => {
   });
 
   describe('Settings Saving', () => {
-    it('should save all settings when save button is clicked', () => {
+    it('should save all settings when save button is clicked', async () => {
       const settingsForm = mockDOM['settings-form'];
       const submitHandler = settingsForm.addEventListener.mock.calls[0][1];
 
@@ -297,7 +303,7 @@ describe('Options Script Comprehensive Tests', () => {
       mockDOM.anthropicApiKey.value = 'new-anthropic-key';
 
       // Trigger save
-      submitHandler({ preventDefault: jest.fn() });
+      await submitHandler({ preventDefault: jest.fn() });
 
       expect(chrome.storage.sync.set).toHaveBeenCalledWith(
         {
@@ -313,13 +319,13 @@ describe('Options Script Comprehensive Tests', () => {
       );
     });
 
-    it('should trim API key values before saving', () => {
+    it('should trim API key values before saving', async () => {
       const settingsForm = mockDOM['settings-form'];
       const submitHandler = settingsForm.addEventListener.mock.calls[0][1];
 
       mockDOM.openaiApiKey.value = '  test-key  ';
 
-      submitHandler({ preventDefault: jest.fn() });
+      await submitHandler({ preventDefault: jest.fn() });
 
       expect(chrome.storage.sync.set).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1131,7 +1137,7 @@ describe('Options Script Comprehensive Tests', () => {
   });
 
   describe('Model Configuration', () => {
-    it('should handle all supported model types', () => {
+    it('should handle all supported model types', async () => {
       const models = [
         'chrome-builtin',
         'gpt-3.5-turbo',
@@ -1147,13 +1153,13 @@ describe('Options Script Comprehensive Tests', () => {
         'claude-3.5-sonnet',
       ];
 
-      models.forEach((model) => {
+      for (const model of models) {
         mockDOM.selectedModel.value = model;
 
         const settingsForm = mockDOM['settings-form'];
         const submitHandler = settingsForm.addEventListener.mock.calls[0][1];
 
-        submitHandler({ preventDefault: jest.fn() });
+        await submitHandler({ preventDefault: jest.fn() });
 
         expect(chrome.storage.sync.set).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -1161,7 +1167,7 @@ describe('Options Script Comprehensive Tests', () => {
           }),
           expect.any(Function)
         );
-      });
+      }
     });
 
     it('should handle enableFallback toggle', () => {

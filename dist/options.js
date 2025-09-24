@@ -511,6 +511,36 @@ document.addEventListener('DOMContentLoaded', function () {
             statusDiv.className = 'status error';
             return;
         }
+        // Request permissions for API providers with keys
+        let permissionsGranted = true;
+        const permissionsToRequest = [];
+        if (openaiApiKey) {
+            permissionsToRequest.push(['https://api.openai.com/*']);
+        }
+        if (geminiApiKey) {
+            permissionsToRequest.push([
+                'https://generativelanguage.googleapis.com/*',
+            ]);
+        }
+        if (anthropicApiKey) {
+            permissionsToRequest.push(['https://api.anthropic.com/*']);
+        }
+        for (const origins of permissionsToRequest) {
+            const hasPermission = await chrome.permissions.contains({ origins });
+            if (!hasPermission) {
+                const granted = await chrome.permissions.request({ origins });
+                if (!granted) {
+                    permissionsGranted = false;
+                    break;
+                }
+            }
+        }
+        if (!permissionsGranted) {
+            statusDiv.textContent =
+                'Permission denied for one or more API providers. Please grant permissions to save settings.';
+            statusDiv.className = 'status error';
+            return;
+        }
         chrome.storage.sync.set({
             selectedModel: selectedModel,
             temperature: temperature,

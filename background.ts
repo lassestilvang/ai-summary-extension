@@ -413,16 +413,11 @@ async function tryOpenAI(
       origins: ['https://api.openai.com/*'],
     });
     if (!hasPermission) {
-      const granted = await chrome.permissions.request({
-        origins: ['https://api.openai.com/*'],
-      });
-      if (!granted) {
-        return {
-          success: false,
-          error:
-            'Permission denied for OpenAI API access. Please grant permission in extension settings.',
-        };
-      }
+      return {
+        success: false,
+        error:
+          'Permission denied for OpenAI API access. Please save your settings again in the extension options to grant permissions.',
+      };
     }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -481,16 +476,11 @@ async function tryGeminiAPI(
       origins: ['https://generativelanguage.googleapis.com/*'],
     });
     if (!hasPermission) {
-      const granted = await chrome.permissions.request({
-        origins: ['https://generativelanguage.googleapis.com/*'],
-      });
-      if (!granted) {
-        return {
-          success: false,
-          error:
-            'Permission denied for Gemini API access. Please grant permission in extension settings.',
-        };
-      }
+      return {
+        success: false,
+        error:
+          'Permission denied for Gemini API access. Please save your settings again in the extension options to grant permissions.',
+      };
     }
 
     const response = await fetch(
@@ -562,16 +552,11 @@ async function tryAnthropicAPI(
       origins: ['https://api.anthropic.com/*'],
     });
     if (!hasPermission) {
-      const granted = await chrome.permissions.request({
-        origins: ['https://api.anthropic.com/*'],
-      });
-      if (!granted) {
-        return {
-          success: false,
-          error:
-            'Permission denied for Anthropic API access. Please grant permission in extension settings.',
-        };
-      }
+      return {
+        success: false,
+        error:
+          'Permission denied for Anthropic API access. Please save your settings again in the extension options to grant permissions.',
+      };
     }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {

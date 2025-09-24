@@ -277,15 +277,10 @@ async function tryOpenAI(content, apiKey, model = 'gpt-3.5-turbo') {
             origins: ['https://api.openai.com/*'],
         });
         if (!hasPermission) {
-            const granted = await chrome.permissions.request({
-                origins: ['https://api.openai.com/*'],
-            });
-            if (!granted) {
-                return {
-                    success: false,
-                    error: 'Permission denied for OpenAI API access. Please grant permission in extension settings.',
-                };
-            }
+            return {
+                success: false,
+                error: 'Permission denied for OpenAI API access. Please save your settings again in the extension options to grant permissions.',
+            };
         }
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
@@ -336,15 +331,10 @@ async function tryGeminiAPI(content, apiKey, model = 'gemini-2.0-flash-exp') {
             origins: ['https://generativelanguage.googleapis.com/*'],
         });
         if (!hasPermission) {
-            const granted = await chrome.permissions.request({
-                origins: ['https://generativelanguage.googleapis.com/*'],
-            });
-            if (!granted) {
-                return {
-                    success: false,
-                    error: 'Permission denied for Gemini API access. Please grant permission in extension settings.',
-                };
-            }
+            return {
+                success: false,
+                error: 'Permission denied for Gemini API access. Please save your settings again in the extension options to grant permissions.',
+            };
         }
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
             method: 'POST',
@@ -406,15 +396,10 @@ async function tryAnthropicAPI(content, apiKey, model = 'claude-3-haiku-20240307
             origins: ['https://api.anthropic.com/*'],
         });
         if (!hasPermission) {
-            const granted = await chrome.permissions.request({
-                origins: ['https://api.anthropic.com/*'],
-            });
-            if (!granted) {
-                return {
-                    success: false,
-                    error: 'Permission denied for Anthropic API access. Please grant permission in extension settings.',
-                };
-            }
+            return {
+                success: false,
+                error: 'Permission denied for Anthropic API access. Please save your settings again in the extension options to grant permissions.',
+            };
         }
         const response = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
