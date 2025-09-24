@@ -1294,12 +1294,18 @@ document.addEventListener('DOMContentLoaded', function () {
     previewText.style.fontStyle = fontStyle === 'italic' ? 'italic' : 'normal';
   }
 
-  // Populate theme selector
+  // Populate theme selector with unique options
+  themeSelect.innerHTML = ''; // Clear existing options to prevent duplicates
+  const addedValues = new Set<string>();
+
   for (const themeKey in optionsThemes) {
-    const option = document.createElement('option');
-    option.value = themeKey;
-    option.textContent = optionsThemes[themeKey].name;
-    themeSelect.appendChild(option);
+    if (!addedValues.has(themeKey)) {
+      const option = document.createElement('option');
+      option.value = themeKey;
+      option.textContent = optionsThemes[themeKey].name;
+      themeSelect.appendChild(option);
+      addedValues.add(themeKey);
+    }
   }
 
   // Load saved theme and font settings
@@ -1309,7 +1315,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (result.theme) {
         themeSelect.value = result.theme;
       } else {
-        themeSelect.value = 'dark'; // Default theme
+        themeSelect.value = 'nord'; // Default theme
       }
       if (result.fontFamily) {
         fontFamilySelect.value = result.fontFamily;
