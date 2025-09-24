@@ -699,6 +699,72 @@
         background: var(--gradient-nature);
       }
 
+      /* ===== SECURITY NOTICE ===== */
+      .security-notice {
+        background: var(--glass-bg);
+        border: 2px solid var(--sunrise-gold);
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl);
+        margin-bottom: var(--space-xl);
+        color: var(--neutral-white);
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-lg);
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        box-shadow: var(--shadow-glow);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .security-notice::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(244, 208, 63, 0.05) 0%,
+          transparent 50%
+        );
+        opacity: 0;
+        transition: opacity var(--transition-normal);
+      }
+
+      .security-notice:hover::before {
+        opacity: 1;
+      }
+
+      .security-notice i {
+        font-size: 2rem;
+        color: var(--sunrise-gold);
+        flex-shrink: 0;
+        margin-top: var(--space-xs);
+        text-shadow: 0 0 20px rgba(244, 208, 63, 0.8);
+      }
+
+      .security-notice div {
+        flex: 1;
+      }
+
+      .security-notice h3 {
+        margin: 0 0 var(--space-md) 0;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--sunrise-gold);
+        text-shadow: 0 0 10px rgba(244, 208, 63, 0.5);
+      }
+
+      .security-notice p {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 500;
+        line-height: 1.6;
+        color: var(--neutral-white);
+      }
+
       /* ===== CARDS & CONTAINERS ===== */
       .metrics-grid {
         display: grid;
@@ -1195,6 +1261,19 @@
         <!-- Model Settings Page -->
         <div id="settings-page" class="page active">
           <h2 class="page-title">Model Settings</h2>
+
+          <div class="security-notice">
+            <i class="fas fa-lock"></i>
+            <div>
+              <h3>Your API keys are secure:</h3>
+              <p>
+                All keys are stored encrypted locally on your device only and
+                are never sent to any external servers, third parties, or cloud
+                services. This ensures complete privacy and protection against
+                data breaches.
+              </p>
+            </div>
+          </div>
 
           <div class="info-box">
             <strong>Note:</strong> Choose your preferred AI provider. If your

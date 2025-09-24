@@ -353,7 +353,7 @@
       text-align: center !important;
     `;
             const summaryTitle = document.createElement('div');
-            summaryTitle.textContent = 'Summary';
+            summaryTitle.textContent = 'AI Summary';
             summaryTitle.style.cssText = `
       color: ${themeColors.titleColor} !important;
       font-size: 14px !important;
