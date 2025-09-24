@@ -15,20 +15,28 @@ chrome.action.onClicked.addListener(async (tab) => {
     const existingSummary = summaryState[tab.id];
     if (existingSummary && existingSummary.summary) {
         // Send toggle with existing summary data
-        chrome.tabs.sendMessage(tab.id, {
+        chrome.tabs
+            .sendMessage(tab.id, {
             action: 'toggle_summary_visibility',
             hasSummary: true,
             summary: existingSummary.summary,
             model: existingSummary.model,
             time: existingSummary.time,
             metrics: existingSummary.metrics,
+        })
+            .catch((error) => {
+            console.log('Content script message failed:', error);
         });
     }
     else {
         // Send toggle to generate new summary
-        chrome.tabs.sendMessage(tab.id, {
+        chrome.tabs
+            .sendMessage(tab.id, {
             action: 'toggle_summary_visibility',
             hasSummary: false,
+        })
+            .catch((error) => {
+            console.log('Content script message failed:', error);
         });
     }
 });
@@ -463,12 +471,20 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
         }
         summaryState[tabId].isProcessing = true;
         // Show loading state
-        chrome.tabs.sendMessage(tabId, { action: 'show_loading_spinner' });
+        chrome.tabs
+            .sendMessage(tabId, { action: 'show_loading_spinner' })
+            .catch((error) => {
+            console.log('Content script message failed:', error);
+        });
         // Progress callback to send updates to content script
         const progressCallback = (progress) => {
-            chrome.tabs.sendMessage(tabId, {
+            chrome.tabs
+                .sendMessage(tabId, {
                 action: 'update_loading_progress',
                 progress,
+            })
+                .catch((error) => {
+                console.log('Content script message failed:', error);
             });
         };
         summarizeWithAI(request.content, request.forceModel, progressCallback)
@@ -481,12 +497,16 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
                 metrics,
                 isProcessing: false,
             };
-            chrome.tabs.sendMessage(tabId, {
+            chrome.tabs
+                .sendMessage(tabId, {
                 action: 'display_inline_summary',
                 summary,
                 model,
                 time,
                 metrics,
+            })
+                .catch((error) => {
+                console.log('Content script message failed:', error);
             });
             // Store summary in history
             await storeSummaryHistory(tabId, summary, model, time, metrics);
@@ -502,12 +522,16 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
                 metrics: undefined,
                 isProcessing: false,
             };
-            chrome.tabs.sendMessage(tabId, {
+            chrome.tabs
+                .sendMessage(tabId, {
                 action: 'display_inline_summary',
                 summary: errorMessage,
                 model: 'N/A',
                 time: 'N/A',
                 metrics: undefined,
+            })
+                .catch((error) => {
+                console.log('Content script message failed:', error);
             });
         });
     }
