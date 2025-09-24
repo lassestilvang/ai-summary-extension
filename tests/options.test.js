@@ -143,6 +143,7 @@ describe('Options Script Comprehensive Tests', () => {
         return {
           className: '',
           innerHTML: '',
+          style: {},
           appendChild: jest.fn(),
           addEventListener: jest.fn(),
         };

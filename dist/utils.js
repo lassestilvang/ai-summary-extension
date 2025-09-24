@@ -180,13 +180,37 @@ async function validateAnthropicApiKey(apiKey) {
         return { valid: false, error: 'Network error during validation' };
     }
 }
-export function isModelAvailable(model, apiKeys) {
+export function getChromeVersion() {
+    const userAgent = navigator?.userAgent;
+    if (!userAgent)
+        return 0;
+    const chromeMatch = userAgent.match(/Chrome\/(\d+)/);
+    return chromeMatch ? parseInt(chromeMatch[1]) : 0;
+}
+export async function isSummarizerAvailable() {
+    if (!globalThis || !('Summarizer' in globalThis)) {
+        return false;
+    }
+    try {
+        const availability = await globalThis.Summarizer.availability();
+        return availability === 'available';
+    }
+    catch {
+        return false;
+    }
+}
+export async function checkChromeBuiltinSupport() {
+    const version = getChromeVersion();
+    const apiAvailable = await isSummarizerAvailable();
+    return version >= 138 && apiAvailable;
+}
+export async function isModelAvailable(model, apiKeys) {
     const config = getModelConfig(model);
     if (!config)
         return false;
     switch (config.provider) {
         case 'chrome':
-            return true; // Chrome built-in is always available
+            return await checkChromeBuiltinSupport();
         case 'openai':
             return !!(apiKeys.openaiApiKey && apiKeys.openaiApiKey.trim() !== '');
         case 'gemini':

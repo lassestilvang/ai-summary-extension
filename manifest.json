@@ -19,5 +19,17 @@
     "service_worker": "background.js",
     "type": "module"
   },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["Readability.js", "showdown.min.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "options_page": "options.html"
 }

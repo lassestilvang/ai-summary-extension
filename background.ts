@@ -5,6 +5,7 @@ import {
   OpenAIResponse,
   GeminiResponse,
   AnthropicResponse,
+  checkChromeBuiltinSupport,
 } from './utils.js';
 
 interface SummaryState {
@@ -58,6 +59,22 @@ interface SummaryHistoryEntry {
   metrics: any;
 }
 
+if (
+  typeof chrome !== 'undefined' &&
+  chrome.runtime &&
+  chrome.runtime.onInstalled
+) {
+  chrome.runtime.onInstalled.addListener(async () => {
+    // Perform initial compatibility check
+    await checkChromeBuiltinSupport();
+  });
+
+  chrome.runtime.onStartup.addListener(async () => {
+    // Perform initial compatibility check
+    await checkChromeBuiltinSupport();
+  });
+}
+
 const summaryState: SummaryState = {}; // Stores { tabId: { summary: "...", visible: true/false } }
 
 chrome.action.onClicked.addListener(async (tab: chrome.tabs.Tab) => {
@@ -68,10 +85,10 @@ chrome.action.onClicked.addListener(async (tab: chrome.tabs.Tab) => {
     );
     return;
   }
-  // Inject content scripts dynamically
+  // Inject library scripts dynamically
   await chrome.scripting.executeScript({
     target: { tabId: tab.id! },
-    files: ['Readability.js', 'showdown.min.js', 'content.js'],
+    files: ['Readability.js', 'showdown.min.js'],
   });
 
   // Check if summary exists for this tab
@@ -171,7 +188,7 @@ export async function summarizeWithAI(
 
   // Fallback to other models if enabled and preferred failed
   if (!result.success && enableFallback !== false) {
-    const fallbackModels = getFallbackModels(preferredModel);
+    const fallbackModels = await getFallbackModels(preferredModel);
     let fallbackProgress = 20;
 
     for (let i = 0; i < fallbackModels.length; i++) {
@@ -275,8 +292,16 @@ export async function tryModel(
   }
 
   switch (modelConfig.provider) {
-    case 'chrome':
+    case 'chrome': {
+      const isSupported = await checkChromeBuiltinSupport();
+      if (!isSupported) {
+        return {
+          success: false,
+          error: 'Chrome built-in AI not supported on this browser version',
+        };
+      }
       return await tryChromeBuiltinAI(content);
+    }
     case 'openai':
       return await tryOpenAI(
         content,
@@ -300,7 +325,9 @@ export async function tryModel(
   }
 }
 
-export function getFallbackModels(primaryModel: string): string[] {
+export async function getFallbackModels(
+  primaryModel: string
+): Promise<string[]> {
   const modelConfig = getModelConfig(primaryModel);
   if (!modelConfig) return [];
 
@@ -311,7 +338,12 @@ export function getFallbackModels(primaryModel: string): string[] {
     anthropic: ['gpt-3.5-turbo', 'gemini-2.0-flash-exp', 'chrome-builtin'],
   };
 
-  return fallbacks[modelConfig.provider] || [];
+  const isChromeSupported = await checkChromeBuiltinSupport();
+  return (
+    fallbacks[modelConfig.provider]?.filter(
+      (model) => model !== 'chrome-builtin' || isChromeSupported
+    ) || []
+  );
 }
 
 export async function storeModelMetrics(

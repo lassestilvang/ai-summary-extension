@@ -1,8 +1,40 @@
 "use strict";
+// Browser compatibility functions
+function getChromeVersion() {
+    const userAgent = navigator?.userAgent;
+    if (!userAgent)
+        return 0;
+    const chromeMatch = userAgent.match(/Chrome\/(\d+)/);
+    return chromeMatch ? parseInt(chromeMatch[1]) : 0;
+}
+async function isSummarizerAvailable() {
+    if (!globalThis || !('Summarizer' in globalThis)) {
+        return false;
+    }
+    try {
+        const availability = await globalThis.Summarizer.availability();
+        return availability === 'available';
+    }
+    catch {
+        return false;
+    }
+}
+async function checkChromeBuiltinSupport() {
+    const version = getChromeVersion();
+    const apiAvailable = await isSummarizerAvailable();
+    return version >= 138 && apiAvailable;
+}
 (function () {
     if (globalThis.aiSummaryExtensionLoaded)
         return;
     globalThis.aiSummaryExtensionLoaded = true;
+    // Inject required libraries
+    const readabilityScript = document.createElement('script');
+    readabilityScript.src = chrome.runtime.getURL('Readability.js');
+    document.head.appendChild(readabilityScript);
+    const showdownScript = document.createElement('script');
+    showdownScript.src = chrome.runtime.getURL('showdown.min.js');
+    document.head.appendChild(showdownScript);
     // Function to extract page content using multiple strategies
     function extractPageContent() {
         // Strategy 1: Try Readability.js for article parsing
@@ -43,14 +75,36 @@
         }
         return pageContent;
     }
+    // Check if any models are available besides chrome-builtin
+    async function hasAlternativeModels(apiKeys) {
+        const alternativeModels = [
+            'gpt-3.5-turbo',
+            'gpt-4',
+            'gpt-4-turbo',
+            'gpt-4o',
+            'gemini-1.5-pro',
+            'gemini-1.5-flash',
+            'gemini-2.0-flash-exp',
+            'claude-3-haiku',
+            'claude-3-sonnet',
+            'claude-3-opus',
+            'claude-3.5-sonnet',
+        ];
+        for (const model of alternativeModels) {
+            if (await contentIsModelAvailable(model, apiKeys)) {
+                return true;
+            }
+        }
+        return false;
+    }
     // Inline utility function to check if a model is available
-    function contentIsModelAvailable(model, apiKeys) {
-        const config = contentGetModelConfig(model);
+    async function contentIsModelAvailable(model, apiKeys) {
+        const config = getModelConfig(model);
         if (!config)
             return false;
         switch (config.provider) {
             case 'chrome':
-                return true; // Chrome built-in is always available
+                return await checkChromeBuiltinSupport();
             case 'openai':
                 return !!(apiKeys.openaiApiKey && apiKeys.openaiApiKey.trim() !== '');
             case 'gemini':
@@ -136,7 +190,7 @@
             },
         },
     };
-    function contentGetModelConfig(model) {
+    function getModelConfig(model) {
         const models = {
             'chrome-builtin': {
                 provider: 'chrome',
@@ -214,7 +268,7 @@
         return models[model];
     }
     function getModelDisplayName(model) {
-        const modelConfig = contentGetModelConfig(model);
+        const modelConfig = getModelConfig(model);
         return modelConfig ? modelConfig.name : model;
     }
     function createOrUpdateSummaryDiv(summaryText, theme, fontFamily, fontSize, fontStyle, model, time, metrics) {
@@ -632,34 +686,84 @@
                 { value: 'claude-3.5-sonnet', label: 'Claude 3.5 Sonnet' },
             ];
             // Get API keys to check availability
-            chrome.storage.sync.get(['openaiApiKey', 'geminiApiKey', 'anthropicApiKey'], (result) => {
+            chrome.storage.sync.get(['openaiApiKey', 'geminiApiKey', 'anthropicApiKey'], async (result) => {
                 const apiKeys = {
                     openaiApiKey: result.openaiApiKey || '',
                     geminiApiKey: result.geminiApiKey || '',
                     anthropicApiKey: result.anthropicApiKey || '',
                 };
-                modelOptions.forEach((option) => {
+                const availableModels = [];
+                for (const option of modelOptions) {
                     const opt = document.createElement('option');
                     opt.value = option.value;
                     opt.textContent = option.label;
                     // Check if model is available based on API keys
-                    if (!contentIsModelAvailable(option.value, apiKeys)) {
+                    const isAvailable = await contentIsModelAvailable(option.value, apiKeys);
+                    if (isAvailable) {
+                        availableModels.push(option.value);
+                    }
+                    else {
                         opt.disabled = true;
                         opt.style.opacity = '0.5';
                         opt.title = 'API key required - configure in settings';
                     }
                     modelSelect.appendChild(opt);
+                }
+                // Load current selected model
+                chrome.storage.sync.get('selectedModel', (result) => {
+                    let selectedModel = result.selectedModel;
+                    if (!selectedModel || !availableModels.includes(selectedModel)) {
+                        selectedModel = availableModels[0] || '';
+                    }
+                    if (selectedModel) {
+                        modelSelect.value = selectedModel;
+                    }
                 });
             });
-            // Load current selected model
-            chrome.storage.sync.get('selectedModel', (result) => {
-                if (result.selectedModel) {
-                    modelSelect.value = result.selectedModel;
-                }
-            });
             // Handle model change - trigger automatic regeneration
-            modelSelect.addEventListener('change', () => {
+            modelSelect.addEventListener('change', async () => {
                 const newModel = modelSelect.value;
+                // Get API keys for availability check
+                const apiKeysResult = await new Promise((resolve) => {
+                    chrome.storage.sync.get(['openaiApiKey', 'geminiApiKey', 'anthropicApiKey'], resolve);
+                });
+                const apiKeys = {
+                    openaiApiKey: apiKeysResult.openaiApiKey || '',
+                    geminiApiKey: apiKeysResult.geminiApiKey || '',
+                    anthropicApiKey: apiKeysResult.anthropicApiKey || '',
+                };
+                // Special handling for chrome-builtin selection
+                if (newModel === 'chrome-builtin') {
+                    const isSupported = await checkChromeBuiltinSupport();
+                    if (!isSupported) {
+                        const hasAlternatives = await hasAlternativeModels(apiKeys);
+                        if (!hasAlternatives) {
+                            // No alternatives available
+                            const summaryContent = document.getElementById('ai-summary-extension-summary-content');
+                            const loadingContainer = document.getElementById('ai-summary-extension-loading-container');
+                            if (summaryContent) {
+                                summaryContent.innerHTML = `
+                  <div style="color: #ff6b6b; text-align: center; padding: 20px;">
+                    <h3>AI Summarization Unavailable</h3>
+                    <p>Chrome Built-in AI requires Chrome 138+ and API support.</p>
+                    <p>No alternative models are configured. Please configure API keys in settings.</p>
+                    <button onclick="chrome.runtime.sendMessage({action: 'open_options_page'})" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Open Settings</button>
+                  </div>
+                `;
+                                summaryContent.style.display = 'block';
+                            }
+                            if (loadingContainer)
+                                loadingContainer.style.display = 'none';
+                            return;
+                        }
+                        else {
+                            // Show requirements info
+                            alert('Chrome Built-in AI requires:\n• Chrome version 138 or higher\n• Summarizer API support\n\nSince this is not available, consider using alternative models like GPT-3.5 Turbo or Gemini.');
+                            // Don't proceed with regeneration, let user choose alternative
+                            return;
+                        }
+                    }
+                }
                 // Update stored preference
                 chrome.runtime.sendMessage({
                     action: 'switch_model',
@@ -979,12 +1083,29 @@
                 }
             }
             else {
-                // Generate new summary
-                isGeneratingSummary = true;
-                const pageContent = extractPageContent();
-                chrome.runtime.sendMessage({
-                    action: 'process_content',
-                    content: pageContent,
+                // Check if any models are available before generating
+                chrome.storage.sync.get(['openaiApiKey', 'geminiApiKey', 'anthropicApiKey'], async (result) => {
+                    const apiKeys = {
+                        openaiApiKey: result.openaiApiKey || '',
+                        geminiApiKey: result.geminiApiKey || '',
+                        anthropicApiKey: result.anthropicApiKey || '',
+                    };
+                    const chromeSupported = await checkChromeBuiltinSupport();
+                    const hasAlternatives = await hasAlternativeModels(apiKeys);
+                    if (!chromeSupported && !hasAlternatives) {
+                        // No models available at all
+                        chrome.storage.sync.get(['theme', 'fontFamily', 'fontSize', 'fontStyle'], function (result) {
+                            createOrUpdateSummaryDiv('<div style="color: #ff6b6b; text-align: center; padding: 20px;"><h3>AI Summarization Unavailable</h3><p>Chrome Built-in AI requires Chrome 138+ and API support.</p><p>No alternative models are configured. Please configure API keys in settings.</p><button onclick="chrome.runtime.sendMessage({action: \'open_options_page\'})" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Open Settings</button></div>', result.theme || 'nord', result.fontFamily || 'Arial', result.fontSize || 14, result.fontStyle || 'normal');
+                        });
+                        return;
+                    }
+                    // Generate new summary
+                    isGeneratingSummary = true;
+                    const pageContent = extractPageContent();
+                    chrome.runtime.sendMessage({
+                        action: 'process_content',
+                        content: pageContent,
+                    });
                 });
             }
         }

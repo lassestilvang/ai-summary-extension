@@ -1,4 +1,16 @@
-import { getModelConfig, } from './utils.js';
+import { getModelConfig, checkChromeBuiltinSupport, } from './utils.js';
+if (typeof chrome !== 'undefined' &&
+    chrome.runtime &&
+    chrome.runtime.onInstalled) {
+    chrome.runtime.onInstalled.addListener(async () => {
+        // Perform initial compatibility check
+        await checkChromeBuiltinSupport();
+    });
+    chrome.runtime.onStartup.addListener(async () => {
+        // Perform initial compatibility check
+        await checkChromeBuiltinSupport();
+    });
+}
 const summaryState = {}; // Stores { tabId: { summary: "...", visible: true/false } }
 chrome.action.onClicked.addListener(async (tab) => {
     console.log('Extension clicked on tab URL:', tab.url);
@@ -6,10 +18,10 @@ chrome.action.onClicked.addListener(async (tab) => {
         console.log('Skipping chrome:// URL - extension does not work on Chrome internal pages');
         return;
     }
-    // Inject content scripts dynamically
+    // Inject library scripts dynamically
     await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        files: ['Readability.js', 'showdown.min.js', 'content.js'],
+        files: ['Readability.js', 'showdown.min.js'],
     });
     // Check if summary exists for this tab
     const existingSummary = summaryState[tab.id];
@@ -90,7 +102,7 @@ export async function summarizeWithAI(content, forceModel = null, progressCallba
     }
     // Fallback to other models if enabled and preferred failed
     if (!result.success && enableFallback !== false) {
-        const fallbackModels = getFallbackModels(preferredModel);
+        const fallbackModels = await getFallbackModels(preferredModel);
         let fallbackProgress = 20;
         for (let i = 0; i < fallbackModels.length; i++) {
             const model = fallbackModels[i];
@@ -177,8 +189,16 @@ export async function tryModel(model, content, apiKeys) {
         return { success: false, error: 'Unknown model' };
     }
     switch (modelConfig.provider) {
-        case 'chrome':
+        case 'chrome': {
+            const isSupported = await checkChromeBuiltinSupport();
+            if (!isSupported) {
+                return {
+                    success: false,
+                    error: 'Chrome built-in AI not supported on this browser version',
+                };
+            }
             return await tryChromeBuiltinAI(content);
+        }
         case 'openai':
             return await tryOpenAI(content, apiKeys.openaiApiKey, modelConfig.modelId);
         case 'gemini':
@@ -189,7 +209,7 @@ export async function tryModel(model, content, apiKeys) {
             return { success: false, error: 'Unknown provider' };
     }
 }
-export function getFallbackModels(primaryModel) {
+export async function getFallbackModels(primaryModel) {
     const modelConfig = getModelConfig(primaryModel);
     if (!modelConfig)
         return [];
@@ -199,7 +219,8 @@ export function getFallbackModels(primaryModel) {
         gemini: ['gpt-3.5-turbo', 'claude-3-haiku', 'chrome-builtin'],
         anthropic: ['gpt-3.5-turbo', 'gemini-2.0-flash-exp', 'chrome-builtin'],
     };
-    return fallbacks[modelConfig.provider] || [];
+    const isChromeSupported = await checkChromeBuiltinSupport();
+    return (fallbacks[modelConfig.provider]?.filter((model) => model !== 'chrome-builtin' || isChromeSupported) || []);
 }
 export async function storeModelMetrics(model, metrics) {
     try {

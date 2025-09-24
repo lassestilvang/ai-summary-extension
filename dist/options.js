@@ -1,4 +1,5 @@
-"use strict";
+// Browser compatibility functions imported from utils
+import { checkChromeBuiltinSupport } from './utils.js';
 // Inline utility functions to avoid ES6 import issues
 async function validateApiKey(provider, apiKey) {
     if (!apiKey || apiKey.trim() === '') {
@@ -103,13 +104,13 @@ async function validateAnthropicApiKey(apiKey) {
         return { valid: false, error: 'Network error during validation' };
     }
 }
-function isModelAvailable(model, apiKeys) {
+async function isModelAvailable(model, apiKeys) {
     const config = optionsGetModelConfig(model);
     if (!config)
         return false;
     switch (config.provider) {
         case 'chrome':
-            return true; // Chrome built-in is always available
+            return await checkChromeBuiltinSupport();
         case 'openai':
             return !!(apiKeys.openaiApiKey && apiKeys.openaiApiKey.trim() !== '');
         case 'gemini':
@@ -505,11 +506,38 @@ document.addEventListener('DOMContentLoaded', function () {
             geminiApiKey,
             anthropicApiKey,
         };
-        if (!isModelAvailable(selectedModel, apiKeys)) {
-            statusDiv.textContent =
-                'Cannot save: Selected model requires a valid API key. Please configure the appropriate API key or choose a different model.';
-            statusDiv.className = 'status error';
-            return;
+        const modelAvailable = await isModelAvailable(selectedModel, apiKeys);
+        if (!modelAvailable) {
+            if (selectedModel === 'chrome-builtin') {
+                // Special handling for chrome-builtin: revert to default and show error
+                const defaultModel = 'gpt-3.5-turbo';
+                selectedModelSelect.value = defaultModel;
+                statusDiv.textContent =
+                    'Chrome Built-in AI is not supported on this browser. Reverted to GPT-3.5 Turbo. Please configure API keys for other models.';
+                statusDiv.className = 'status error';
+                // Save with default model
+                chrome.storage.sync.set({
+                    selectedModel: defaultModel,
+                    temperature: temperature,
+                    maxTokens: maxTokens,
+                    enableFallback: enableFallback,
+                    openaiApiKey: openaiApiKey,
+                    geminiApiKey: geminiApiKey,
+                    anthropicApiKey: anthropicApiKey,
+                }, function () {
+                    setTimeout(() => {
+                        statusDiv.textContent = '';
+                        statusDiv.className = '';
+                    }, 5000);
+                });
+                return;
+            }
+            else {
+                statusDiv.textContent =
+                    'Cannot save: Selected model requires a valid API key. Please configure the appropriate API key or choose a different model.';
+                statusDiv.className = 'status error';
+                return;
+            }
         }
         // Request permissions for API providers with keys
         let permissionsGranted = true;
@@ -559,6 +587,31 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 3000);
         });
     });
+    // Add informational messages about model configuration
+    const infoDiv = document.createElement('div');
+    infoDiv.id = 'model-info';
+    if (infoDiv.style) {
+        infoDiv.style.cssText = `
+      margin-top: 20px;
+      padding: 15px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.5;
+    `;
+    }
+    infoDiv.innerHTML = `
+    <h4 style="margin: 0 0 10px 0; color: #39ff14;">Model Configuration Info</h4>
+    <p style="margin: 0 0 8px 0;"><strong>Chrome Built-in AI:</strong> Requires Chrome 138+ and Summarizer API support. Free but limited availability.</p>
+    <p style="margin: 0 0 8px 0;"><strong>API-based Models:</strong> Require valid API keys from respective providers. Check the provider's website for pricing and limits.</p>
+    <p style="margin: 0;"><strong>Fallback:</strong> When enabled, the extension will automatically try alternative models if the primary one fails.</p>
+  `;
+    // Insert before the first form-group (AI Model)
+    const firstFormGroup = settingsForm.querySelector('.form-group');
+    if (firstFormGroup) {
+        settingsForm.insertBefore(infoDiv, firstFormGroup);
+    }
     // Load and display metrics
     function loadMetrics() {
         chrome.runtime.sendMessage({ action: 'get_model_metrics' });
