@@ -1,5 +1,14 @@
 // Comprehensive unit tests for utils.ts
-import { getModelConfig } from '../utils';
+import {
+  getModelConfig,
+  validateApiKey,
+  getChromeVersion,
+  isSummarizerAvailable,
+  checkChromeBuiltinSupport,
+  isModelAvailable,
+} from '../utils';
+
+import 'jest-fetch-mock';
 
 describe('Utils Module Comprehensive Tests', () => {
   describe('getModelConfig Function', () => {
@@ -560,6 +569,272 @@ describe('Utils Module Comprehensive Tests', () => {
       expect(config?.provider).toBe('chrome');
       expect(config?.modelId).toBeNull();
       expect(config?.cost).toBe(0);
+    });
+  });
+
+  describe('API Key Validation Functions', () => {
+    beforeEach(() => {
+      fetchMock.resetMocks();
+    });
+
+    describe('validateApiKey', () => {
+      it('should return error for empty API key', async () => {
+        const result = await validateApiKey('openai', '');
+        expect(result).toEqual({ valid: false, error: 'API key is required' });
+      });
+
+      it('should return error for whitespace-only API key', async () => {
+        const result = await validateApiKey('openai', '   ');
+        expect(result).toEqual({ valid: false, error: 'API key is required' });
+      });
+
+      it('should validate OpenAI API key successfully', async () => {
+        fetchMock.mockResponseOnce('', { status: 200 });
+        const result = await validateApiKey('openai', 'valid-key');
+        expect(result).toEqual({ valid: true });
+      });
+
+      it('should validate Gemini API key successfully', async () => {
+        fetchMock.mockResponseOnce('', { status: 200 });
+        const result = await validateApiKey('gemini', 'valid-key');
+        expect(result).toEqual({ valid: true });
+      });
+
+      it('should validate Anthropic API key successfully', async () => {
+        fetchMock.mockResponseOnce('', { status: 200 });
+        const result = await validateApiKey('anthropic', 'valid-key');
+        expect(result).toEqual({ valid: true });
+      });
+
+      it('should return error for unknown provider', async () => {
+        const result = await validateApiKey('unknown', 'key');
+        expect(result).toEqual({ valid: false, error: 'Unknown provider' });
+      });
+
+      it('should handle network errors', async () => {
+        fetchMock.mockRejectOnce(new Error('Network error'));
+        const result = await validateApiKey('openai', 'key');
+        expect(result).toEqual({
+          valid: false,
+          error: 'Network error during validation',
+        });
+      });
+    });
+  });
+
+  describe('Chrome Support Functions', () => {
+    describe('getChromeVersion', () => {
+      it('should return version number from userAgent', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+          value:
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          writable: true,
+        });
+        const version = getChromeVersion();
+        expect(version).toBe(120);
+      });
+
+      it('should return 0 when no userAgent', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+          value: undefined,
+          writable: true,
+        });
+        const version = getChromeVersion();
+        expect(version).toBe(0);
+      });
+
+      it('should return 0 when Chrome not in userAgent', () => {
+        Object.defineProperty(navigator, 'userAgent', {
+          value:
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Safari/537.36',
+          writable: true,
+        });
+        const version = getChromeVersion();
+        expect(version).toBe(0);
+      });
+    });
+
+    describe('isSummarizerAvailable', () => {
+      it('should return false when Summarizer is not available', async () => {
+        (globalThis as any).Summarizer = undefined;
+        const result = await isSummarizerAvailable();
+        expect(result).toBe(false);
+      });
+
+      it('should return false when Summarizer.availability throws', async () => {
+        (globalThis as any).Summarizer = {
+          availability: jest.fn().mockRejectedValue(new Error('Not available')),
+        };
+        const result = await isSummarizerAvailable();
+        expect(result).toBe(false);
+      });
+
+      it('should return true when Summarizer is available', async () => {
+        (globalThis as any).Summarizer = {
+          availability: jest.fn().mockResolvedValue('available'),
+        };
+        const result = await isSummarizerAvailable();
+        expect(result).toBe(true);
+      });
+
+      it('should return false when availability is not "available"', async () => {
+        (globalThis as any).Summarizer = {
+          availability: jest.fn().mockResolvedValue('unavailable'),
+        };
+        const result = await isSummarizerAvailable();
+        expect(result).toBe(false);
+      });
+    });
+
+    describe('checkChromeBuiltinSupport', () => {
+      it('should return true when version >= 138 and API available', async () => {
+        Object.defineProperty(navigator, 'userAgent', {
+          value: 'Chrome/138.0.0.0',
+          writable: true,
+        });
+        (globalThis as any).Summarizer = {
+          availability: jest.fn().mockResolvedValue('available'),
+        };
+        const result = await checkChromeBuiltinSupport();
+        expect(result).toBe(true);
+      });
+
+      it('should return false when version < 138', async () => {
+        Object.defineProperty(navigator, 'userAgent', {
+          value: 'Chrome/120.0.0.0',
+          writable: true,
+        });
+        (globalThis as any).Summarizer = {
+          availability: jest.fn().mockResolvedValue('available'),
+        };
+        const result = await checkChromeBuiltinSupport();
+        expect(result).toBe(false);
+      });
+
+      it('should return false when API not available', async () => {
+        Object.defineProperty(navigator, 'userAgent', {
+          value: 'Chrome/138.0.0.0',
+          writable: true,
+        });
+        (globalThis as any).Summarizer = {
+          availability: jest.fn().mockResolvedValue('unavailable'),
+        };
+        const result = await checkChromeBuiltinSupport();
+        expect(result).toBe(false);
+      });
+    });
+  });
+
+  describe('isModelAvailable', () => {
+    it('should return false for unknown model', async () => {
+      const apiKeys = {
+        openaiApiKey: '',
+        geminiApiKey: '',
+        anthropicApiKey: '',
+      };
+      const result = await isModelAvailable('unknown-model', apiKeys);
+      expect(result).toBe(false);
+    });
+
+    it('should return true for chrome-builtin when supported', async () => {
+      Object.defineProperty(navigator, 'userAgent', {
+        value: 'Chrome/138.0.0.0',
+        writable: true,
+      });
+      (globalThis as any).Summarizer = {
+        availability: jest.fn().mockResolvedValue('available'),
+      };
+      const apiKeys = {
+        openaiApiKey: '',
+        geminiApiKey: '',
+        anthropicApiKey: '',
+      };
+      const result = await isModelAvailable('chrome-builtin', apiKeys);
+      expect(result).toBe(true);
+    });
+
+    it('should return false for chrome-builtin when not supported', async () => {
+      Object.defineProperty(navigator, 'userAgent', {
+        value: 'Chrome/120.0.0.0',
+        writable: true,
+      });
+      const apiKeys = {
+        openaiApiKey: '',
+        geminiApiKey: '',
+        anthropicApiKey: '',
+      };
+      const result = await isModelAvailable('chrome-builtin', apiKeys);
+      expect(result).toBe(false);
+    });
+
+    it('should return true for openai model with valid key', async () => {
+      const apiKeys = {
+        openaiApiKey: 'key',
+        geminiApiKey: '',
+        anthropicApiKey: '',
+      };
+      const result = await isModelAvailable('gpt-3.5-turbo', apiKeys);
+      expect(result).toBe(true);
+    });
+
+    it('should return false for openai model without key', async () => {
+      const apiKeys = {
+        openaiApiKey: '',
+        geminiApiKey: '',
+        anthropicApiKey: '',
+      };
+      const result = await isModelAvailable('gpt-3.5-turbo', apiKeys);
+      expect(result).toBe(false);
+    });
+
+    it('should return false for openai model with whitespace key', async () => {
+      const apiKeys = {
+        openaiApiKey: '   ',
+        geminiApiKey: '',
+        anthropicApiKey: '',
+      };
+      const result = await isModelAvailable('gpt-3.5-turbo', apiKeys);
+      expect(result).toBe(false);
+    });
+
+    it('should return true for gemini model with valid key', async () => {
+      const apiKeys = {
+        openaiApiKey: '',
+        geminiApiKey: 'key',
+        anthropicApiKey: '',
+      };
+      const result = await isModelAvailable('gemini-1.5-pro', apiKeys);
+      expect(result).toBe(true);
+    });
+
+    it('should return false for gemini model without key', async () => {
+      const apiKeys = {
+        openaiApiKey: '',
+        geminiApiKey: '',
+        anthropicApiKey: '',
+      };
+      const result = await isModelAvailable('gemini-1.5-pro', apiKeys);
+      expect(result).toBe(false);
+    });
+
+    it('should return true for anthropic model with valid key', async () => {
+      const apiKeys = {
+        openaiApiKey: '',
+        geminiApiKey: '',
+        anthropicApiKey: 'key',
+      };
+      const result = await isModelAvailable('claude-3-haiku', apiKeys);
+      expect(result).toBe(true);
+    });
+
+    it('should return false for anthropic model without key', async () => {
+      const apiKeys = {
+        openaiApiKey: '',
+        geminiApiKey: '',
+        anthropicApiKey: '',
+      };
+      const result = await isModelAvailable('claude-3-haiku', apiKeys);
+      expect(result).toBe(false);
     });
   });
 });

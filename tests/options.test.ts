@@ -40,9 +40,21 @@ describe('Options Script Comprehensive Tests', () => {
   // Utility functions are tested indirectly through integration tests
   // since they are internal to the options.ts module and not exported
 
+  let mockNavLink: any;
+  let mockPage: any;
+
   beforeEach(() => {
     // Reset fetch mocks
     fetchMock.resetMocks();
+
+    // Create persistent mock objects
+    mockNavLink = {
+      addEventListener: jest.fn(),
+      getAttribute: jest.fn(() => 'settings'),
+      dataset: { page: 'settings' },
+      classList: { remove: jest.fn(), add: jest.fn() },
+    };
+    mockPage = { classList: { remove: jest.fn(), add: jest.fn() } };
 
     // Mock DOM elements
     mockDOM = {
@@ -147,16 +159,10 @@ describe('Options Script Comprehensive Tests', () => {
     // Mock document.querySelectorAll
     (document.querySelectorAll as any) = jest.fn((selector) => {
       if (selector === '.nav-link') {
-        return [
-          {
-            addEventListener: jest.fn(),
-            getAttribute: jest.fn(() => 'settings'),
-            dataset: { page: 'settings' },
-          },
-        ];
+        return [mockNavLink];
       }
       if (selector === '.page') {
-        return [{ classList: { remove: jest.fn(), add: jest.fn() } }];
+        return [mockPage];
       }
       return [];
     });
@@ -206,13 +212,37 @@ describe('Options Script Comprehensive Tests', () => {
     };
 
     // Mock chrome.storage.sync.get/set
-    (chrome.storage.sync.get as any).mockResolvedValue({
-      selectedModel: 'chrome-builtin',
-      enableFallback: true,
-      openaiApiKey: 'test-openai-key',
-      geminiApiKey: 'test-gemini-key',
-      anthropicApiKey: 'test-anthropic-key',
-    });
+    (chrome.storage.sync.get as any).mockImplementation(
+      (keys: any, callback?: (result: any) => void) => {
+        const defaultValues = {
+          selectedModel: 'chrome-builtin',
+          temperature: 0.7,
+          maxTokens: 1000,
+          enableFallback: true,
+          openaiApiKey: 'test-openai-key',
+          geminiApiKey: 'test-gemini-key',
+          anthropicApiKey: 'test-anthropic-key',
+          theme: 'nord',
+          fontFamily: 'Arial',
+          fontSize: 14,
+          fontStyle: 'normal',
+        };
+        const result: any = {};
+        if (Array.isArray(keys)) {
+          keys.forEach((key: string) => {
+            result[key] =
+              defaultValues[key as keyof typeof defaultValues] || null;
+          });
+        } else if (typeof keys === 'string') {
+          result[keys] =
+            defaultValues[keys as keyof typeof defaultValues] || null;
+        } else {
+          Object.assign(result, defaultValues);
+        }
+        if (callback) callback(result);
+        return Promise.resolve(result);
+      }
+    );
 
     (chrome.storage.sync.set as any).mockImplementation(
       (items: any, callback?: () => void) => {
@@ -262,6 +292,16 @@ describe('Options Script Comprehensive Tests', () => {
     // Mock navigator.share
     Object.defineProperty(navigator, 'share', {
       value: jest.fn().mockResolvedValue(undefined),
+      writable: true,
+    });
+
+    // Mock URL
+    Object.defineProperty(URL, 'createObjectURL', {
+      value: jest.fn(() => 'blob:url'),
+      writable: true,
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      value: jest.fn(),
       writable: true,
     });
 
@@ -1194,6 +1234,457 @@ describe('Options Script Comprehensive Tests', () => {
           fontStyle: 'bold',
         },
         expect.any(Function)
+      );
+    });
+
+    it('should initialize theme from storage', () => {
+      (chrome.storage.sync.get as any).mockImplementation(
+        (keys: any, callback?: (result: any) => void) => {
+          const result = {
+            theme: 'dark',
+            fontFamily: 'Arial',
+            fontSize: 14,
+            fontStyle: 'normal',
+          };
+          if (callback) callback(result);
+          return Promise.resolve(result);
+        }
+      );
+
+      // Re-trigger initialization
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+
+      expect(mockDOM.theme.value).toBe('dark');
+      expect(mockDOM.fontFamily.value).toBe('Arial');
+      expect(mockDOM.fontSize.value).toBe('14');
+      expect(mockDOM.fontStyle.value).toBe('normal');
+    });
+
+    it('should set default theme when no saved theme exists', () => {
+      (chrome.storage.sync.get as any).mockImplementation(
+        (keys: any, callback?: (result: any) => void) => {
+          const result = {};
+          if (callback) callback(result);
+          return Promise.resolve(result);
+        }
+      );
+
+      // Re-trigger initialization
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+
+      expect(mockDOM.theme.value).toBe('nord'); // Default theme
+      expect(mockDOM.fontFamily.value).toBe('Arial'); // Default font
+      expect(mockDOM.fontSize.value).toBe('14'); // Default size
+      expect(mockDOM.fontStyle.value).toBe('normal'); // Default style
+    });
+
+    it('should update theme preview when theme changes', () => {
+      mockDOM.theme.value = 'dark';
+
+      // Mock the change event
+      const changeHandler = mockDOM.theme.addEventListener.mock.calls.find(
+        (call: any[]) => call[0] === 'change'
+      )[1];
+
+      changeHandler();
+
+      expect(mockDOM.themePreview.style.backgroundColor).toBeDefined();
+      expect(mockDOM.themePreview.style.color).toBeDefined();
+    });
+
+    it('should update theme preview when font settings change', () => {
+      mockDOM.fontFamily.value = 'Times New Roman';
+      mockDOM.fontSize.value = '16';
+      mockDOM.fontStyle.value = 'bold';
+
+      // Mock the change events
+      const fontFamilyHandler =
+        mockDOM.fontFamily.addEventListener.mock.calls.find(
+          (call: any[]) => call[0] === 'change'
+        )[1];
+      const fontSizeHandler = mockDOM.fontSize.addEventListener.mock.calls.find(
+        (call: any[]) => call[0] === 'input'
+      )[1];
+      const fontStyleHandler =
+        mockDOM.fontStyle.addEventListener.mock.calls.find(
+          (call: any[]) => call[0] === 'change'
+        )[1];
+
+      fontFamilyHandler();
+      fontSizeHandler();
+      fontStyleHandler();
+
+      expect(mockDOM.previewText.style.fontFamily).toBe('Times New Roman');
+      expect(mockDOM.previewText.style.fontSize).toBe('16px');
+      expect(mockDOM.previewText.style.fontWeight).toBe('bold');
+    });
+  });
+
+  describe('Navigation Functions', () => {
+    it('should switch page correctly', () => {
+      const navLink = document.querySelectorAll('.nav-link')[0];
+      expect(navLink.addEventListener).toHaveBeenCalledWith(
+        'click',
+        expect.any(Function)
+      );
+      const clickHandler = (navLink.addEventListener as any).mock.calls[0][1];
+
+      clickHandler({ preventDefault: jest.fn() });
+
+      // Should have called switchPage with the correct page
+      expect(mockPage.classList.remove).toHaveBeenCalledWith('active');
+      expect(mockNavLink.classList.remove).toHaveBeenCalledWith('active');
+    });
+
+    it('should toggle sidebar when toggle button is clicked', () => {
+      const toggleHandler =
+        mockDOM.toggleSidebar.addEventListener.mock.calls[0][1];
+
+      toggleHandler();
+
+      expect(mockDOM.sidebar.classList.toggle).toHaveBeenCalledWith('open');
+    });
+  });
+
+  describe('History Management Functions', () => {
+    it('should load history on initialization', () => {
+      expect(chrome.storage.local.get).toHaveBeenCalledWith(
+        'summaryHistory',
+        expect.any(Function)
+      );
+    });
+
+    it('should display history items', () => {
+      const mockHistory = [
+        {
+          id: '1',
+          timestamp: '2023-12-01T10:00:00.000Z',
+          url: 'https://example.com',
+          title: 'Example Page',
+          summary: 'This is a test summary.',
+          model: 'chrome-builtin',
+          time: '2.50',
+          metrics: { attempts: [], totalTime: 2.5 },
+        },
+      ];
+
+      (chrome.storage.local.get as any).mockImplementationOnce(
+        (keys: any, callback?: (result: any) => void) => {
+          if (callback) callback({ summaryHistory: mockHistory });
+          return Promise.resolve({ summaryHistory: mockHistory });
+        }
+      );
+
+      // Trigger loadHistory
+      const refreshButton = mockDOM.refreshHistory;
+      const clickHandler = refreshButton.addEventListener.mock.calls[0][1];
+      clickHandler();
+
+      expect(mockDOM.historyContainer.innerHTML).toContain('Example Page');
+    });
+
+    it('should clear history when confirmed', () => {
+      // Mock confirm
+      const originalConfirm = global.confirm;
+      global.confirm = jest.fn().mockReturnValue(true);
+
+      const clearButton = mockDOM.clearHistory;
+      const clickHandler = clearButton.addEventListener.mock.calls[0][1];
+
+      clickHandler();
+
+      expect(chrome.storage.local.set).toHaveBeenCalledWith(
+        {
+          summaryHistory: [],
+        },
+        expect.any(Function)
+      );
+
+      // Restore
+      global.confirm = originalConfirm;
+    });
+
+    it('should export history to CSV format', () => {
+      const mockHistory = [
+        {
+          id: '1',
+          timestamp: '2023-12-01T10:00:00.000Z',
+          url: 'https://example.com',
+          title: 'Example Page',
+          summary: 'This is a test summary.',
+          model: 'chrome-builtin',
+          time: '2.50',
+          metrics: { attempts: [], totalTime: 2.5 },
+        },
+      ];
+
+      // Mock history data
+      (chrome.storage.local.get as any).mockImplementation(
+        (keys: any, callback?: (result: any) => void) => {
+          if (callback) callback({ summaryHistory: mockHistory });
+          return Promise.resolve({ summaryHistory: mockHistory });
+        }
+      );
+
+      // Load history first
+      const refreshButton = mockDOM.refreshHistory;
+      const refreshHandler = refreshButton.addEventListener.mock.calls[0][1];
+      refreshHandler();
+
+      // Mock the export function calls
+      const exportButton = mockDOM.exportHistory;
+      const clickHandler = exportButton.addEventListener.mock.calls[0][1];
+
+      mockDOM.exportFormat.value = 'csv';
+      clickHandler();
+
+      // Should have created a download link
+      expect(document.createElement).toHaveBeenCalledWith('a');
+    });
+
+    it('should export history to JSON format', () => {
+      const mockHistory = [
+        {
+          id: '1',
+          timestamp: '2023-12-01T10:00:00.000Z',
+          url: 'https://example.com',
+          title: 'Example Page',
+          summary: 'This is a test summary.',
+          model: 'chrome-builtin',
+          time: '2.50',
+          metrics: { attempts: [], totalTime: 2.5 },
+        },
+      ];
+
+      // Mock history data
+      (chrome.storage.local.get as any).mockImplementation(
+        (keys: any, callback?: (result: any) => void) => {
+          if (callback) callback({ summaryHistory: mockHistory });
+          return Promise.resolve({ summaryHistory: mockHistory });
+        }
+      );
+
+      // Load history first
+      const refreshButton = mockDOM.refreshHistory;
+      const refreshHandler = refreshButton.addEventListener.mock.calls[0][1];
+      refreshHandler();
+
+      const exportButton = mockDOM.exportHistory;
+      const clickHandler = exportButton.addEventListener.mock.calls[0][1];
+
+      mockDOM.exportFormat.value = 'json';
+      clickHandler();
+
+      expect(document.createElement).toHaveBeenCalledWith('a');
+    });
+
+    it('should export history to HTML format', () => {
+      const mockHistory = [
+        {
+          id: '1',
+          timestamp: '2023-12-01T10:00:00.000Z',
+          url: 'https://example.com',
+          title: 'Example Page',
+          summary: 'This is a test summary.',
+          model: 'chrome-builtin',
+          time: '2.50',
+          metrics: { attempts: [], totalTime: 2.5 },
+        },
+      ];
+
+      // Mock history data
+      (chrome.storage.local.get as any).mockImplementation(
+        (keys: any, callback?: (result: any) => void) => {
+          if (callback) callback({ summaryHistory: mockHistory });
+          return Promise.resolve({ summaryHistory: mockHistory });
+        }
+      );
+
+      // Load history first
+      const refreshButton = mockDOM.refreshHistory;
+      const refreshHandler = refreshButton.addEventListener.mock.calls[0][1];
+      refreshHandler();
+
+      const exportButton = mockDOM.exportHistory;
+      const clickHandler = exportButton.addEventListener.mock.calls[0][1];
+
+      mockDOM.exportFormat.value = 'html';
+      clickHandler();
+
+      expect(document.createElement).toHaveBeenCalledWith('a');
+    });
+
+    it('should filter history based on search term', () => {
+      const mockHistory = [
+        {
+          id: '1',
+          timestamp: '2023-12-01T10:00:00.000Z',
+          url: 'https://example.com',
+          title: 'Example Page',
+          summary: 'This is a test summary.',
+          model: 'chrome-builtin',
+          time: '2.50',
+          metrics: { attempts: [], totalTime: 2.5 },
+        },
+        {
+          id: '2',
+          timestamp: '2023-12-02T10:00:00.000Z',
+          url: 'https://test.com',
+          title: 'Test Page',
+          summary: 'Another test summary.',
+          model: 'gpt-3.5-turbo',
+          time: '3.00',
+          metrics: { attempts: [], totalTime: 3.0 },
+        },
+      ];
+
+      (chrome.storage.local.get as any).mockImplementationOnce(
+        (keys: any, callback?: (result: any) => void) => {
+          if (callback) callback({ summaryHistory: mockHistory });
+          return Promise.resolve({ summaryHistory: mockHistory });
+        }
+      );
+
+      // Load history first
+      const refreshButton = mockDOM.refreshHistory;
+      const refreshHandler = refreshButton.addEventListener.mock.calls[0][1];
+      refreshHandler();
+
+      // Now filter
+      mockDOM.searchInput.value = 'Example';
+      const searchHandler =
+        mockDOM.searchInput.addEventListener.mock.calls[0][1];
+      searchHandler();
+
+      expect(mockDOM.historyContainer.innerHTML).toContain('Example Page');
+      expect(mockDOM.historyContainer.innerHTML).not.toContain('Test Page');
+    });
+
+    it('should filter history based on model selection', () => {
+      const mockHistory = [
+        {
+          id: '1',
+          timestamp: '2023-12-01T10:00:00.000Z',
+          url: 'https://example.com',
+          title: 'Example Page',
+          summary: 'This is a test summary.',
+          model: 'chrome-builtin',
+          time: '2.50',
+          metrics: { attempts: [], totalTime: 2.5 },
+        },
+        {
+          id: '2',
+          timestamp: '2023-12-02T10:00:00.000Z',
+          url: 'https://test.com',
+          title: 'Test Page',
+          summary: 'Another test summary.',
+          model: 'gpt-3.5-turbo',
+          time: '3.00',
+          metrics: { attempts: [], totalTime: 3.0 },
+        },
+      ];
+
+      (chrome.storage.local.get as any).mockImplementationOnce(
+        (keys: any, callback?: (result: any) => void) => {
+          if (callback) callback({ summaryHistory: mockHistory });
+          return Promise.resolve({ summaryHistory: mockHistory });
+        }
+      );
+
+      // Load history first
+      const refreshButton = mockDOM.refreshHistory;
+      const refreshHandler = refreshButton.addEventListener.mock.calls[0][1];
+      refreshHandler();
+
+      // Now filter by model
+      mockDOM.filterModel.value = 'chrome-builtin';
+      const filterHandler =
+        mockDOM.filterModel.addEventListener.mock.calls[0][1];
+      filterHandler();
+
+      expect(mockDOM.historyContainer.innerHTML).toContain(
+        'Chrome Built-in AI'
+      );
+      expect(mockDOM.historyContainer.innerHTML).not.toContain('GPT-3.5 Turbo');
+    });
+  });
+
+  describe('Metrics Display Functions', () => {
+    it('should load metrics on initialization', () => {
+      expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
+        action: 'get_model_metrics',
+      });
+    });
+
+    it('should display metrics when received', () => {
+      const mockMetrics = {
+        'chrome-builtin': {
+          totalRequests: 10,
+          successfulRequests: 8,
+          totalTime: 25.5,
+          avgTime: 2.55,
+          lastUsed: '2023-12-01T10:00:00.000Z',
+        },
+      };
+
+      // Mock the message listener
+      (chrome.runtime.onMessage.addListener as any).mock.calls.forEach(
+        (call: any[]) => {
+          const [listener] = call;
+          listener({
+            action: 'model_metrics_response',
+            metrics: mockMetrics,
+          });
+        }
+      );
+
+      expect(mockDOM.metricsContainer.innerHTML).toContain(
+        'Chrome Built-in AI'
+      );
+      expect(mockDOM.metricsContainer.innerHTML).toContain('10'); // total requests
+      expect(mockDOM.metricsContainer.innerHTML).toContain('80.0%'); // success rate
+    });
+
+    it('should refresh metrics when button is clicked', () => {
+      const refreshHandler =
+        mockDOM.refreshMetrics.addEventListener.mock.calls[0][1];
+
+      refreshHandler();
+
+      expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
+        action: 'get_model_metrics',
+      });
+    });
+  });
+
+  describe('UI Enhancement Functions', () => {
+    it('should add ripple effect to buttons', () => {
+      // Mock querySelectorAll to return buttons
+      (document.querySelectorAll as any).mockReturnValueOnce([
+        { addEventListener: jest.fn() },
+      ]);
+
+      // Re-trigger the ripple effect setup
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+
+      expect(document.querySelectorAll).toHaveBeenCalledWith('.btn');
+      expect(document.createElement).toHaveBeenCalledWith('style');
+    });
+
+    it('should handle temperature slider input', () => {
+      mockDOM.temperature.value = '1.5';
+      mockDOM.temperature.style = { setProperty: jest.fn() };
+
+      const inputHandler = mockDOM.temperature.addEventListener.mock.calls.find(
+        (call: any[]) => call[0] === 'input'
+      )[1];
+
+      inputHandler();
+
+      expect(mockDOM['temperature-value'].textContent).toBe('1.5');
+      expect(mockDOM.temperature.style.setProperty).toHaveBeenCalledWith(
+        '--slider-progress',
+        '75%'
       );
     });
   });
