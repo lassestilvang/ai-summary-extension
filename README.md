@@ -4,6 +4,8 @@
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/lassestilvang/ai-summary-extension)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+![SCR-20250925-porj-2](https://github.com/user-attachments/assets/19f33ad3-419b-4ce1-9752-3fd0817c9402)
+
 ## Table of Contents
 
 - [Project Description and Overview](#project-description-and-overview)
