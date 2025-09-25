@@ -1,11 +1,64 @@
 // Comprehensive unit tests for background.ts
+import fetchMock from 'jest-fetch-mock';
 import {
   summarizeWithAI,
   tryModel,
   getFallbackModels,
   storeModelMetrics,
   storeSummaryHistory,
-} from '../background.ts';
+} from '../background';
+
+// Mock utils module
+jest.mock('../utils', () => ({
+  checkChromeBuiltinSupport: jest.fn().mockResolvedValue(true),
+  getModelConfig: jest.fn((model: string) => {
+    const configs: Record<string, any> = {
+      'chrome-builtin': {
+        provider: 'chrome',
+        modelId: null,
+        name: 'Chrome Built-in AI',
+        cost: 0,
+      },
+      'gpt-3.5-turbo': {
+        provider: 'openai',
+        modelId: 'gpt-3.5-turbo',
+        name: 'GPT-3.5 Turbo',
+        cost: 0.002,
+      },
+      'gpt-4': {
+        provider: 'openai',
+        modelId: 'gpt-4',
+        name: 'GPT-4',
+        cost: 0.03,
+      },
+      'gemini-1.5-pro': {
+        provider: 'gemini',
+        modelId: 'gemini-1.5-pro',
+        name: 'Gemini 1.5 Pro',
+        cost: 0.00125,
+      },
+      'gemini-2.0-flash-exp': {
+        provider: 'gemini',
+        modelId: 'gemini-2.0-flash-exp',
+        name: 'Gemini 2.0 Flash (Exp)',
+        cost: 0,
+      },
+      'claude-3-haiku': {
+        provider: 'anthropic',
+        modelId: 'claude-3-haiku-20240307',
+        name: 'Claude 3 Haiku',
+        cost: 0.00025,
+      },
+      'claude-3-sonnet': {
+        provider: 'anthropic',
+        modelId: 'claude-3-sonnet-20240229',
+        name: 'Claude 3 Sonnet',
+        cost: 0.003,
+      },
+    };
+    return configs[model] || null;
+  }),
+}));
 
 describe('Background Script Comprehensive Tests', () => {
   beforeEach(() => {
@@ -13,7 +66,7 @@ describe('Background Script Comprehensive Tests', () => {
     fetchMock.resetMocks();
 
     // Reset global Summarizer mock
-    globalThis.Summarizer = {
+    (globalThis as any).Summarizer = {
       create: jest.fn().mockResolvedValue({
         summarize: jest.fn().mockResolvedValue('Mocked summary'),
         destroy: jest.fn(),
@@ -21,7 +74,7 @@ describe('Background Script Comprehensive Tests', () => {
     };
 
     // Reset chrome mocks with comprehensive setup
-    chrome.storage.sync.get.mockResolvedValue({
+    (chrome as any).storage.sync.get.mockResolvedValue({
       selectedModel: 'chrome-builtin',
       enableFallback: true,
       openaiApiKey: 'test-openai-key',
@@ -29,35 +82,35 @@ describe('Background Script Comprehensive Tests', () => {
       anthropicApiKey: 'test-anthropic-key',
     });
 
-    chrome.storage.local.get.mockResolvedValue({
+    (chrome as any).storage.local.get.mockResolvedValue({
       modelMetrics: {},
       summaryHistory: [],
     });
 
-    chrome.storage.sync.set.mockResolvedValue();
-    chrome.storage.local.set.mockResolvedValue();
-    chrome.tabs.sendMessage.mockResolvedValue();
-    chrome.tabs.get.mockResolvedValue({
+    (chrome as any).storage.sync.set.mockResolvedValue();
+    (chrome as any).storage.local.set.mockResolvedValue();
+    (chrome as any).tabs.sendMessage.mockResolvedValue();
+    (chrome as any).tabs.get.mockResolvedValue({
       id: 123,
       url: 'https://example.com',
       title: 'Test Page',
     });
-    chrome.runtime.sendMessage.mockReset().mockResolvedValue();
-    chrome.runtime.openOptionsPage.mockResolvedValue();
+    (chrome as any).runtime.sendMessage.mockReset().mockResolvedValue();
+    (chrome as any).runtime.openOptionsPage.mockResolvedValue();
   });
 
   describe('Event Listeners Setup', () => {
     it('should set up all required event listeners on initialization', () => {
-      expect(chrome.action.onClicked.addListener).toHaveBeenCalledWith(
+      expect((chrome as any).action.onClicked.addListener).toHaveBeenCalledWith(
         expect.any(Function)
       );
-      expect(chrome.runtime.onMessage.addListener).toHaveBeenCalledWith(
+      expect(
+        (chrome as any).runtime.onMessage.addListener
+      ).toHaveBeenCalledWith(expect.any(Function));
+      expect((chrome as any).tabs.onRemoved.addListener).toHaveBeenCalledWith(
         expect.any(Function)
       );
-      expect(chrome.tabs.onRemoved.addListener).toHaveBeenCalledWith(
-        expect.any(Function)
-      );
-      expect(chrome.tabs.onUpdated.addListener).toHaveBeenCalledWith(
+      expect((chrome as any).tabs.onUpdated.addListener).toHaveBeenCalledWith(
         expect.any(Function)
       );
     });
@@ -68,15 +121,16 @@ describe('Background Script Comprehensive Tests', () => {
       const mockTab = { id: 123 };
 
       // Trigger the action click listener
-      for (const [listener] of chrome.action.onClicked.addListener.mock.calls) {
+      for (const [listener] of (chrome as any).action.onClicked.addListener.mock
+        .calls) {
         await listener(mockTab);
       }
 
-      expect(chrome.scripting.executeScript).toHaveBeenCalledWith({
+      expect((chrome as any).scripting.executeScript).toHaveBeenCalledWith({
         target: { tabId: 123 },
         files: ['Readability.js', 'showdown.min.js', 'content.js'],
       });
-      expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(123, {
+      expect((chrome as any).tabs.sendMessage).toHaveBeenCalledWith(123, {
         action: 'toggle_summary_visibility',
         hasSummary: false,
       });
@@ -85,9 +139,11 @@ describe('Background Script Comprehensive Tests', () => {
     it('should handle undefined tab id gracefully', () => {
       const mockTab = { id: undefined };
 
-      chrome.action.onClicked.addListener.mock.calls.forEach(([listener]) => {
-        expect(() => listener(mockTab)).not.toThrow();
-      });
+      (chrome as any).action.onClicked.addListener.mock.calls.forEach(
+        ([listener]: any[]) => {
+          expect(() => listener(mockTab)).not.toThrow();
+        }
+      );
     });
   });
 
@@ -95,11 +151,14 @@ describe('Background Script Comprehensive Tests', () => {
     it('should clean up summary state when tab is closed', () => {
       const tabId = 123;
 
-      chrome.tabs.onRemoved.addListener.mock.calls.forEach(([listener]) => {
-        listener(tabId);
-      });
+      (chrome as any).tabs.onRemoved.addListener.mock.calls.forEach(
+        // @ts-expect-error: Jest mock types
+        ([listener]) => {
+          listener(tabId);
+        }
+      );
 
-      expect(chrome.tabs.onRemoved.addListener).toHaveBeenCalled();
+      expect((chrome as any).tabs.onRemoved.addListener).toHaveBeenCalled();
     });
   });
 
@@ -149,7 +208,7 @@ describe('Background Script Comprehensive Tests', () => {
 
     it('should fallback to alternative models when primary fails', async () => {
       // Mock Chrome AI failure
-      globalThis.Summarizer.create.mockRejectedValueOnce(
+      (globalThis as any).Summarizer.create.mockRejectedValueOnce(
         new Error('Chrome AI not available')
       );
 
@@ -173,7 +232,7 @@ describe('Background Script Comprehensive Tests', () => {
 
     it('should return error message when all models fail', async () => {
       // Mock all APIs to fail
-      globalThis.Summarizer.create.mockRejectedValue(
+      (globalThis as any).Summarizer.create.mockRejectedValue(
         new Error('Chrome AI failed')
       );
       fetchMock.mockReject(new Error('Network error'));
@@ -190,12 +249,12 @@ describe('Background Script Comprehensive Tests', () => {
     });
 
     it('should disable fallback when enableFallback is false', async () => {
-      chrome.storage.sync.get.mockResolvedValueOnce({
+      (chrome as any).storage.sync.get.mockResolvedValueOnce({
         selectedModel: 'chrome-builtin',
         enableFallback: false,
       });
 
-      globalThis.Summarizer.create.mockRejectedValue(
+      (globalThis as any).Summarizer.create.mockRejectedValue(
         new Error('Chrome AI failed')
       );
 
@@ -269,27 +328,39 @@ describe('Background Script Comprehensive Tests', () => {
     });
 
     it('should return error for unknown model', async () => {
-      const result = await tryModel('unknown-model', mockContent, {});
+      const result = await tryModel('unknown-model', mockContent, {
+        openaiApiKey: '',
+        geminiApiKey: '',
+        anthropicApiKey: '',
+      });
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Unknown model');
     });
 
     it('should handle Chrome AI errors', async () => {
-      globalThis.Summarizer.create.mockRejectedValue(
+      (globalThis as any).Summarizer.create.mockRejectedValue(
         new Error('Chrome AI error')
       );
 
-      const result = await tryModel('chrome-builtin', mockContent, {});
+      const result = await tryModel('chrome-builtin', mockContent, {
+        openaiApiKey: '',
+        geminiApiKey: '',
+        anthropicApiKey: '',
+      });
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Chrome AI error');
     });
 
     it('should handle Chrome AI not available', async () => {
-      delete globalThis.Summarizer;
+      delete (globalThis as any).Summarizer;
 
-      const result = await tryModel('chrome-builtin', mockContent, {});
+      const result = await tryModel('chrome-builtin', mockContent, {
+        openaiApiKey: '',
+        geminiApiKey: '',
+        anthropicApiKey: '',
+      });
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Chrome built-in AI not available');
@@ -309,6 +380,8 @@ describe('Background Script Comprehensive Tests', () => {
 
         const result = await tryModel('gpt-3.5-turbo', mockContent, {
           openaiApiKey: 'test-key',
+          geminiApiKey: '',
+          anthropicApiKey: '',
         });
 
         expect(result.success).toBe(true);
@@ -328,6 +401,8 @@ describe('Background Script Comprehensive Tests', () => {
       it('should handle missing OpenAI API key', async () => {
         const result = await tryModel('gpt-3.5-turbo', mockContent, {
           openaiApiKey: '',
+          geminiApiKey: '',
+          anthropicApiKey: '',
         });
 
         expect(result.success).toBe(false);
@@ -339,6 +414,8 @@ describe('Background Script Comprehensive Tests', () => {
 
         const result = await tryModel('gpt-3.5-turbo', mockContent, {
           openaiApiKey: 'test-key',
+          geminiApiKey: '',
+          anthropicApiKey: '',
         });
 
         expect(result.success).toBe(false);
@@ -350,6 +427,8 @@ describe('Background Script Comprehensive Tests', () => {
 
         const result = await tryModel('gpt-3.5-turbo', mockContent, {
           openaiApiKey: 'invalid-key',
+          geminiApiKey: '',
+          anthropicApiKey: '',
         });
 
         expect(result.success).toBe(false);
@@ -373,6 +452,8 @@ describe('Background Script Comprehensive Tests', () => {
 
         const result = await tryModel('gemini-2.0-flash-exp', mockContent, {
           geminiApiKey: 'test-key',
+          openaiApiKey: '',
+          anthropicApiKey: '',
         });
 
         expect(result.success).toBe(true);
@@ -382,7 +463,9 @@ describe('Background Script Comprehensive Tests', () => {
       it('should handle missing Gemini API key', async () => {
         const result = await tryModel('gemini-2.0-flash-exp', mockContent, {
           geminiApiKey: '',
-        });
+          openaiApiKey: '',
+          anthropicApiKey: '',
+        } as any);
 
         expect(result.success).toBe(false);
         expect(result.error).toBe('No Gemini API key configured');
@@ -393,6 +476,8 @@ describe('Background Script Comprehensive Tests', () => {
 
         const result = await tryModel('gemini-2.0-flash-exp', mockContent, {
           geminiApiKey: 'test-key',
+          openaiApiKey: '',
+          anthropicApiKey: '',
         });
 
         expect(result.success).toBe(false);
@@ -410,6 +495,8 @@ describe('Background Script Comprehensive Tests', () => {
 
         const result = await tryModel('claude-3-haiku', mockContent, {
           anthropicApiKey: 'test-key',
+          openaiApiKey: '',
+          geminiApiKey: '',
         });
 
         expect(result.success).toBe(true);
@@ -419,7 +506,9 @@ describe('Background Script Comprehensive Tests', () => {
       it('should handle missing Anthropic API key', async () => {
         const result = await tryModel('claude-3-haiku', mockContent, {
           anthropicApiKey: '',
-        });
+          openaiApiKey: '',
+          geminiApiKey: '',
+        } as any);
 
         expect(result.success).toBe(false);
         expect(result.error).toBe('No Anthropic API key configured');
@@ -430,6 +519,8 @@ describe('Background Script Comprehensive Tests', () => {
 
         const result = await tryModel('claude-3-haiku', mockContent, {
           anthropicApiKey: 'test-key',
+          openaiApiKey: '',
+          geminiApiKey: '',
         });
 
         expect(result.success).toBe(false);
@@ -439,8 +530,8 @@ describe('Background Script Comprehensive Tests', () => {
   });
 
   describe('getFallbackModels Function', () => {
-    it('should return correct fallback models for Chrome', () => {
-      const fallbacks = getFallbackModels('chrome-builtin');
+    it('should return correct fallback models for Chrome', async () => {
+      const fallbacks = await getFallbackModels('chrome-builtin');
       expect(fallbacks).toEqual([
         'gpt-3.5-turbo',
         'gemini-2.0-flash-exp',
@@ -448,8 +539,8 @@ describe('Background Script Comprehensive Tests', () => {
       ]);
     });
 
-    it('should return correct fallback models for OpenAI', () => {
-      const fallbacks = getFallbackModels('gpt-4');
+    it('should return correct fallback models for OpenAI', async () => {
+      const fallbacks = await getFallbackModels('gpt-4');
       expect(fallbacks).toEqual([
         'gemini-2.0-flash-exp',
         'claude-3-haiku',
@@ -457,8 +548,8 @@ describe('Background Script Comprehensive Tests', () => {
       ]);
     });
 
-    it('should return correct fallback models for Gemini', () => {
-      const fallbacks = getFallbackModels('gemini-1.5-pro');
+    it('should return correct fallback models for Gemini', async () => {
+      const fallbacks = await getFallbackModels('gemini-1.5-pro');
       expect(fallbacks).toEqual([
         'gpt-3.5-turbo',
         'claude-3-haiku',
@@ -466,8 +557,8 @@ describe('Background Script Comprehensive Tests', () => {
       ]);
     });
 
-    it('should return correct fallback models for Anthropic', () => {
-      const fallbacks = getFallbackModels('claude-3-sonnet');
+    it('should return correct fallback models for Anthropic', async () => {
+      const fallbacks = await getFallbackModels('claude-3-sonnet');
       expect(fallbacks).toEqual([
         'gpt-3.5-turbo',
         'gemini-2.0-flash-exp',
@@ -475,8 +566,8 @@ describe('Background Script Comprehensive Tests', () => {
       ]);
     });
 
-    it('should return empty array for unknown model', () => {
-      const fallbacks = getFallbackModels('unknown');
+    it('should return empty array for unknown model', async () => {
+      const fallbacks = await getFallbackModels('unknown');
       expect(fallbacks).toEqual([]);
     });
   });
@@ -490,7 +581,7 @@ describe('Background Script Comprehensive Tests', () => {
 
       await storeModelMetrics('chrome-builtin', metrics);
 
-      expect(chrome.storage.local.set).toHaveBeenCalledWith({
+      expect((chrome as any).storage.local.set).toHaveBeenCalledWith({
         modelMetrics: {
           'chrome-builtin': {
             totalRequests: 1,
@@ -504,7 +595,7 @@ describe('Background Script Comprehensive Tests', () => {
     });
 
     it('should update existing model metrics', async () => {
-      chrome.storage.local.get.mockResolvedValueOnce({
+      (chrome as any).storage.local.get.mockResolvedValueOnce({
         modelMetrics: {
           'chrome-builtin': {
             totalRequests: 1,
@@ -523,7 +614,7 @@ describe('Background Script Comprehensive Tests', () => {
 
       await storeModelMetrics('chrome-builtin', metrics);
 
-      expect(chrome.storage.local.set).toHaveBeenCalledWith({
+      expect((chrome as any).storage.local.set).toHaveBeenCalledWith({
         modelMetrics: {
           'chrome-builtin': {
             totalRequests: 2,
@@ -537,7 +628,9 @@ describe('Background Script Comprehensive Tests', () => {
     });
 
     it('should handle storage errors gracefully', async () => {
-      chrome.storage.local.get.mockRejectedValue(new Error('Storage error'));
+      (chrome as any).storage.local.get.mockRejectedValue(
+        new Error('Storage error')
+      );
 
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
@@ -566,7 +659,7 @@ describe('Background Script Comprehensive Tests', () => {
         metrics
       );
 
-      expect(chrome.storage.local.set).toHaveBeenCalledWith({
+      expect((chrome as any).storage.local.set).toHaveBeenCalledWith({
         summaryHistory: [
           expect.objectContaining({
             id: expect.any(String),
@@ -583,7 +676,7 @@ describe('Background Script Comprehensive Tests', () => {
     });
 
     it('should handle storage errors gracefully', async () => {
-      chrome.tabs.get.mockRejectedValue(new Error('Tab error'));
+      (chrome as any).tabs.get.mockRejectedValue(new Error('Tab error'));
 
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
@@ -613,17 +706,20 @@ describe('Background Script Comprehensive Tests', () => {
         forceModel: 'gpt-3.5-turbo',
       };
 
-      chrome.runtime.onMessage.addListener.mock.calls.forEach(([listener]) => {
-        listener(message, mockSender);
-      });
+      (chrome as any).runtime.onMessage.addListener.mock.calls.forEach(
+        // @ts-expect-error: Jest mock types
+        ([listener]) => {
+          listener(message, mockSender);
+        }
+      );
 
       // Wait for async operations
       await new Promise((resolve) => setTimeout(resolve, 0));
 
-      expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(123, {
+      expect((chrome as any).tabs.sendMessage).toHaveBeenCalledWith(123, {
         action: 'show_loading_spinner',
       });
-      expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(
+      expect((chrome as any).tabs.sendMessage).toHaveBeenCalledWith(
         123,
         expect.objectContaining({
           action: 'display_inline_summary',
@@ -636,32 +732,41 @@ describe('Background Script Comprehensive Tests', () => {
     it('should handle update_summary_visibility message', () => {
       const message = { action: 'update_summary_visibility', visible: false };
 
-      chrome.runtime.onMessage.addListener.mock.calls.forEach(([listener]) => {
-        listener(message, mockSender);
-      });
+      (chrome as any).runtime.onMessage.addListener.mock.calls.forEach(
+        // @ts-expect-error: Jest mock types
+        ([listener]) => {
+          listener(message, mockSender);
+        }
+      );
 
       // The code doesn't send a message in response
-      expect(chrome.runtime.sendMessage).not.toHaveBeenCalled();
+      expect((chrome as any).runtime.sendMessage).not.toHaveBeenCalled();
     });
 
     it('should handle open_options_page message', () => {
       const message = { action: 'open_options_page' };
 
-      chrome.runtime.onMessage.addListener.mock.calls.forEach(([listener]) => {
-        listener(message, mockSender);
-      });
+      (chrome as any).runtime.onMessage.addListener.mock.calls.forEach(
+        // @ts-expect-error: Jest mock types
+        ([listener]) => {
+          listener(message, mockSender);
+        }
+      );
 
-      expect(chrome.runtime.openOptionsPage).toHaveBeenCalled();
+      expect((chrome as any).runtime.openOptionsPage).toHaveBeenCalled();
     });
 
     it('should handle switch_model message', () => {
       const message = { action: 'switch_model', model: 'gpt-4' };
 
-      chrome.runtime.onMessage.addListener.mock.calls.forEach(([listener]) => {
-        listener(message, mockSender);
-      });
+      (chrome as any).runtime.onMessage.addListener.mock.calls.forEach(
+        // @ts-expect-error: Jest mock types
+        ([listener]) => {
+          listener(message, mockSender);
+        }
+      );
 
-      expect(chrome.storage.sync.set).toHaveBeenCalledWith(
+      expect((chrome as any).storage.sync.set).toHaveBeenCalledWith(
         { selectedModel: 'gpt-4' },
         expect.any(Function)
       );
@@ -669,20 +774,24 @@ describe('Background Script Comprehensive Tests', () => {
 
     it('should handle get_model_metrics message', async () => {
       // Mock the storage.get callback to return empty metrics
-      chrome.storage.local.get.mockImplementation((keys, callback) => {
+      // @ts-expect-error: Jest mock types
+      (chrome as any).storage.local.get.mockImplementation((keys, callback) => {
         callback({ modelMetrics: {} });
       });
 
       const message = { action: 'get_model_metrics' };
 
-      chrome.runtime.onMessage.addListener.mock.calls.forEach(([listener]) => {
-        listener(message, mockSender);
-      });
+      (chrome as any).runtime.onMessage.addListener.mock.calls.forEach(
+        // @ts-expect-error: Jest mock types
+        ([listener]) => {
+          listener(message, mockSender);
+        }
+      );
 
       // Wait for the async callback to complete
       await new Promise((resolve) => setTimeout(resolve, 0));
 
-      expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
+      expect((chrome as any).runtime.sendMessage).toHaveBeenCalledWith({
         action: 'model_metrics_response',
         metrics: {},
       });
@@ -692,8 +801,8 @@ describe('Background Script Comprehensive Tests', () => {
       const message = { action: 'unknown_action' };
 
       expect(() => {
-        chrome.runtime.onMessage.addListener.mock.calls.forEach(
-          ([listener]) => {
+        (chrome as any).runtime.onMessage.addListener.mock.calls.forEach(
+          ([listener]: any[]) => {
             listener(message, mockSender);
           }
         );
@@ -704,17 +813,20 @@ describe('Background Script Comprehensive Tests', () => {
       const message = { action: 'process_content', content: 'Test content' };
 
       // Mock Summarizer to fail
-      globalThis.Summarizer.create.mockRejectedValueOnce(
+      (globalThis as any).Summarizer.create.mockRejectedValueOnce(
         new Error('Processing error')
       );
 
-      chrome.runtime.onMessage.addListener.mock.calls.forEach(([listener]) => {
-        listener(message, mockSender);
-      });
+      (chrome as any).runtime.onMessage.addListener.mock.calls.forEach(
+        // @ts-expect-error: Jest mock types
+        ([listener]) => {
+          listener(message, mockSender);
+        }
+      );
 
       await new Promise((resolve) => setTimeout(resolve, 0));
 
-      expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(
+      expect((chrome as any).tabs.sendMessage).toHaveBeenCalledWith(
         123,
         expect.objectContaining({
           action: 'display_inline_summary',
@@ -731,6 +843,8 @@ describe('Background Script Comprehensive Tests', () => {
 
       const result = await tryModel('gpt-3.5-turbo', 'content', {
         openaiApiKey: 'key',
+        geminiApiKey: '',
+        anthropicApiKey: '',
       });
 
       expect(result.success).toBe(false);
@@ -742,6 +856,8 @@ describe('Background Script Comprehensive Tests', () => {
 
       const result = await tryModel('gpt-3.5-turbo', 'content', {
         openaiApiKey: 'key',
+        geminiApiKey: '',
+        anthropicApiKey: '',
       });
 
       expect(result.success).toBe(false);
@@ -753,6 +869,8 @@ describe('Background Script Comprehensive Tests', () => {
 
       const result = await tryModel('gpt-3.5-turbo', 'content', {
         openaiApiKey: 'key',
+        geminiApiKey: '',
+        anthropicApiKey: '',
       });
 
       expect(result.success).toBe(false);

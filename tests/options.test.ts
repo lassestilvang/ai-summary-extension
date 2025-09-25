@@ -1,9 +1,41 @@
 // Comprehensive unit tests for options.ts
 // Import the options script to execute it during tests
-import '../options.ts';
+import '../options';
+
+import 'jest-fetch-mock';
+
+// Mock utils module
+jest.mock('../utils', () => ({
+  checkChromeBuiltinSupport: jest.fn().mockResolvedValue(true),
+}));
+
+declare global {
+  interface Window {
+    validateApiKey: (
+      provider: string,
+      key: string
+    ) => Promise<{ valid: boolean; error?: string }>;
+    validateOpenAIApiKey: (
+      key: string
+    ) => Promise<{ valid: boolean; error?: string }>;
+    validateGeminiApiKey: (
+      key: string
+    ) => Promise<{ valid: boolean; error?: string }>;
+    validateAnthropicApiKey: (
+      key: string
+    ) => Promise<{ valid: boolean; error?: string }>;
+    isModelAvailable: (model: string, apiKeys: any) => boolean;
+    optionsGetModelConfig: (model: string) => any;
+    copyToClipboard: (text: string, statusId: string) => void;
+  }
+}
+
+interface MockDOM {
+  [key: string]: any;
+}
 
 describe('Options Script Comprehensive Tests', () => {
-  let mockDOM;
+  let mockDOM: MockDOM;
 
   // Utility functions are tested indirectly through integration tests
   // since they are internal to the options.ts module and not exported
@@ -98,18 +130,22 @@ describe('Options Script Comprehensive Tests', () => {
       historyStatus: { textContent: '', className: '', style: {} },
 
       // Form
-      'settings-form': { addEventListener: jest.fn() },
+      'settings-form': {
+        addEventListener: jest.fn(),
+        querySelector: jest.fn(() => ({ style: {} })),
+        insertBefore: jest.fn(),
+      },
       'theme-form': { addEventListener: jest.fn() },
     };
 
     // Mock document.getElementById
-    document.getElementById = jest.fn((id) => mockDOM[id] || null);
+    (document.getElementById as any) = jest.fn((id) => mockDOM[id] || null);
 
     // Mock document.querySelector
-    document.querySelector = jest.fn(() => null);
+    (document.querySelector as any) = jest.fn(() => null);
 
     // Mock document.querySelectorAll
-    document.querySelectorAll = jest.fn((selector) => {
+    (document.querySelectorAll as any) = jest.fn((selector) => {
       if (selector === '.nav-link') {
         return [
           {
@@ -126,7 +162,7 @@ describe('Options Script Comprehensive Tests', () => {
     });
 
     // Mock document.createElement
-    document.createElement = jest.fn((tag) => {
+    (document.createElement as any) = jest.fn((tag) => {
       if (tag === 'option') {
         return { value: '', textContent: '', setAttribute: jest.fn() };
       }
@@ -164,13 +200,13 @@ describe('Options Script Comprehensive Tests', () => {
     });
 
     // Mock chrome.permissions
-    chrome.permissions = {
+    (chrome.permissions as any) = {
       contains: jest.fn().mockResolvedValue(true), // Assume permissions are already granted for tests
       request: jest.fn().mockResolvedValue(true),
     };
 
     // Mock chrome.storage.sync.get/set
-    chrome.storage.sync.get.mockResolvedValue({
+    (chrome.storage.sync.get as any).mockResolvedValue({
       selectedModel: 'chrome-builtin',
       enableFallback: true,
       openaiApiKey: 'test-openai-key',
@@ -178,48 +214,54 @@ describe('Options Script Comprehensive Tests', () => {
       anthropicApiKey: 'test-anthropic-key',
     });
 
-    chrome.storage.sync.set.mockImplementation((items, callback) => {
-      if (callback) callback();
-      return Promise.resolve();
-    });
-    chrome.storage.local.get.mockImplementation((keys, callback) => {
-      const defaultValues = {
-        modelMetrics: {},
-        summaryHistory: [],
-      };
-      const result = {};
-      if (Array.isArray(keys)) {
-        keys.forEach((key) => {
-          result[key] = defaultValues[key] || null;
-        });
-      } else if (typeof keys === 'string') {
-        result[keys] = defaultValues[keys] || null;
-      } else {
-        Object.assign(result, defaultValues);
+    (chrome.storage.sync.set as any).mockImplementation(
+      (items: any, callback?: () => void) => {
+        if (callback) callback();
+        return Promise.resolve();
       }
-      if (callback) callback(result);
-      return Promise.resolve(result);
-    });
-    chrome.storage.local.set
+    );
+    (chrome.storage.local.get as any).mockImplementation(
+      (keys: any, callback?: (result: any) => void) => {
+        const defaultValues = {
+          modelMetrics: {},
+          summaryHistory: [],
+        };
+        const result: any = {};
+        if (Array.isArray(keys)) {
+          keys.forEach((key: string) => {
+            result[key] =
+              defaultValues[key as keyof typeof defaultValues] || null;
+          });
+        } else if (typeof keys === 'string') {
+          result[keys] =
+            defaultValues[keys as keyof typeof defaultValues] || null;
+        } else {
+          Object.assign(result, defaultValues);
+        }
+        if (callback) callback(result);
+        return Promise.resolve(result);
+      }
+    );
+    (chrome.storage.local.set as any)
       .mockReset()
-      .mockImplementation((items, callback) => {
+      .mockImplementation((items: any, callback?: () => void) => {
         if (callback) callback();
         return Promise.resolve();
       });
 
     // Mock chrome.runtime.sendMessage
-    chrome.runtime.sendMessage.mockResolvedValue();
-    chrome.runtime.onMessage.addListener.mockImplementation(() => {});
+    (chrome.runtime.sendMessage as any).mockResolvedValue();
+    (chrome.runtime.onMessage.addListener as any).mockImplementation(() => {});
 
     // Mock navigator.clipboard
     Object.defineProperty(navigator, 'clipboard', {
-      value: { writeText: jest.fn().mockResolvedValue() },
+      value: { writeText: jest.fn().mockResolvedValue(undefined) },
       writable: true,
     });
 
     // Mock navigator.share
     Object.defineProperty(navigator, 'share', {
-      value: jest.fn().mockResolvedValue(),
+      value: jest.fn().mockResolvedValue(undefined),
       writable: true,
     });
 
@@ -281,7 +323,7 @@ describe('Options Script Comprehensive Tests', () => {
     });
 
     it('should set default values when no saved settings exist', () => {
-      chrome.storage.sync.get.mockResolvedValueOnce({});
+      (chrome.storage.sync.get as any).mockResolvedValueOnce({});
 
       // Re-trigger initialization
       document.dispatchEvent(new Event('DOMContentLoaded'));
@@ -340,10 +382,7 @@ describe('Options Script Comprehensive Tests', () => {
       const settingsForm = mockDOM['settings-form'];
       const submitHandler = settingsForm.addEventListener.mock.calls[0][1];
 
-      submitHandler({ preventDefault: jest.fn() });
-
-      // Wait for async operations
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await submitHandler({ preventDefault: jest.fn() });
 
       expect(mockDOM.status.textContent).toBe('Settings saved successfully!');
       expect(mockDOM.status.className).toBe('status success');
@@ -393,9 +432,12 @@ describe('Options Script Comprehensive Tests', () => {
       };
 
       // Trigger the message listener
-      chrome.runtime.onMessage.addListener.mock.calls.forEach(([listener]) => {
-        listener(mockMetricsResponse);
-      });
+      (chrome.runtime.onMessage.addListener as any).mock.calls.forEach(
+        (call: any[]) => {
+          const [listener] = call;
+          listener(mockMetricsResponse);
+        }
+      );
 
       expect(mockDOM.metricsContainer.innerHTML).toContain(
         'Chrome Built-in AI'
@@ -409,9 +451,11 @@ describe('Options Script Comprehensive Tests', () => {
         metrics: {},
       };
 
-      chrome.runtime.onMessage.addListener.mock.calls.forEach(([listener]) => {
-        listener(mockMetricsResponse);
-      });
+      (chrome.runtime.onMessage.addListener as any).mock.calls.forEach(
+        ([listener]: any) => {
+          listener(mockMetricsResponse);
+        }
+      );
 
       expect(mockDOM.metricsContainer.innerHTML).toContain(
         'No performance data available yet'
@@ -424,9 +468,11 @@ describe('Options Script Comprehensive Tests', () => {
         metrics: mockMetrics,
       };
 
-      chrome.runtime.onMessage.addListener.mock.calls.forEach(([listener]) => {
-        listener(mockMetricsResponse);
-      });
+      (chrome.runtime.onMessage.addListener as any).mock.calls.forEach(
+        ([listener]: any) => {
+          listener(mockMetricsResponse);
+        }
+      );
 
       expect(mockDOM.metricsContainer.innerHTML).toContain('80.0%'); // 8/10
       expect(mockDOM.metricsContainer.innerHTML).toContain('2.55s'); // avg time
@@ -438,9 +484,11 @@ describe('Options Script Comprehensive Tests', () => {
         metrics: mockMetrics,
       };
 
-      chrome.runtime.onMessage.addListener.mock.calls.forEach(([listener]) => {
-        listener(mockMetricsResponse);
-      });
+      (chrome.runtime.onMessage.addListener as any).mock.calls.forEach(
+        ([listener]: any) => {
+          listener(mockMetricsResponse);
+        }
+      );
 
       expect(mockDOM.metricsContainer.innerHTML).toContain('12/1/2023');
     });
@@ -459,9 +507,12 @@ describe('Options Script Comprehensive Tests', () => {
         },
       };
 
-      chrome.runtime.onMessage.addListener.mock.calls.forEach(([listener]) => {
-        listener(mockMetricsResponse);
-      });
+      (chrome.runtime.onMessage.addListener as any).mock.calls.forEach(
+        (call: any[]) => {
+          const [listener] = call;
+          listener(mockMetricsResponse);
+        }
+      );
 
       expect(mockDOM.metricsContainer.innerHTML).toContain('unknown-model');
     });
@@ -547,42 +598,42 @@ describe('Options Script Comprehensive Tests', () => {
         });
       });
     });
+  });
 
-    describe('window.validateGeminiApiKey', () => {
-      it('should return valid for successful response', async () => {
-        fetchMock.mockResponseOnce('', { status: 200 });
-        const result = await window.validateGeminiApiKey('valid-key');
-        expect(result).toEqual({ valid: true });
+  describe('window.validateGeminiApiKey', () => {
+    it('should return valid for successful response', async () => {
+      fetchMock.mockResponseOnce('', { status: 200 });
+      const result = await window.validateGeminiApiKey('valid-key');
+      expect(result).toEqual({ valid: true });
+    });
+
+    it('should return invalid for 400 status', async () => {
+      fetchMock.mockResponseOnce('', { status: 400 });
+      const result = await window.validateGeminiApiKey('invalid-key');
+      expect(result).toEqual({ valid: false, error: 'Invalid API key' });
+    });
+
+    it('should return invalid for 403 status', async () => {
+      fetchMock.mockResponseOnce('', { status: 403 });
+      const result = await window.validateGeminiApiKey('invalid-key');
+      expect(result).toEqual({ valid: false, error: 'Invalid API key' });
+    });
+
+    it('should return invalid for other error status', async () => {
+      fetchMock.mockResponseOnce('', { status: 500 });
+      const result = await window.validateGeminiApiKey('key');
+      expect(result).toEqual({
+        valid: false,
+        error: 'API validation failed: 500',
       });
+    });
 
-      it('should return invalid for 400 status', async () => {
-        fetchMock.mockResponseOnce('', { status: 400 });
-        const result = await window.validateGeminiApiKey('invalid-key');
-        expect(result).toEqual({ valid: false, error: 'Invalid API key' });
-      });
-
-      it('should return invalid for 403 status', async () => {
-        fetchMock.mockResponseOnce('', { status: 403 });
-        const result = await window.validateGeminiApiKey('invalid-key');
-        expect(result).toEqual({ valid: false, error: 'Invalid API key' });
-      });
-
-      it('should return invalid for other error status', async () => {
-        fetchMock.mockResponseOnce('', { status: 500 });
-        const result = await window.validateGeminiApiKey('key');
-        expect(result).toEqual({
-          valid: false,
-          error: 'API validation failed: 500',
-        });
-      });
-
-      it('should handle network errors', async () => {
-        fetchMock.mockRejectOnce(new Error('Network error'));
-        const result = await window.validateGeminiApiKey('key');
-        expect(result).toEqual({
-          valid: false,
-          error: 'Network error during validation',
-        });
+    it('should handle network errors', async () => {
+      fetchMock.mockRejectOnce(new Error('Network error'));
+      const result = await window.validateGeminiApiKey('key');
+      expect(result).toEqual({
+        valid: false,
+        error: 'Network error during validation',
       });
     });
 
@@ -619,83 +670,83 @@ describe('Options Script Comprehensive Tests', () => {
     });
 
     describe('window.isModelAvailable', () => {
-      it('should return false for unknown model', () => {
-        const result = window.isModelAvailable('unknown-model', {});
+      it('should return false for unknown model', async () => {
+        const result = await window.isModelAvailable('unknown-model', {});
         expect(result).toBe(false);
       });
 
-      it('should return true for chrome-builtin', () => {
-        const result = window.isModelAvailable('chrome-builtin', {});
+      it('should return true for chrome-builtin', async () => {
+        const result = await window.isModelAvailable('chrome-builtin', {});
         expect(result).toBe(true);
       });
 
-      it('should return true for openai model with valid key', () => {
+      it('should return true for openai model with valid key', async () => {
         const apiKeys = {
           openaiApiKey: 'key',
           geminiApiKey: '',
           anthropicApiKey: '',
         };
-        const result = window.isModelAvailable('gpt-3.5-turbo', apiKeys);
+        const result = await window.isModelAvailable('gpt-3.5-turbo', apiKeys);
         expect(result).toBe(true);
       });
 
-      it('should return false for openai model without key', () => {
+      it('should return false for openai model without key', async () => {
         const apiKeys = {
           openaiApiKey: '',
           geminiApiKey: '',
           anthropicApiKey: '',
         };
-        const result = window.isModelAvailable('gpt-3.5-turbo', apiKeys);
+        const result = await window.isModelAvailable('gpt-3.5-turbo', apiKeys);
         expect(result).toBe(false);
       });
 
-      it('should return false for openai model with whitespace key', () => {
+      it('should return false for openai model with whitespace key', async () => {
         const apiKeys = {
           openaiApiKey: '   ',
           geminiApiKey: '',
           anthropicApiKey: '',
         };
-        const result = window.isModelAvailable('gpt-3.5-turbo', apiKeys);
+        const result = await window.isModelAvailable('gpt-3.5-turbo', apiKeys);
         expect(result).toBe(false);
       });
 
-      it('should return true for gemini model with valid key', () => {
+      it('should return true for gemini model with valid key', async () => {
         const apiKeys = {
           openaiApiKey: '',
           geminiApiKey: 'key',
           anthropicApiKey: '',
         };
-        const result = window.isModelAvailable('gemini-1.5-pro', apiKeys);
+        const result = await window.isModelAvailable('gemini-1.5-pro', apiKeys);
         expect(result).toBe(true);
       });
 
-      it('should return false for gemini model without key', () => {
+      it('should return false for gemini model without key', async () => {
         const apiKeys = {
           openaiApiKey: '',
           geminiApiKey: '',
           anthropicApiKey: '',
         };
-        const result = window.isModelAvailable('gemini-1.5-pro', apiKeys);
+        const result = await window.isModelAvailable('gemini-1.5-pro', apiKeys);
         expect(result).toBe(false);
       });
 
-      it('should return true for anthropic model with valid key', () => {
+      it('should return true for anthropic model with valid key', async () => {
         const apiKeys = {
           openaiApiKey: '',
           geminiApiKey: '',
           anthropicApiKey: 'key',
         };
-        const result = window.isModelAvailable('claude-3-haiku', apiKeys);
+        const result = await window.isModelAvailable('claude-3-haiku', apiKeys);
         expect(result).toBe(true);
       });
 
-      it('should return false for anthropic model without key', () => {
+      it('should return false for anthropic model without key', async () => {
         const apiKeys = {
           openaiApiKey: '',
           geminiApiKey: '',
           anthropicApiKey: '',
         };
-        const result = window.isModelAvailable('claude-3-haiku', apiKeys);
+        const result = await window.isModelAvailable('claude-3-haiku', apiKeys);
         expect(result).toBe(false);
       });
     });
@@ -854,10 +905,12 @@ describe('Options Script Comprehensive Tests', () => {
 
     it('should display history items correctly', () => {
       // Mock chrome.storage.local.get for history
-      chrome.storage.local.get.mockImplementationOnce((keys, callback) => {
-        if (callback) callback({ summaryHistory: mockHistory });
-        return Promise.resolve({ summaryHistory: mockHistory });
-      });
+      (chrome.storage.local.get as any).mockImplementationOnce(
+        (keys: any, callback?: (result: any) => void) => {
+          if (callback) callback({ summaryHistory: mockHistory });
+          return Promise.resolve({ summaryHistory: mockHistory });
+        }
+      );
 
       // Trigger refresh history
       const refreshButton = mockDOM.refreshHistory;
@@ -875,7 +928,9 @@ describe('Options Script Comprehensive Tests', () => {
     });
 
     it('should show message when no history exists', () => {
-      chrome.storage.local.get.mockResolvedValueOnce({ summaryHistory: [] });
+      (chrome.storage.local.get as any).mockResolvedValueOnce({
+        summaryHistory: [],
+      });
 
       const refreshButton = mockDOM.refreshHistory;
       const clickHandler = refreshButton.addEventListener.mock.calls[0][1];
@@ -894,10 +949,12 @@ describe('Options Script Comprehensive Tests', () => {
         },
       ];
 
-      chrome.storage.local.get.mockImplementationOnce((keys, callback) => {
-        if (callback) callback({ summaryHistory: historyWithMissingTitle });
-        return Promise.resolve({ summaryHistory: historyWithMissingTitle });
-      });
+      (chrome.storage.local.get as any).mockImplementationOnce(
+        (keys: any, callback?: (result: any) => void) => {
+          if (callback) callback({ summaryHistory: historyWithMissingTitle });
+          return Promise.resolve({ summaryHistory: historyWithMissingTitle });
+        }
+      );
 
       const refreshButton = mockDOM.refreshHistory;
       const clickHandler = refreshButton.addEventListener.mock.calls[0][1];
@@ -907,10 +964,12 @@ describe('Options Script Comprehensive Tests', () => {
     });
 
     it('should format timestamps correctly', () => {
-      chrome.storage.local.get.mockImplementationOnce((keys, callback) => {
-        if (callback) callback({ summaryHistory: mockHistory });
-        return Promise.resolve({ summaryHistory: mockHistory });
-      });
+      (chrome.storage.local.get as any).mockImplementationOnce(
+        (keys: any, callback?: (result: any) => void) => {
+          if (callback) callback({ summaryHistory: mockHistory });
+          return Promise.resolve({ summaryHistory: mockHistory });
+        }
+      );
 
       const refreshButton = mockDOM.refreshHistory;
       const clickHandler = refreshButton.addEventListener.mock.calls[0][1];
@@ -931,10 +990,12 @@ describe('Options Script Comprehensive Tests', () => {
         },
       ];
 
-      chrome.storage.local.get.mockImplementationOnce((keys, callback) => {
-        if (callback) callback({ summaryHistory: historyWithAttempts });
-        return Promise.resolve({ summaryHistory: historyWithAttempts });
-      });
+      (chrome.storage.local.get as any).mockImplementationOnce(
+        (keys: any, callback?: (result: any) => void) => {
+          if (callback) callback({ summaryHistory: historyWithAttempts });
+          return Promise.resolve({ summaryHistory: historyWithAttempts });
+        }
+      );
 
       const refreshButton = mockDOM.refreshHistory;
       const clickHandler = refreshButton.addEventListener.mock.calls[0][1];
@@ -995,9 +1056,9 @@ describe('Options Script Comprehensive Tests', () => {
         metrics: { attempts: [], totalTime: 1.0 },
       }));
 
-      chrome.storage.local.get.mockResolvedValueOnce({
+      (chrome.storage.local.get as any).mockResolvedValueOnce({
         summaryHistory: largeHistory,
-      });
+      } as any);
 
       const refreshButton = mockDOM.refreshHistory;
       const clickHandler = refreshButton.addEventListener.mock.calls[0][1];
@@ -1031,7 +1092,7 @@ describe('Options Script Comprehensive Tests', () => {
       const title = 'Test Title';
       const text = 'Test summary text';
 
-      global.shareSummary(title, text, 'status');
+      (global as any).shareSummary(title, text, 'status');
 
       expect(navigator.share).toHaveBeenCalledWith({
         title: title,
@@ -1050,7 +1111,7 @@ describe('Options Script Comprehensive Tests', () => {
       const title = 'Test Title';
       const text = 'Test summary text';
 
-      global.shareSummary(title, text, 'status');
+      (global as any).shareSummary(title, text, 'status');
 
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(text);
 

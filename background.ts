@@ -88,7 +88,7 @@ chrome.action.onClicked.addListener(async (tab: chrome.tabs.Tab) => {
   // Inject library scripts dynamically
   await chrome.scripting.executeScript({
     target: { tabId: tab.id! },
-    files: ['Readability.js', 'showdown.min.js'],
+    files: ['Readability.js', 'showdown.min.js', 'content.js'],
   });
 
   // Check if summary exists for this tab
