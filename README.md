@@ -66,7 +66,7 @@ _Note: Chrome Built-in AI models don't require API keys but may have limited ava
 ### For Users
 
 1. **Download the Extension**
-   - Visit the [Chrome Web Store](https://chrome.google.com/webstore) (link to be added)
+   - Visit the [Chrome Web Store](https://chromewebstore.google.com/detail/ai-summary/jbdalmaofgehlogmedjomdjimhdfnboi)
    - Or download the latest release from [GitHub Releases](https://github.com/lassestilvang/ai-summary-extension/releases)
 
 2. **Install in Chrome**

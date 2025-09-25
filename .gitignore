@@ -1,5 +1,6 @@
 docs/
 coverage/
+dist/
 
 # Node.js
 node_modules/

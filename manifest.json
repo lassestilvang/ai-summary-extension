@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "description": "🚀 One-click AI summary of any web page! Supports GPT-4, Gemini, Claude, and free Chrome AI. Instant, secure, and customizable",
   "icons": {
-    "128": "icon.png"
+    "128": "icon.png",
+    "1024": "icon-1024.png"
   },
   "permissions": ["activeTab", "scripting", "storage"],
   "optional_host_permissions": [

@@ -264,7 +264,10 @@
 
       .sidebar-header {
         padding: var(--space-xl) var(--space-lg);
-        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-md);
         border-bottom: 1px solid var(--glass-border);
         position: relative;
         z-index: 2;
@@ -273,6 +276,17 @@
 
       .sidebar.collapsed .sidebar-header {
         padding: var(--space-xl) var(--space-md);
+      }
+
+      .app-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm);
+        transition: all var(--transition-normal);
+      }
+
+      .sidebar.collapsed .app-icon {
+        display: none;
       }
 
       .sidebar-title {
@@ -1079,6 +1093,11 @@
         .history-actions {
           flex-direction: column;
         }
+
+        .app-icon {
+          width: 24px;
+          height: 24px;
+        }
       }
 
       /* ===== VALIDATION INDICATORS ===== */
@@ -1194,6 +1213,7 @@
     <div class="app-container">
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
+          <img src="icon-1024.png" alt="AI Summary Icon" class="app-icon" />
           <h1 class="sidebar-title">AI Summary</h1>
         </div>
         <nav>
