@@ -6,7 +6,7 @@
   "icons": {
     "128": "icon.png"
   },
-  "permissions": ["activeTab", "scripting", "storage", "notifications"],
+  "permissions": ["activeTab", "scripting", "storage"],
   "optional_host_permissions": [
     "https://api.openai.com/*",
     "https://generativelanguage.googleapis.com/*",

@@ -116,6 +116,7 @@ async function checkChromeBuiltinSupport() {
         }
     }
     let summaryDiv = null;
+    let progressAnimationId = null;
     const contentThemes = {
         light: {
             name: 'Light',
@@ -271,6 +272,38 @@ async function checkChromeBuiltinSupport() {
         const modelConfig = getModelConfig(model);
         return modelConfig ? modelConfig.name : model;
     }
+    function startProgressAnimation() {
+        if (progressAnimationId)
+            return;
+        const progressBar = document.getElementById('ai-summary-extension-progress-bar');
+        if (!progressBar)
+            return;
+        const startTime = Date.now();
+        const duration = 10000; // 10 seconds for smoother, longer animation
+        function animate() {
+            if (!progressBar)
+                return;
+            const elapsed = Date.now() - startTime;
+            const t = Math.min(elapsed / duration, 1); // 0 to 1
+            const easedT = 1 - Math.pow(1 - t, 3); // ease-out cubic for gradual slowdown
+            const width = easedT * 100;
+            progressBar.style.width = `${width}%`;
+            if (t < 1) {
+                progressAnimationId = requestAnimationFrame(animate);
+            }
+            else {
+                progressAnimationId = null;
+            }
+        }
+        progressBar.style.width = '0%';
+        progressAnimationId = requestAnimationFrame(animate);
+    }
+    function stopProgressAnimation() {
+        if (progressAnimationId) {
+            cancelAnimationFrame(progressAnimationId);
+            progressAnimationId = null;
+        }
+    }
     function createOrUpdateSummaryDiv(summaryText, theme, fontFamily, fontSize, fontStyle, model, time, metrics) {
         const themeColors = contentThemes[theme]?.colors || contentThemes.light.colors;
         if (!summaryDiv) {
@@ -410,6 +443,7 @@ async function checkChromeBuiltinSupport() {
             summaryTitle.textContent = 'AI Summary';
             summaryTitle.style.cssText = `
       color: ${themeColors.titleColor} !important;
+      font-family: Arial, sans-serif !important;
       font-size: 14px !important;
       font-weight: bold !important;
       display: inline-block !important;
@@ -596,27 +630,6 @@ async function checkChromeBuiltinSupport() {
       margin: 0 auto 10px auto;
     `;
             loadingContainer.appendChild(loadingSpinner);
-            // Progress bar container
-            const progressContainer = document.createElement('div');
-            progressContainer.style.cssText = `
-      width: 100% !important;
-      height: 8px !important;
-      background-color: #e0e0e0 !important;
-      border-radius: 4px !important;
-      margin-bottom: 10px !important;
-      overflow: hidden !important;
-    `;
-            const progressBar = document.createElement('div');
-            progressBar.id = 'ai-summary-extension-progress-bar';
-            progressBar.style.cssText = `
-      height: 100% !important;
-      width: 0% !important;
-      background-color: #3498db !important;
-      border-radius: 4px !important;
-      transition: width 0.3s ease !important;
-    `;
-            progressContainer.appendChild(progressBar);
-            loadingContainer.appendChild(progressContainer);
             // Progress text (percentage and step)
             const progressText = document.createElement('div');
             progressText.id = 'ai-summary-extension-progress-text';
@@ -633,10 +646,29 @@ async function checkChromeBuiltinSupport() {
             progressDetails.style.cssText = `
       font-size: 12px !important;
       color: ${themeColors.titleColor} !important;
-      margin-bottom: 5px !important;
+      margin-bottom: 10px !important;
     `;
             progressDetails.textContent = '';
             loadingContainer.appendChild(progressDetails);
+            // Progress bar container
+            const progressContainer = document.createElement('div');
+            progressContainer.style.cssText = `
+      width: 100% !important;
+      height: 8px !important;
+      background-color: #e0e0e0 !important;
+      border-radius: 4px !important;
+      overflow: hidden !important;
+    `;
+            const progressBar = document.createElement('div');
+            progressBar.id = 'ai-summary-extension-progress-bar';
+            progressBar.style.cssText = `
+      height: 100% !important;
+      width: 0% !important;
+      background-color: #3498db !important;
+      border-radius: 4px !important;
+    `;
+            progressContainer.appendChild(progressBar);
+            loadingContainer.appendChild(progressContainer);
             summaryDiv.appendChild(loadingContainer);
             summaryDiv.appendChild(summaryContent);
             const footerDiv = document.createElement('div');
@@ -647,7 +679,8 @@ async function checkChromeBuiltinSupport() {
       left: 0 !important;
       right: 0 !important;
       height: 32px !important;
-      padding: 4px 8px !important;
+      padding: 0px 8px !important;
+      font-family: Arial, sans-serif !important;
       font-size: 12px !important;
       color: ${themeColors.titleColor} !important;
       background-color: ${themeColors.borderColor} !important;
@@ -662,6 +695,7 @@ async function checkChromeBuiltinSupport() {
             modelSelect.id = 'ai-summary-model-selector';
             modelSelect.style.cssText = `
       padding: 2px 4px !important;
+      font-family: Arial, sans-serif !important;
       font-size: 11px !important;
       border: 1px solid ${themeColors.borderColor} !important;
       border-radius: 3px !important;
@@ -813,6 +847,7 @@ async function checkChromeBuiltinSupport() {
       overflow: hidden !important;
       text-overflow: ellipsis !important;
       white-space: nowrap !important;
+      font-family: Arial, sans-serif !important;
     `;
             footerDiv.appendChild(modelSelect);
             footerDiv.appendChild(statusText);
@@ -842,6 +877,7 @@ async function checkChromeBuiltinSupport() {
                 statusText.textContent = '';
             if (summaryDiv)
                 summaryDiv.style.display = 'flex';
+            startProgressAnimation();
         }
         else {
             // Hide loading container, show content
@@ -865,6 +901,7 @@ async function checkChromeBuiltinSupport() {
             }
             if (summaryDiv)
                 summaryDiv.style.display = 'flex';
+            stopProgressAnimation();
             adjustHeight();
         }
     }
@@ -946,8 +983,11 @@ async function checkChromeBuiltinSupport() {
         const progressText = document.getElementById('ai-summary-extension-progress-text');
         const progressDetails = document.getElementById('ai-summary-extension-progress-details');
         if (progressBar && progressText && progressDetails) {
-            // Update progress bar
-            progressBar.style.width = `${progress.percentage}%`;
+            // Update progress bar if new percentage is higher
+            const currentWidth = parseFloat(progressBar.style.width || '0');
+            if (progress.percentage > currentWidth) {
+                progressBar.style.width = `${progress.percentage}%`;
+            }
             // Update progress text
             progressText.textContent = `${progress.step} (${progress.percentage}%)`;
             // Update details
