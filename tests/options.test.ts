@@ -139,6 +139,16 @@ describe('Options Script Comprehensive Tests', () => {
           return [];
         }),
       },
+       // Shortcuts elements
+       currentShortcut: { value: '', addEventListener: jest.fn() },
+       ctrlMod: { checked: false, addEventListener: jest.fn() },
+       altMod: { checked: false, addEventListener: jest.fn() },
+       shiftMod: { checked: false, addEventListener: jest.fn() },
+       cmdMod: { checked: false, addEventListener: jest.fn() },
+       keyInput: { value: '', addEventListener: jest.fn() },
+       recordShortcut: { addEventListener: jest.fn() },
+       resetShortcut: { addEventListener: jest.fn() },
+       shortcutValidation: { textContent: '', className: '', style: { display: 'none' } },
       historyStatus: { textContent: '', className: '', style: {} },
 
       // Form
@@ -282,6 +292,10 @@ describe('Options Script Comprehensive Tests', () => {
     // Mock chrome.runtime.sendMessage
     (chrome.runtime.sendMessage as any).mockResolvedValue();
     (chrome.runtime.onMessage.addListener as any).mockImplementation(() => {});
+    // Mock chrome.commands
+    (chrome.commands as any) = {
+      update: jest.fn().mockResolvedValue(undefined),
+    };
 
     // Mock navigator.clipboard
     Object.defineProperty(navigator, 'clipboard', {
