@@ -1,8 +1,9 @@
 docs/
 coverage/
 dist/
-.kilocode
+.kilocode/
 .kiro/
+screenshots/
 
 # Node.js
 node_modules/
