@@ -2,10 +2,7 @@
 declare global {
   interface chrome {
     commands: {
-      update: (details: {
-        name: string;
-        shortcut: string;
-      }) => Promise<void>;
+      update: (details: { name: string; shortcut: string }) => Promise<void>;
     };
   }
 }
