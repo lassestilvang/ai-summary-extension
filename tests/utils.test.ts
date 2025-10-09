@@ -1,10 +1,10 @@
 // Type declarations for chrome APIs
 declare global {
-  namespace chrome {
-    namespace commands {
-      function update(details: { name: string; shortcut: string }): Promise<void>;
-    }
-  }
+  const chrome: {
+    commands: {
+      update(details: { name: string; shortcut: string }): Promise<void>;
+    };
+  };
 }
 
 // Comprehensive unit tests for utils.ts
@@ -377,7 +377,7 @@ describe('Utils Module Comprehensive Tests', () => {
         expect(config?.name).toMatch(/^Claude/);
       });
     });
-  
+
     describe('Shortcut Management Functions', () => {
       beforeEach(() => {
         // Reset mocks
@@ -385,7 +385,7 @@ describe('Utils Module Comprehensive Tests', () => {
         (chrome.storage.sync.get as jest.Mock).mockReset();
         (chrome.commands.update as jest.Mock).mockReset();
       });
-  
+
       describe('validateShortcut', () => {
         it('should return null for valid shortcuts', () => {
           expect(validateShortcut('Ctrl+S')).toBeNull();
@@ -395,88 +395,136 @@ describe('Utils Module Comprehensive Tests', () => {
           expect(validateShortcut('Ctrl+F1')).toBeNull();
           expect(validateShortcut('Ctrl+F12')).toBeNull();
         });
-  
+
         it('should reject empty shortcuts', () => {
           expect(validateShortcut('')).toBe('Shortcut cannot be empty');
           expect(validateShortcut('   ')).toBe('Shortcut cannot be empty');
         });
-  
+
         it('should reject shortcuts without modifiers', () => {
-          expect(validateShortcut('S')).toBe('Shortcut must include at least one modifier key (Ctrl/Cmd, Alt, Shift)');
-          expect(validateShortcut('A')).toBe('Shortcut must include at least one modifier key (Ctrl/Cmd, Alt, Shift)');
+          expect(validateShortcut('S')).toBe(
+            'Shortcut must include at least one modifier key (Ctrl/Cmd, Alt, Shift)'
+          );
+          expect(validateShortcut('A')).toBe(
+            'Shortcut must include at least one modifier key (Ctrl/Cmd, Alt, Shift)'
+          );
         });
-  
+
         it('should reject shortcuts with single modifier only', () => {
-          expect(validateShortcut('Ctrl')).toBe('Shortcut must include at least one modifier key (Ctrl/Cmd, Alt, Shift)');
-          expect(validateShortcut('Alt')).toBe('Shortcut must include at least one modifier key (Ctrl/Cmd, Alt, Shift)');
-          expect(validateShortcut('Shift')).toBe('Shortcut must include at least one modifier key (Ctrl/Cmd, Alt, Shift)');
+          expect(validateShortcut('Ctrl')).toBe(
+            'Shortcut must include at least one modifier key (Ctrl/Cmd, Alt, Shift)'
+          );
+          expect(validateShortcut('Alt')).toBe(
+            'Shortcut must include at least one modifier key (Ctrl/Cmd, Alt, Shift)'
+          );
+          expect(validateShortcut('Shift')).toBe(
+            'Shortcut must include at least one modifier key (Ctrl/Cmd, Alt, Shift)'
+          );
         });
-  
+
         it('should reject invalid modifier combinations', () => {
-          expect(validateShortcut('Ctrl+Cmd+S')).toBe('Cannot use both Ctrl and Cmd in the same shortcut');
+          expect(validateShortcut('Ctrl+Cmd+S')).toBe(
+            'Cannot use both Ctrl and Cmd in the same shortcut'
+          );
         });
-  
+
         it('should reject browser/OS conflicts', () => {
           const conflicts = [
-            'Ctrl+T', 'Ctrl+W', 'Ctrl+R', 'Ctrl+N', 'Ctrl+Shift+T',
-            'Ctrl+Shift+W', 'Ctrl+F4', 'Alt+F4', 'Ctrl+Q', 'Ctrl+Shift+Q',
-            'Ctrl+Tab', 'Ctrl+Shift+Tab', 'Cmd+T', 'Cmd+W', 'Cmd+R',
-            'Cmd+N', 'Cmd+Shift+T', 'Cmd+Shift+W', 'Cmd+Q', 'Cmd+Tab',
-            'Cmd+Shift+Tab'
+            'Ctrl+T',
+            'Ctrl+W',
+            'Ctrl+R',
+            'Ctrl+N',
+            'Ctrl+Shift+T',
+            'Ctrl+Shift+W',
+            'Ctrl+F4',
+            'Alt+F4',
+            'Ctrl+Q',
+            'Ctrl+Shift+Q',
+            'Ctrl+Tab',
+            'Ctrl+Shift+Tab',
+            'Cmd+T',
+            'Cmd+W',
+            'Cmd+R',
+            'Cmd+N',
+            'Cmd+Shift+T',
+            'Cmd+Shift+W',
+            'Cmd+Q',
+            'Cmd+Tab',
+            'Cmd+Shift+Tab',
           ];
-  
-          conflicts.forEach(shortcut => {
-            expect(validateShortcut(shortcut)).toBe('This shortcut conflicts with browser or system shortcuts');
+
+          conflicts.forEach((shortcut) => {
+            expect(validateShortcut(shortcut)).toBe(
+              'This shortcut conflicts with browser or system shortcuts'
+            );
           });
         });
-  
+
         it('should reject invalid function keys', () => {
-          expect(validateShortcut('Ctrl+F0')).toBe('Function keys must be F1 through F12');
-          expect(validateShortcut('Ctrl+F13')).toBe('Function keys must be F1 through F12');
-          expect(validateShortcut('Ctrl+F123')).toBe('Function keys must be F1 through F12');
+          expect(validateShortcut('Ctrl+F0')).toBe(
+            'Function keys must be F1 through F12'
+          );
+          expect(validateShortcut('Ctrl+F13')).toBe(
+            'Function keys must be F1 through F12'
+          );
+          expect(validateShortcut('Ctrl+F123')).toBe(
+            'Function keys must be F1 through F12'
+          );
         });
-  
+
         it('should reject invalid keys', () => {
-          expect(validateShortcut('Ctrl+InvalidKey')).toBe('Invalid key for shortcut');
+          expect(validateShortcut('Ctrl+InvalidKey')).toBe(
+            'Invalid key for shortcut'
+          );
           expect(validateShortcut('Ctrl+123')).toBe('Invalid key for shortcut');
         });
-  
+
         it('should accept valid special keys', () => {
           expect(validateShortcut('Ctrl+Space')).toBeNull();
           expect(validateShortcut('Ctrl+Enter')).toBeNull();
-          expect(validateShortcut('Ctrl+Tab')).toBe('This shortcut conflicts with browser or system shortcuts'); // This is actually a conflict
+          expect(validateShortcut('Ctrl+Tab')).toBe(
+            'This shortcut conflicts with browser or system shortcuts'
+          ); // This is actually a conflict
           expect(validateShortcut('Ctrl+Esc')).toBeNull();
           expect(validateShortcut('Ctrl+Backspace')).toBeNull();
           expect(validateShortcut('Ctrl+Delete')).toBeNull();
         });
-  
+
         it('should reject duplicate modifiers', () => {
-          expect(validateShortcut('Ctrl+Ctrl+S')).toBe('Duplicate modifier keys are not allowed');
-          expect(validateShortcut('Shift+Shift+A')).toBe('Duplicate modifier keys are not allowed');
-          expect(validateShortcut('Alt+Alt+F')).toBe('Duplicate modifier keys are not allowed');
+          expect(validateShortcut('Ctrl+Ctrl+S')).toBe(
+            'Duplicate modifier keys are not allowed'
+          );
+          expect(validateShortcut('Shift+Shift+A')).toBe(
+            'Duplicate modifier keys are not allowed'
+          );
+          expect(validateShortcut('Alt+Alt+F')).toBe(
+            'Duplicate modifier keys are not allowed'
+          );
         });
-  
+
         it('should handle cross-platform modifiers', () => {
           // On Mac, Cmd should be accepted
           expect(validateShortcut('Cmd+S')).toBeNull();
-          expect(validateShortcut('Cmd+Shift+T')).toBe('This shortcut conflicts with browser or system shortcuts');
+          expect(validateShortcut('Cmd+Shift+T')).toBe(
+            'This shortcut conflicts with browser or system shortcuts'
+          );
         });
       });
-  
+
       describe('recordShortcut', () => {
         let addEventListenerSpy: jest.SpyInstance;
         let removeEventListenerSpy: jest.SpyInstance;
-  
+
         beforeEach(() => {
           addEventListenerSpy = jest.spyOn(document, 'addEventListener');
           removeEventListenerSpy = jest.spyOn(document, 'removeEventListener');
         });
-  
+
         afterEach(() => {
           addEventListenerSpy.mockRestore();
           removeEventListenerSpy.mockRestore();
         });
-  
+
         it('should resolve with valid shortcut on keydown', async () => {
           const mockEvent = {
             key: 'S',
@@ -487,23 +535,25 @@ describe('Utils Module Comprehensive Tests', () => {
             preventDefault: jest.fn(),
             stopPropagation: jest.fn(),
           } as any as KeyboardEvent;
-  
+
           // Mock the event listener to immediately trigger
           addEventListenerSpy.mockImplementation((event, handler) => {
             if (event === 'keydown' && typeof handler === 'function') {
               setTimeout(() => handler(mockEvent), 0);
             }
           });
-  
+
           const result = await recordShortcut();
           expect(result).toBe('Ctrl+S');
           expect(mockEvent.preventDefault).toHaveBeenCalled();
           expect(mockEvent.stopPropagation).toHaveBeenCalled();
-          expect(removeEventListenerSpy).toHaveBeenCalledWith('keydown', expect.any(Function));
+          expect(removeEventListenerSpy).toHaveBeenCalledWith(
+            'keydown',
+            expect.any(Function)
+          );
         });
-  
+
         it('should continue listening for invalid shortcuts', async () => {
-          let callCount = 0;
           const mockEvents = [
             // Invalid: no modifiers
             {
@@ -526,7 +576,7 @@ describe('Utils Module Comprehensive Tests', () => {
               stopPropagation: jest.fn(),
             },
           ] as any as KeyboardEvent[];
-  
+
           addEventListenerSpy.mockImplementation((event, handler) => {
             if (event === 'keydown' && typeof handler === 'function') {
               // Trigger first invalid event
@@ -539,11 +589,11 @@ describe('Utils Module Comprehensive Tests', () => {
               }, 0);
             }
           });
-  
+
           const result = await recordShortcut();
           expect(result).toBe('Ctrl+S');
         });
-  
+
         it('should handle special keys correctly', async () => {
           const mockEvent = {
             key: ' ',
@@ -554,17 +604,17 @@ describe('Utils Module Comprehensive Tests', () => {
             preventDefault: jest.fn(),
             stopPropagation: jest.fn(),
           } as any as KeyboardEvent;
-  
+
           addEventListenerSpy.mockImplementation((event, handler) => {
             if (event === 'keydown' && typeof handler === 'function') {
               setTimeout(() => handler(mockEvent), 0);
             }
           });
-  
+
           const result = await recordShortcut();
           expect(result).toBe('Ctrl+Space');
         });
-  
+
         it('should handle uppercase keys', async () => {
           const mockEvent = {
             key: 'a',
@@ -575,17 +625,17 @@ describe('Utils Module Comprehensive Tests', () => {
             preventDefault: jest.fn(),
             stopPropagation: jest.fn(),
           } as any as KeyboardEvent;
-  
+
           addEventListenerSpy.mockImplementation((event, handler) => {
             if (event === 'keydown' && typeof handler === 'function') {
               setTimeout(() => handler(mockEvent), 0);
             }
           });
-  
+
           const result = await recordShortcut();
           expect(result).toBe('Ctrl+A');
         });
-  
+
         it('should handle arrow keys', async () => {
           const mockEvent = {
             key: 'ArrowUp',
@@ -596,17 +646,17 @@ describe('Utils Module Comprehensive Tests', () => {
             preventDefault: jest.fn(),
             stopPropagation: jest.fn(),
           } as any as KeyboardEvent;
-  
+
           addEventListenerSpy.mockImplementation((event, handler) => {
             if (event === 'keydown' && typeof handler === 'function') {
               setTimeout(() => handler(mockEvent), 0);
             }
           });
-  
+
           const result = await recordShortcut();
           expect(result).toBe('Ctrl+Up');
         });
-  
+
         it('should handle Escape key', async () => {
           const mockEvent = {
             key: 'Escape',
@@ -617,24 +667,24 @@ describe('Utils Module Comprehensive Tests', () => {
             preventDefault: jest.fn(),
             stopPropagation: jest.fn(),
           } as any as KeyboardEvent;
-  
+
           addEventListenerSpy.mockImplementation((event, handler) => {
             if (event === 'keydown' && typeof handler === 'function') {
               setTimeout(() => handler(mockEvent), 0);
             }
           });
-  
+
           const result = await recordShortcut();
           expect(result).toBe('Ctrl+Esc');
         });
-  
+
         it('should handle Cmd on Mac', async () => {
           // Mock Mac platform
           Object.defineProperty(navigator, 'platform', {
             value: 'MacIntel',
             writable: true,
           });
-  
+
           const mockEvent = {
             key: 'S',
             ctrlKey: false,
@@ -644,80 +694,94 @@ describe('Utils Module Comprehensive Tests', () => {
             preventDefault: jest.fn(),
             stopPropagation: jest.fn(),
           } as any as KeyboardEvent;
-  
+
           addEventListenerSpy.mockImplementation((event, handler) => {
             if (event === 'keydown' && typeof handler === 'function') {
               setTimeout(() => handler(mockEvent), 0);
             }
           });
-  
+
           const result = await recordShortcut();
           expect(result).toBe('Cmd+S');
         });
       });
-  
+
       describe('saveShortcut', () => {
         it('should save shortcut to storage and update commands', async () => {
           (chrome.storage.sync.set as jest.Mock).mockResolvedValue(undefined);
           (chrome.commands.update as jest.Mock).mockResolvedValue(undefined);
-  
+
           await saveShortcut('Ctrl+Shift+S');
-  
-          expect(chrome.storage.sync.set).toHaveBeenCalledWith({ keyboardShortcut: 'Ctrl+Shift+S' });
+
+          expect(chrome.storage.sync.set).toHaveBeenCalledWith({
+            keyboardShortcut: 'Ctrl+Shift+S',
+          });
           expect(chrome.commands.update).toHaveBeenCalledWith({
             name: '_execute_action',
             shortcut: 'Ctrl+Shift+S',
           });
         });
-  
+
         it('should throw error on storage failure', async () => {
           const error = new Error('Storage failed');
           (chrome.storage.sync.set as jest.Mock).mockRejectedValue(error);
-  
-          await expect(saveShortcut('Ctrl+S')).rejects.toThrow('Failed to save shortcut');
+
+          await expect(saveShortcut('Ctrl+S')).rejects.toThrow(
+            'Failed to save shortcut'
+          );
         });
-  
+
         it('should throw error on commands update failure', async () => {
           (chrome.storage.sync.set as jest.Mock).mockResolvedValue(undefined);
           const error = new Error('Commands update failed');
           (chrome.commands.update as jest.Mock).mockRejectedValue(error);
-  
-          await expect(saveShortcut('Ctrl+S')).rejects.toThrow('Failed to save shortcut');
+
+          await expect(saveShortcut('Ctrl+S')).rejects.toThrow(
+            'Failed to save shortcut'
+          );
         });
       });
-  
+
       describe('loadShortcut', () => {
         it('should return saved shortcut from storage', async () => {
-          (chrome.storage.sync.get as jest.Mock).mockResolvedValue({ keyboardShortcut: 'Alt+F' });
-  
+          (chrome.storage.sync.get as jest.Mock).mockResolvedValue({
+            keyboardShortcut: 'Alt+F',
+          });
+
           const result = await loadShortcut();
           expect(result).toBe('Alt+F');
-          expect(chrome.storage.sync.get).toHaveBeenCalledWith('keyboardShortcut');
+          expect(chrome.storage.sync.get).toHaveBeenCalledWith(
+            'keyboardShortcut'
+          );
         });
-  
+
         it('should return default shortcut when none saved', async () => {
           (chrome.storage.sync.get as jest.Mock).mockResolvedValue({});
-  
+
           const result = await loadShortcut();
           expect(result).toBe('Ctrl+Shift+S');
         });
-  
+
         it('should return default shortcut on storage error', async () => {
-          (chrome.storage.sync.get as jest.Mock).mockRejectedValue(new Error('Storage error'));
-  
+          (chrome.storage.sync.get as jest.Mock).mockRejectedValue(
+            new Error('Storage error')
+          );
+
           const result = await loadShortcut();
           expect(result).toBe('Ctrl+Shift+S');
         });
       });
-  
+
       describe('resetShortcut', () => {
         it('should reset to default shortcut', async () => {
           (chrome.storage.sync.set as jest.Mock).mockResolvedValue(undefined);
           (chrome.commands.update as jest.Mock).mockResolvedValue(undefined);
-  
+
           await resetShortcut();
-  
-          expect(chrome.storage.sync.set).toHaveBeenCalledWith({ keyboardShortcut: 'Ctrl+Shift+S' });
+
+          expect(chrome.storage.sync.set).toHaveBeenCalledWith({
+            keyboardShortcut: 'Ctrl+Shift+S',
+          });
           expect(chrome.commands.update).toHaveBeenCalledWith({
             name: '_execute_action',
             shortcut: 'Ctrl+Shift+S',

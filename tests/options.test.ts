@@ -139,16 +139,20 @@ describe('Options Script Comprehensive Tests', () => {
           return [];
         }),
       },
-       // Shortcuts elements
-       currentShortcut: { value: '', addEventListener: jest.fn() },
-       ctrlMod: { checked: false, addEventListener: jest.fn() },
-       altMod: { checked: false, addEventListener: jest.fn() },
-       shiftMod: { checked: false, addEventListener: jest.fn() },
-       cmdMod: { checked: false, addEventListener: jest.fn() },
-       keyInput: { value: '', addEventListener: jest.fn() },
-       recordShortcut: { addEventListener: jest.fn() },
-       resetShortcut: { addEventListener: jest.fn() },
-       shortcutValidation: { textContent: '', className: '', style: { display: 'none' } },
+      // Shortcuts elements
+      currentShortcut: { value: '', addEventListener: jest.fn() },
+      ctrlMod: { checked: false, addEventListener: jest.fn() },
+      altMod: { checked: false, addEventListener: jest.fn() },
+      shiftMod: { checked: false, addEventListener: jest.fn() },
+      cmdMod: { checked: false, addEventListener: jest.fn() },
+      keyInput: { value: '', addEventListener: jest.fn() },
+      recordShortcut: { addEventListener: jest.fn() },
+      resetShortcut: { addEventListener: jest.fn() },
+      shortcutValidation: {
+        textContent: '',
+        className: '',
+        style: { display: 'none' },
+      },
       historyStatus: { textContent: '', className: '', style: {} },
 
       // Form
