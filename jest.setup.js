@@ -155,6 +155,9 @@ const createChromeMock = () => ({
       return Promise.resolve(true);
     }),
   },
+  commands: {
+    update: jest.fn().mockResolvedValue(undefined),
+  },
   scripting: {
     executeScript: jest.fn().mockResolvedValue(),
   },
