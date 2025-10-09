@@ -7,12 +7,21 @@
     "128": "icon.png",
     "1024": "icon-1024.png"
   },
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": ["activeTab", "scripting", "storage", "commands"],
   "optional_host_permissions": [
     "https://api.openai.com/*",
     "https://generativelanguage.googleapis.com/*",
     "https://api.anthropic.com/*"
   ],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S",
+        "mac": "Command+Shift+S"
+      },
+      "description": "Summarize current page"
+    }
+  },
   "action": {
     "default_title": "AI Summary"
   },

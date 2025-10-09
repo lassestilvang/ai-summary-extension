@@ -1273,6 +1273,17 @@
                 <span class="nav-text">Feedback</span>
               </a>
             </li>
+            <li class="nav-item">
+              <a
+                href="#"
+                class="nav-link"
+                data-page="shortcuts"
+                aria-label="Keyboard Shortcuts"
+              >
+                <i class="fas fa-keyboard"></i>
+                <span class="nav-text">Keyboard Shortcuts</span>
+              </a>
+            </li>
           </ul>
         </nav>
       </aside>
@@ -1618,6 +1629,94 @@
               to improve our extension.
             </p>
           </div>
+        </div>
+
+        <!-- Keyboard Shortcuts Page -->
+        <div id="shortcuts-page" class="page">
+          <h2 class="page-title">Keyboard Shortcuts</h2>
+
+          <div class="info-box">
+            <p>
+              Configure keyboard shortcuts for quick access to extension features.
+              Click "Record Shortcut" and press your desired key combination.
+            </p>
+            <p>
+              <strong>Instructions:</strong> Select modifier keys (Ctrl, Alt, Shift, Cmd)
+              and a single key. The shortcut will be displayed above for confirmation.
+            </p>
+          </div>
+
+          <form id="shortcuts-form">
+            <div class="form-group">
+              <label class="form-label" for="currentShortcut">Current Shortcut:</label>
+              <input
+                type="text"
+                class="form-input"
+                id="currentShortcut"
+                readonly
+                aria-label="Current keyboard shortcut"
+                placeholder="No shortcut set"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Modifiers:</label>
+              <div style="display: flex; gap: var(--space-lg); flex-wrap: wrap;">
+                <div class="checkbox-group" title="Control key modifier">
+                  <input type="checkbox" id="ctrlMod" aria-label="Control modifier" />
+                  <label for="ctrlMod">Ctrl</label>
+                </div>
+                <div class="checkbox-group" title="Alt key modifier">
+                  <input type="checkbox" id="altMod" aria-label="Alt modifier" />
+                  <label for="altMod">Alt</label>
+                </div>
+                <div class="checkbox-group" title="Shift key modifier">
+                  <input type="checkbox" id="shiftMod" aria-label="Shift modifier" />
+                  <label for="shiftMod">Shift</label>
+                </div>
+                <div class="checkbox-group" title="Command key modifier">
+                  <input type="checkbox" id="cmdMod" aria-label="Command modifier" />
+                  <label for="cmdMod">Cmd</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="keyInput">Key:</label>
+              <input
+                type="text"
+                class="form-input"
+                id="keyInput"
+                maxlength="1"
+                aria-label="Single key for shortcut"
+                placeholder="Press a key"
+                title="Enter a single character key (e.g., S, A, 1)"
+              />
+            </div>
+
+            <div class="form-group">
+              <button
+                type="button"
+                class="btn btn-primary"
+                id="recordShortcut"
+                aria-label="Record new keyboard shortcut"
+                title="Click and press your desired key combination"
+              >
+                Record Shortcut
+              </button>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                id="resetShortcut"
+                aria-label="Reset shortcut to default"
+                title="Clear current shortcut and reset to default"
+              >
+                Reset
+              </button>
+            </div>
+
+            <div id="shortcutValidation" class="status" style="display: none;" role="alert" aria-live="polite"></div>
+          </form>
         </div>
       </main>
     </div>

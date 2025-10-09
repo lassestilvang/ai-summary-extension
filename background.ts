@@ -119,6 +119,59 @@ chrome.action.onClicked.addListener(async (tab: chrome.tabs.Tab) => {
       });
   }
 });
+if (chrome.commands && chrome.commands.onCommand) {
+  chrome.commands.onCommand.addListener(async (command: string) => {
+    if (command === '_execute_action') {
+      // Get the active tab
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+      if (!tab) return;
+
+      console.log('Shortcut triggered on tab URL:', tab.url);
+      if (tab.url && tab.url.startsWith('chrome://')) {
+        console.log(
+          'Skipping chrome:// URL - extension does not work on Chrome internal pages'
+        );
+        return;
+      }
+      // Inject library scripts dynamically
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id! },
+        files: ['Readability.js', 'showdown.min.js', 'content.js'],
+      });
+
+      // Check if summary exists for this tab
+      const existingSummary = summaryState[tab.id!];
+      if (existingSummary && existingSummary.summary) {
+        // Send toggle with existing summary data
+        chrome.tabs
+          .sendMessage(tab.id!, {
+            action: 'toggle_summary_visibility',
+            hasSummary: true,
+            summary: existingSummary.summary,
+            model: existingSummary.model,
+            time: existingSummary.time,
+            metrics: existingSummary.metrics,
+          })
+          .catch((error) => {
+            console.log('Content script message failed:', error);
+          });
+      } else {
+        // Send toggle to generate new summary
+        chrome.tabs
+          .sendMessage(tab.id!, {
+            action: 'toggle_summary_visibility',
+            hasSummary: false,
+          })
+          .catch((error) => {
+            console.log('Content script message failed:', error);
+          });
+      }
+    }
+  });
+}
 
 export async function summarizeWithAI(
   content: string,

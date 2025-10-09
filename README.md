@@ -15,6 +15,7 @@
 - [Usage Guide](#usage-guide)
 - [API Documentation](#api-documentation)
 - [Configuration Options](#configuration-options)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
 - [Troubleshooting Tips](#troubleshooting-tips)
 - [Screenshots](#screenshots)
 - [Contribution Guidelines](#contribution-guidelines)
@@ -38,6 +39,7 @@ The extension supports multiple AI providers including OpenAI's GPT models, Goog
 - **Secure API Key Storage**: API keys are stored securely using Chrome's storage API
 - **Markdown Rendering**: Summaries are rendered using Markdown for better readability
 - **Real-time Summarization**: Get instant summaries of the current web page
+- **Customizable Keyboard Shortcuts**: Set up keyboard shortcuts for quick access to page summarization
 
 ## Prerequisites and System Requirements
 
@@ -231,6 +233,74 @@ Choose from various AI models with different capabilities and costs:
 
 - Choose from available themes to customize the UI appearance
 - Themes are defined in `themes.js`
+
+## Keyboard Shortcuts
+
+The extension supports customizable keyboard shortcuts for quick access to page summarization functionality, allowing you to trigger summaries without clicking the extension icon.
+
+### How It Works
+
+Keyboard shortcuts are implemented using Chrome's commands API, which provides a standardized way to handle keyboard input across different platforms. When you press your configured shortcut, it activates the extension's action, which then processes the current page content and displays the summary.
+
+### Setting Up and Customizing Shortcuts
+
+1. **Access the Options Page**
+   - Click the extension icon in your browser toolbar
+   - Click "Options" or right-click the icon and select "Options"
+   - Navigate to the "Keyboard Shortcuts" tab
+
+2. **View Current Shortcut**
+   - The current shortcut is displayed at the top of the shortcuts page
+   - Default shortcut: `Ctrl+Shift+S` (Windows/Linux) or `Cmd+Shift+S` (macOS)
+
+3. **Record a New Shortcut**
+   - Click the "Record Shortcut" button
+   - Press your desired key combination (modifier + key)
+   - The shortcut will be validated and displayed for confirmation
+   - Click "Save" to apply the new shortcut
+
+4. **Reset to Default**
+   - Click the "Reset to Default" button to restore the original shortcut
+   - This is useful if you accidentally set an unusable shortcut
+
+### Default Shortcut Information
+
+- **Default**: `Ctrl+Shift+S` (Windows/Linux) or `Command+Shift+S` (macOS)
+- **Purpose**: Triggers page summarization for the current tab
+- **Storage**: Saved in Chrome's synchronized storage for consistency across devices
+
+### Cross-Platform Compatibility
+
+The extension automatically adapts shortcuts based on your operating system:
+
+- **Windows/Linux**: Uses `Ctrl` as the primary modifier key
+- **macOS**: Uses `Cmd` (⌘) as the primary modifier key
+- **Supported Modifiers**: `Ctrl/Cmd`, `Alt`, `Shift`
+- **Supported Keys**: Letters (A-Z), numbers (0-9), function keys (F1-F12), and special keys (Space, Enter, Tab, Esc, etc.)
+
+### Edge Cases and Limitations
+
+- **Input Fields**: Shortcuts are disabled when typing in input fields, text areas, or other form elements to avoid conflicts
+- **Browser Conflicts**: Certain shortcuts are blocked to prevent conflicts with browser or system functionality (e.g., `Ctrl+T` for new tabs, `Ctrl+W` for closing tabs)
+- **Validation**: The extension validates shortcuts to ensure they include at least one modifier key and don't conflict with known browser shortcuts
+- **Single Session**: Shortcuts are active only while the extension is loaded; they don't persist browser restarts independently
+
+### Accessibility Information
+
+- **Screen Reader Support**: All shortcut-related UI elements include proper ARIA labels and live regions for status updates
+- **Keyboard Navigation**: The shortcuts configuration page is fully navigable using keyboard-only input
+- **Visual Feedback**: Clear visual indicators show shortcut recording status and validation results
+- **Error Announcements**: Validation errors and success messages are announced to assistive technologies
+
+### Developer Notes
+
+For developers working on the extension:
+
+- **API Integration**: Shortcuts are managed through `chrome.commands` API in `manifest.json`
+- **Storage Key**: Custom shortcuts are stored as `keyboardShortcut` in `chrome.storage.sync`
+- **Validation Logic**: Shortcut validation is handled in `utils.ts` with conflict detection for common browser shortcuts
+- **Recording Function**: The `recordShortcut()` function in `utils.ts` captures keyboard input during shortcut setup
+- **Platform Detection**: Automatic platform detection ensures correct modifier keys (Ctrl vs Cmd) are used
 
 ## Troubleshooting Tips
 
