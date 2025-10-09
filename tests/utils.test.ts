@@ -1,10 +1,10 @@
 // Type declarations for chrome APIs
 declare global {
-  const chrome: {
-    commands: {
-      update(details: { name: string; shortcut: string }): Promise<void>;
-    };
-  };
+  namespace chrome {
+    namespace commands {
+      function update(details: { name: string; shortcut: string }): Promise<void>;
+    }
+  }
 }
 
 // Comprehensive unit tests for utils.ts
@@ -23,11 +23,6 @@ import {
 } from '../utils';
 
 import 'jest-fetch-mock';
-
-// Mock chrome.commands
-(chrome.commands as any) = {
-  update: jest.fn().mockResolvedValue(undefined),
-};
 
 describe('Utils Module Comprehensive Tests', () => {
   describe('getModelConfig Function', () => {
