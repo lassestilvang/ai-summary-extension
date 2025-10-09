@@ -1,8 +1,14 @@
 // Type declarations for chrome APIs
+// eslint-disable-next-line @typescript-eslint/no-namespace
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace chrome {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace commands {
-      function update(details: { name: string; shortcut: string }): Promise<void>;
+      function update(details: {
+        name: string;
+        shortcut: string;
+      }): Promise<void>;
     }
   }
 }
