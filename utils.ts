@@ -528,7 +528,7 @@ export async function saveShortcut(shortcut: string): Promise<void> {
     await chrome.storage.sync.set({ keyboardShortcut: shortcut });
 
     // Update the command shortcut
-    await chrome.commands.update({
+    await (chrome.commands as any).update({
       name: COMMAND_NAME,
       shortcut: shortcut,
     });
