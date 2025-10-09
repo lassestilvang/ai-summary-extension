@@ -1,9 +1,12 @@
 // Type declarations for chrome APIs
 declare global {
-  namespace chrome {
-    namespace commands {
-      function update(details: { name: string; shortcut: string }): Promise<void>;
-    }
+  interface chrome {
+    commands: {
+      update: (details: {
+        name: string;
+        shortcut: string;
+      }) => Promise<void>;
+    };
   }
 }
 
