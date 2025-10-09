@@ -494,7 +494,18 @@ export function validateShortcut(shortcut: string): string | null {
     // For non-function keys, ensure it's a valid key
     if (
       key.length > 1 &&
-      !['Space', 'Enter', 'Tab', 'Esc', 'Backspace', 'Delete', 'Up', 'Down', 'Left', 'Right'].includes(key)
+      ![
+        'Space',
+        'Enter',
+        'Tab',
+        'Esc',
+        'Backspace',
+        'Delete',
+        'Up',
+        'Down',
+        'Left',
+        'Right',
+      ].includes(key)
     ) {
       return 'Invalid key for shortcut';
     }
