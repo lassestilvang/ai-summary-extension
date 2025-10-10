@@ -37,7 +37,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["Readability.js", "showdown.min.js"],
+      "resources": ["readability.js", "showdown.js"],
       "matches": ["<all_urls>"]
     }
   ],

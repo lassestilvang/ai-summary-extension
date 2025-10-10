@@ -2,7 +2,7 @@
 
 This project is an AI-powered Chrome extension designed to summarize web pages. It consists of two main parts:
 
-1.  **Chrome Extension (Frontend):** Built with JavaScript, HTML, and CSS, it interacts with the browser and the current web page. It utilizes `showdown.min.js` for rendering Markdown content.
+1.  **Chrome Extension (Frontend):** Built with JavaScript, HTML, and CSS, it interacts with the browser and the current web page. It utilizes `showdown.js` for rendering Markdown content.
 
 # AI Summary
 

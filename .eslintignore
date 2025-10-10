@@ -1,4 +1,4 @@
 node_modules/
 *.min.js
 dist/
-Readability.js
+readability.js

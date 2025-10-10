@@ -88,7 +88,7 @@ chrome.action.onClicked.addListener(async (tab: chrome.tabs.Tab) => {
   // Inject library scripts dynamically
   await chrome.scripting.executeScript({
     target: { tabId: tab.id! },
-    files: ['Readability.js', 'showdown.min.js', 'content.js'],
+    files: ['readability.js', 'showdown.js', 'content.js'],
   });
 
   // Check if summary exists for this tab
@@ -139,7 +139,7 @@ if (chrome.commands && chrome.commands.onCommand) {
       // Inject library scripts dynamically
       await chrome.scripting.executeScript({
         target: { tabId: tab.id! },
-        files: ['Readability.js', 'showdown.min.js', 'content.js'],
+        files: ['readability.js', 'showdown.js', 'content.js'],
       });
 
       // Check if summary exists for this tab

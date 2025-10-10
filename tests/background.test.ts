@@ -128,7 +128,7 @@ describe('Background Script Comprehensive Tests', () => {
 
       expect((chrome as any).scripting.executeScript).toHaveBeenCalledWith({
         target: { tabId: 123 },
-        files: ['Readability.js', 'showdown.min.js', 'content.js'],
+        files: ['readability.js', 'showdown.js', 'content.js'],
       });
       expect((chrome as any).tabs.sendMessage).toHaveBeenCalledWith(123, {
         action: 'toggle_summary_visibility',

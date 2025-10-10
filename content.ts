@@ -42,16 +42,16 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
 
   // Inject required libraries
   const readabilityScript = document.createElement('script');
-  readabilityScript.src = chrome.runtime.getURL('Readability.js');
+  readabilityScript.src = chrome.runtime.getURL('readability.js');
   document.head.appendChild(readabilityScript);
 
   const showdownScript = document.createElement('script');
-  showdownScript.src = chrome.runtime.getURL('showdown.min.js');
+  showdownScript.src = chrome.runtime.getURL('showdown.js');
   document.head.appendChild(showdownScript);
 
   // Function to extract page content using multiple strategies
   function extractPageContent(): string {
-    // Strategy 1: Try Readability.js for article parsing
+    // Strategy 1: Try readability.js for article parsing
     try {
       // Create a proper clone of the document to avoid modifying the original page
       const documentClone = document.cloneNode(true) as Document;
