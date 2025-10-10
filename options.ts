@@ -1579,41 +1579,65 @@ document.addEventListener('DOMContentLoaded', function () {
       shortcutValidationDiv.className = 'status error';
       shortcutValidationDiv.style.display = 'block';
     }
-    // Handle "Save Shortcut" button
-    const saveShortcutBtn = document.getElementById(
-      'saveShortcut'
-    ) as HTMLButtonElement;
-    saveShortcutBtn.addEventListener('click', async () => {
-      const shortcut = buildShortcutFromInputs();
-      if (!shortcut) {
-        shortcutValidationDiv.textContent =
-          'Please select modifiers and enter a key';
-        shortcutValidationDiv.className = 'status error';
-        shortcutValidationDiv.style.display = 'block';
-        return;
-      }
+  });
 
-      const error = validateShortcut(shortcut);
-      if (error) {
-        shortcutValidationDiv.textContent = error;
-        shortcutValidationDiv.className = 'status error';
-        shortcutValidationDiv.style.display = 'block';
-        return;
-      }
+  // Handle "Save Shortcut" button
+  const saveShortcutBtn = document.getElementById(
+    'saveShortcut'
+  ) as HTMLButtonElement;
+  saveShortcutBtn.addEventListener('click', async () => {
+    const shortcut = buildShortcutFromInputs();
+    if (!shortcut) {
+      shortcutValidationDiv.textContent =
+        'Please select modifiers and enter a key';
+      shortcutValidationDiv.className = 'status error';
+      shortcutValidationDiv.style.display = 'block';
+      return;
+    }
 
-      try {
-        await saveShortcut(shortcut);
-        currentShortcutInput.value = shortcut;
-        shortcutValidationDiv.textContent = `Shortcut saved: ${shortcut}`;
-        shortcutValidationDiv.className = 'status success';
-        shortcutValidationDiv.style.display = 'block';
-      } catch (error) {
-        console.error('Error saving shortcut:', error);
-        shortcutValidationDiv.textContent = 'Error saving shortcut';
-        shortcutValidationDiv.className = 'status error';
-        shortcutValidationDiv.style.display = 'block';
-      }
-    });
+    const error = validateShortcut(shortcut);
+    if (error) {
+      shortcutValidationDiv.textContent = error;
+      shortcutValidationDiv.className = 'status error';
+      shortcutValidationDiv.style.display = 'block';
+      return;
+    }
+
+    try {
+      await saveShortcut(shortcut);
+      currentShortcutInput.value = shortcut;
+      shortcutValidationDiv.textContent = `Shortcut saved: ${shortcut}`;
+      shortcutValidationDiv.className = 'status success';
+      shortcutValidationDiv.style.display = 'block';
+    } catch (error) {
+      console.error('Error saving shortcut:', error);
+      shortcutValidationDiv.textContent = 'Error saving shortcut';
+      shortcutValidationDiv.className = 'status error';
+      shortcutValidationDiv.style.display = 'block';
+    }
+  });
+
+  // Handle "Reset" button
+  resetShortcutBtn.addEventListener('click', async () => {
+    try {
+      await resetShortcut();
+      await loadCurrentShortcut();
+      shortcutValidationDiv.textContent = 'Shortcut reset to default';
+      shortcutValidationDiv.className = 'status success';
+      shortcutValidationDiv.style.display = 'block';
+
+      // Clear the input fields
+      ctrlModCheckbox.checked = false;
+      altModCheckbox.checked = false;
+      shiftModCheckbox.checked = false;
+      cmdModCheckbox.checked = false;
+      keyInput.value = '';
+    } catch (error) {
+      console.error('Error resetting shortcut:', error);
+      shortcutValidationDiv.textContent = 'Error resetting shortcut';
+      shortcutValidationDiv.className = 'status error';
+      shortcutValidationDiv.style.display = 'block';
+    }
   });
 
   // Integrate with navigation: load shortcut when shortcuts page becomes active
