@@ -1574,8 +1574,8 @@ document.addEventListener('DOMContentLoaded', function () {
       cmdModCheckbox.checked = false;
       keyInput.value = '';
     } catch (error) {
-      console.error('Error resetting shortcut:', error);
-      shortcutValidationDiv.textContent = 'Error resetting shortcut';
+      console.error('Error recording shortcut:', error);
+      shortcutValidationDiv.textContent = 'Error recording shortcut';
       shortcutValidationDiv.className = 'status error';
       shortcutValidationDiv.style.display = 'block';
     }
@@ -1633,8 +1633,8 @@ document.addEventListener('DOMContentLoaded', function () {
       cmdModCheckbox.checked = false;
       keyInput.value = '';
     } catch (error) {
-      console.error('Error resetting shortcut:', error);
-      shortcutValidationDiv.textContent = 'Error resetting shortcut';
+      console.error('Error recording shortcut:', error);
+      shortcutValidationDiv.textContent = 'Error recording shortcut';
       shortcutValidationDiv.className = 'status error';
       shortcutValidationDiv.style.display = 'block';
     }
