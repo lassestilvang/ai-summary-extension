@@ -38,6 +38,7 @@
     "jest-fetch-mock": "^3.0.3",
     "prettier": "^3.2.5",
     "rimraf": "^5.0.0",
+    "terser": "^5.44.0",
     "ts-jest": "^29.4.4",
     "typescript": "^5.9.2",
     "vite": "^7.1.9"
