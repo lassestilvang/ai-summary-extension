@@ -147,6 +147,7 @@ describe('Options Script Comprehensive Tests', () => {
       cmdMod: { checked: false, addEventListener: jest.fn() },
       keyInput: { value: '', addEventListener: jest.fn() },
       recordShortcut: { addEventListener: jest.fn() },
+      saveShortcut: { addEventListener: jest.fn() },
       resetShortcut: { addEventListener: jest.fn() },
       shortcutValidation: {
         textContent: '',
