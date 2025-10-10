@@ -41,6 +41,7 @@ import {
   checkChromeBuiltinSupport,
   recordShortcut,
   validateShortcut,
+  saveShortcut,
   loadShortcut,
   resetShortcut,
 } from './utils.js';
@@ -1555,34 +1556,13 @@ document.addEventListener('DOMContentLoaded', function () {
   keyInput.addEventListener('input', validateAndDisplayShortcut);
 
   // Handle "Record Shortcut" button
+  // Handle "Record Shortcut" button
   recordShortcutBtn.addEventListener('click', async () => {
     try {
       const shortcut = await recordShortcut();
+      await saveShortcut(shortcut);
       currentShortcutInput.value = shortcut;
-      shortcutValidationDiv.textContent = `Shortcut recorded: ${shortcut}`;
-      shortcutValidationDiv.className = 'status success';
-      shortcutValidationDiv.style.display = 'block';
-
-      // Clear the input fields
-      ctrlModCheckbox.checked = false;
-      altModCheckbox.checked = false;
-      shiftModCheckbox.checked = false;
-      cmdModCheckbox.checked = false;
-      keyInput.value = '';
-    } catch (error) {
-      console.error('Error recording shortcut:', error);
-      shortcutValidationDiv.textContent = 'Error recording shortcut';
-      shortcutValidationDiv.className = 'status error';
-      shortcutValidationDiv.style.display = 'block';
-    }
-  });
-
-  // Handle "Reset" button
-  resetShortcutBtn.addEventListener('click', async () => {
-    try {
-      await resetShortcut();
-      await loadCurrentShortcut();
-      shortcutValidationDiv.textContent = 'Shortcut reset to default';
+      shortcutValidationDiv.textContent = `Shortcut recorded and saved: ${shortcut}`;
       shortcutValidationDiv.className = 'status success';
       shortcutValidationDiv.style.display = 'block';
 
@@ -1598,6 +1578,41 @@ document.addEventListener('DOMContentLoaded', function () {
       shortcutValidationDiv.className = 'status error';
       shortcutValidationDiv.style.display = 'block';
     }
+    // Handle "Save Shortcut" button
+    const saveShortcutBtn = document.getElementById(
+      'saveShortcut'
+    ) as HTMLButtonElement;
+    saveShortcutBtn.addEventListener('click', async () => {
+      const shortcut = buildShortcutFromInputs();
+      if (!shortcut) {
+        shortcutValidationDiv.textContent =
+          'Please select modifiers and enter a key';
+        shortcutValidationDiv.className = 'status error';
+        shortcutValidationDiv.style.display = 'block';
+        return;
+      }
+
+      const error = validateShortcut(shortcut);
+      if (error) {
+        shortcutValidationDiv.textContent = error;
+        shortcutValidationDiv.className = 'status error';
+        shortcutValidationDiv.style.display = 'block';
+        return;
+      }
+
+      try {
+        await saveShortcut(shortcut);
+        currentShortcutInput.value = shortcut;
+        shortcutValidationDiv.textContent = `Shortcut saved: ${shortcut}`;
+        shortcutValidationDiv.className = 'status success';
+        shortcutValidationDiv.style.display = 'block';
+      } catch (error) {
+        console.error('Error saving shortcut:', error);
+        shortcutValidationDiv.textContent = 'Error saving shortcut';
+        shortcutValidationDiv.className = 'status error';
+        shortcutValidationDiv.style.display = 'block';
+      }
+    });
   });
 
   // Integrate with navigation: load shortcut when shortcuts page becomes active
