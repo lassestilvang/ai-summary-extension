@@ -39,11 +39,6 @@ interface ValidationStatus {
 // Browser compatibility functions imported from utils
 import {
   checkChromeBuiltinSupport,
-  recordShortcut,
-  validateShortcut,
-  saveShortcut,
-  loadShortcut,
-  resetShortcut, // eslint-disable-line @typescript-eslint/no-unused-vars
 } from './utils.js';
 
 // Inline utility functions to avoid ES6 import issues
@@ -1483,162 +1478,34 @@ document.addEventListener('DOMContentLoaded', function () {
   const currentShortcutInput = document.getElementById(
     'currentShortcut'
   ) as HTMLInputElement;
-  const ctrlModCheckbox = document.getElementById(
-    'ctrlMod'
-  ) as HTMLInputElement;
-  const altModCheckbox = document.getElementById('altMod') as HTMLInputElement;
-  const shiftModCheckbox = document.getElementById(
-    'shiftMod'
-  ) as HTMLInputElement;
-  const cmdModCheckbox = document.getElementById('cmdMod') as HTMLInputElement;
-  const keyInput = document.getElementById('keyInput') as HTMLInputElement;
-  const recordShortcutBtn = document.getElementById(
-    'recordShortcut'
-  ) as HTMLButtonElement;
-  const resetShortcutBtn = document.getElementById(
-    // eslint-disable-line @typescript-eslint/no-unused-vars
-    'resetShortcut'
-  ) as HTMLButtonElement;
   const shortcutValidationDiv = document.getElementById(
     'shortcutValidation'
   ) as HTMLDivElement;
 
-  // Function to load and display the current shortcut
+  // Function to load and display the current shortcut from Chrome
   async function loadCurrentShortcut() {
     try {
-      const shortcut = await loadShortcut();
-      currentShortcutInput.value = shortcut;
+      const commands = await chrome.commands.getAll();
+      const executeActionCommand = commands.find(cmd => cmd.name === '_execute_action');
+      if (executeActionCommand && executeActionCommand.shortcut) {
+        currentShortcutInput.value = executeActionCommand.shortcut;
+        shortcutValidationDiv.textContent = `Current shortcut: ${executeActionCommand.shortcut}`;
+        shortcutValidationDiv.className = 'status success';
+        shortcutValidationDiv.style.display = 'block';
+      } else {
+        currentShortcutInput.value = 'No shortcut set';
+        shortcutValidationDiv.textContent = 'No keyboard shortcut is currently set for this extension.';
+        shortcutValidationDiv.className = 'status';
+        shortcutValidationDiv.style.display = 'block';
+      }
     } catch (error) {
       console.error('Error loading shortcut:', error);
-      currentShortcutInput.value = '';
-    }
-  }
-
-  // Function to build shortcut string from input elements
-  function buildShortcutFromInputs(): string {
-    const modifiers: string[] = [];
-    if (ctrlModCheckbox.checked) modifiers.push('Ctrl');
-    if (altModCheckbox.checked) modifiers.push('Alt');
-    if (shiftModCheckbox.checked) modifiers.push('Shift');
-    if (cmdModCheckbox.checked) modifiers.push('Cmd');
-
-    const key = keyInput.value.toUpperCase();
-    if (key) {
-      return [...modifiers, key].join('+');
-    }
-    return '';
-  }
-
-  // Function to validate and display shortcut validation messages
-  function validateAndDisplayShortcut() {
-    const shortcut = buildShortcutFromInputs();
-    if (!shortcut) {
-      shortcutValidationDiv.style.display = 'none';
-      return;
-    }
-
-    const error = validateShortcut(shortcut);
-    if (error) {
-      shortcutValidationDiv.textContent = error;
+      currentShortcutInput.value = 'Unable to load shortcut';
+      shortcutValidationDiv.textContent = 'Unable to load current shortcut.';
       shortcutValidationDiv.className = 'status error';
-      shortcutValidationDiv.style.display = 'block';
-    } else {
-      shortcutValidationDiv.textContent = `Valid shortcut: ${shortcut}`;
-      shortcutValidationDiv.className = 'status success';
       shortcutValidationDiv.style.display = 'block';
     }
   }
-
-  // Add event listeners for real-time validation
-  ctrlModCheckbox.addEventListener('change', validateAndDisplayShortcut);
-  altModCheckbox.addEventListener('change', validateAndDisplayShortcut);
-  shiftModCheckbox.addEventListener('change', validateAndDisplayShortcut);
-  cmdModCheckbox.addEventListener('change', validateAndDisplayShortcut);
-  keyInput.addEventListener('input', validateAndDisplayShortcut);
-
-  // Handle "Record Shortcut" button
-  // Handle "Record Shortcut" button
-  recordShortcutBtn.addEventListener('click', async () => {
-    try {
-      const shortcut = await recordShortcut();
-      await saveShortcut(shortcut);
-      currentShortcutInput.value = shortcut;
-      shortcutValidationDiv.textContent = `Shortcut recorded and saved: ${shortcut}`;
-      shortcutValidationDiv.className = 'status success';
-      shortcutValidationDiv.style.display = 'block';
-
-      // Clear the input fields
-      ctrlModCheckbox.checked = false;
-      altModCheckbox.checked = false;
-      shiftModCheckbox.checked = false;
-      cmdModCheckbox.checked = false;
-      keyInput.value = '';
-    } catch (error) {
-      console.error('Error recording shortcut:', error);
-      shortcutValidationDiv.textContent = 'Error recording shortcut';
-      shortcutValidationDiv.className = 'status error';
-      shortcutValidationDiv.style.display = 'block';
-    }
-  });
-
-  // Handle "Save Shortcut" button
-  const saveShortcutBtn = document.getElementById(
-    'saveShortcut'
-  ) as HTMLButtonElement;
-  saveShortcutBtn.addEventListener('click', async () => {
-    const shortcut = buildShortcutFromInputs();
-    if (!shortcut) {
-      shortcutValidationDiv.textContent =
-        'Please select modifiers and enter a key';
-      shortcutValidationDiv.className = 'status error';
-      shortcutValidationDiv.style.display = 'block';
-      return;
-    }
-
-    const error = validateShortcut(shortcut);
-    if (error) {
-      shortcutValidationDiv.textContent = error;
-      shortcutValidationDiv.className = 'status error';
-      shortcutValidationDiv.style.display = 'block';
-      return;
-    }
-
-    try {
-      await saveShortcut(shortcut);
-      currentShortcutInput.value = shortcut;
-      shortcutValidationDiv.textContent = `Shortcut saved: ${shortcut}`;
-      shortcutValidationDiv.className = 'status success';
-      shortcutValidationDiv.style.display = 'block';
-    } catch (error) {
-      console.error('Error saving shortcut:', error);
-      shortcutValidationDiv.textContent = 'Error saving shortcut';
-      shortcutValidationDiv.className = 'status error';
-      shortcutValidationDiv.style.display = 'block';
-    }
-  });
-
-  // Handle "Reset" button
-  resetShortcutBtn.addEventListener('click', async () => {
-    try {
-      await resetShortcut();
-      await loadCurrentShortcut();
-      shortcutValidationDiv.textContent = 'Shortcut reset to default';
-      shortcutValidationDiv.className = 'status success';
-      shortcutValidationDiv.style.display = 'block';
-
-      // Clear the input fields
-      ctrlModCheckbox.checked = false;
-      altModCheckbox.checked = false;
-      shiftModCheckbox.checked = false;
-      cmdModCheckbox.checked = false;
-      keyInput.value = '';
-    } catch (error) {
-      console.error('Error recording shortcut:', error);
-      shortcutValidationDiv.textContent = 'Error recording shortcut';
-      shortcutValidationDiv.className = 'status error';
-      shortcutValidationDiv.style.display = 'block';
-    }
-  });
 
   // Integrate with navigation: load shortcut when shortcuts page becomes active
   const shortcutsPage = document.getElementById('shortcuts-page');
