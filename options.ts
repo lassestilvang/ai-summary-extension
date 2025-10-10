@@ -1496,6 +1496,7 @@ document.addEventListener('DOMContentLoaded', function () {
     'recordShortcut'
   ) as HTMLButtonElement;
   const resetShortcutBtn = document.getElementById(
+    // eslint-disable-line @typescript-eslint/no-unused-vars
     'resetShortcut'
   ) as HTMLButtonElement;
   const shortcutValidationDiv = document.getElementById(
