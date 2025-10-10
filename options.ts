@@ -43,7 +43,7 @@ import {
   validateShortcut,
   saveShortcut,
   loadShortcut,
-  resetShortcut,, // eslint-disable-line @typescript-eslint/no-unused-vars
+  resetShortcut, // eslint-disable-line @typescript-eslint/no-unused-vars
 } from './utils.js';
 
 // Inline utility functions to avoid ES6 import issues
