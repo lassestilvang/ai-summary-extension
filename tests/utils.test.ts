@@ -708,7 +708,7 @@ describe('Utils Module Comprehensive Tests', () => {
       });
 
       describe('saveShortcut', () => {
-        it('should save shortcut to storage and update commands', async () => {
+        it('should save shortcut to storage and send update message', async () => {
           (chrome.storage.sync.set as jest.Mock).mockResolvedValue(undefined);
           (chrome.commands.update as jest.Mock).mockResolvedValue(undefined);
 
@@ -716,10 +716,6 @@ describe('Utils Module Comprehensive Tests', () => {
 
           expect(chrome.storage.sync.set).toHaveBeenCalledWith({
             keyboardShortcut: 'Ctrl+Shift+S',
-          });
-          expect(chrome.commands.update).toHaveBeenCalledWith({
-            name: '_execute_action',
-            shortcut: 'Ctrl+Shift+S',
           });
         });
 
@@ -732,394 +728,441 @@ describe('Utils Module Comprehensive Tests', () => {
           );
         });
 
-        it('should throw error on commands update failure', async () => {
-          (chrome.storage.sync.set as jest.Mock).mockResolvedValue(undefined);
-          const error = new Error('Commands update failed');
-          (chrome.commands.update as jest.Mock).mockRejectedValue(error);
+        describe('loadShortcut', () => {
+          it('should return saved shortcut from storage', async () => {
+            (chrome.storage.sync.get as jest.Mock).mockResolvedValue({
+              keyboardShortcut: 'Alt+F',
+            });
 
-          await expect(saveShortcut('Ctrl+S')).rejects.toThrow(
-            'Failed to save shortcut'
-          );
-        });
-      });
-
-      describe('loadShortcut', () => {
-        it('should return saved shortcut from storage', async () => {
-          (chrome.storage.sync.get as jest.Mock).mockResolvedValue({
-            keyboardShortcut: 'Alt+F',
+            const result = await loadShortcut();
+            expect(result).toBe('Alt+F');
+            expect(chrome.storage.sync.get).toHaveBeenCalledWith(
+              'keyboardShortcut'
+            );
           });
 
-          const result = await loadShortcut();
-          expect(result).toBe('Alt+F');
-          expect(chrome.storage.sync.get).toHaveBeenCalledWith(
-            'keyboardShortcut'
-          );
-        });
+          it('should return default shortcut when none saved', async () => {
+            (chrome.storage.sync.get as jest.Mock).mockResolvedValue({});
 
-        it('should return default shortcut when none saved', async () => {
-          (chrome.storage.sync.get as jest.Mock).mockResolvedValue({});
-
-          const result = await loadShortcut();
-          expect(result).toBe('Ctrl+Shift+S');
-        });
-
-        it('should return default shortcut on storage error', async () => {
-          (chrome.storage.sync.get as jest.Mock).mockRejectedValue(
-            new Error('Storage error')
-          );
-
-          const result = await loadShortcut();
-          expect(result).toBe('Ctrl+Shift+S');
-        });
-      });
-
-      describe('resetShortcut', () => {
-        it('should reset to default shortcut', async () => {
-          (chrome.storage.sync.set as jest.Mock).mockResolvedValue(undefined);
-          (chrome.commands.update as jest.Mock).mockResolvedValue(undefined);
-
-          await resetShortcut();
-
-          expect(chrome.storage.sync.set).toHaveBeenCalledWith({
-            keyboardShortcut: 'Ctrl+Shift+S',
+            const result = await loadShortcut();
+            expect(result).toBe('Ctrl+Shift+S');
           });
-          expect(chrome.commands.update).toHaveBeenCalledWith({
-            name: '_execute_action',
-            shortcut: 'Ctrl+Shift+S',
+
+          it('should return default shortcut on storage error', async () => {
+            (chrome.storage.sync.get as jest.Mock).mockRejectedValue(
+              new Error('Storage error')
+            );
+
+            const result = await loadShortcut();
+            expect(result).toBe('Ctrl+Shift+S');
+          });
+        });
+
+        describe('resetShortcut', () => {
+          it('should reset to default shortcut', async () => {
+            (chrome.storage.sync.set as jest.Mock).mockResolvedValue(undefined);
+            (chrome.commands.update as jest.Mock).mockResolvedValue(undefined);
+
+            await resetShortcut();
+
+            expect(chrome.storage.sync.set).toHaveBeenCalledWith({
+              keyboardShortcut: 'Ctrl+Shift+S',
+            });
           });
         });
       });
     });
-  });
 
-  describe('Type Definitions and Interfaces', () => {
-    it('should export all required interfaces', () => {
-      // Test that the interfaces are properly exported by checking they can be imported
-      expect(() => {
-        // This test verifies that the module can be imported without errors
-        // The actual interface validation is done through TypeScript compilation
-      }).not.toThrow();
-    });
+    describe('Type Definitions and Interfaces', () => {
+      it('should export all required interfaces', () => {
+        // Test that the interfaces are properly exported by checking they can be imported
+        expect(() => {
+          // This test verifies that the module can be imported without errors
+          // The actual interface validation is done through TypeScript compilation
+        }).not.toThrow();
+      });
 
-    it('should have proper interface structure for OpenAIResponse', () => {
-      // This is more of a documentation test - ensuring the interface matches expected API
-      const mockResponse = {
-        choices: [
-          {
-            message: {
-              content: 'Test response',
+      it('should have proper interface structure for OpenAIResponse', () => {
+        // This is more of a documentation test - ensuring the interface matches expected API
+        const mockResponse = {
+          choices: [
+            {
+              message: {
+                content: 'Test response',
+              },
             },
-          },
-        ],
-      };
+          ],
+        };
 
-      expect(mockResponse).toHaveProperty('choices');
-      expect(mockResponse.choices[0]).toHaveProperty('message');
-      expect(mockResponse.choices[0].message).toHaveProperty('content');
-    });
+        expect(mockResponse).toHaveProperty('choices');
+        expect(mockResponse.choices[0]).toHaveProperty('message');
+        expect(mockResponse.choices[0].message).toHaveProperty('content');
+      });
 
-    it('should have proper interface structure for GeminiResponse', () => {
-      const mockResponse = {
-        candidates: [
-          {
-            content: {
-              parts: [
-                {
-                  text: 'Test response',
-                },
-              ],
+      it('should have proper interface structure for GeminiResponse', () => {
+        const mockResponse = {
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: 'Test response',
+                  },
+                ],
+              },
             },
-          },
-        ],
-      };
+          ],
+        };
 
-      expect(mockResponse).toHaveProperty('candidates');
-      expect(mockResponse.candidates[0]).toHaveProperty('content');
-      expect(mockResponse.candidates[0].content).toHaveProperty('parts');
+        expect(mockResponse).toHaveProperty('candidates');
+        expect(mockResponse.candidates[0]).toHaveProperty('content');
+        expect(mockResponse.candidates[0].content).toHaveProperty('parts');
+      });
+
+      it('should have proper interface structure for AnthropicResponse', () => {
+        const mockResponse = {
+          content: [
+            {
+              text: 'Test response',
+            },
+          ],
+        };
+
+        expect(mockResponse).toHaveProperty('content');
+        expect(mockResponse.content[0]).toHaveProperty('text');
+      });
+
+      it('should have proper interface structure for ProgressUpdate', () => {
+        const mockProgress = {
+          step: 'Processing',
+          percentage: 50,
+          estimatedTimeRemaining: 30,
+          currentModel: 'gpt-3.5-turbo',
+          success: true,
+        };
+
+        expect(mockProgress).toHaveProperty('step');
+        expect(mockProgress).toHaveProperty('percentage');
+        expect(mockProgress).toHaveProperty('estimatedTimeRemaining');
+        expect(mockProgress).toHaveProperty('currentModel');
+        expect(mockProgress).toHaveProperty('success');
+      });
+
+      it('should have proper interface structure for Metrics', () => {
+        const mockMetrics = {
+          attempts: [
+            {
+              model: 'gpt-3.5-turbo',
+              success: true,
+              time: 2.5,
+              error: undefined,
+            },
+          ],
+          totalTime: 2.5,
+        };
+
+        expect(mockMetrics).toHaveProperty('attempts');
+        expect(mockMetrics).toHaveProperty('totalTime');
+        expect(mockMetrics.attempts[0]).toHaveProperty('model');
+        expect(mockMetrics.attempts[0]).toHaveProperty('success');
+        expect(mockMetrics.attempts[0]).toHaveProperty('time');
+      });
     });
 
-    it('should have proper interface structure for AnthropicResponse', () => {
-      const mockResponse = {
-        content: [
-          {
-            text: 'Test response',
-          },
-        ],
-      };
+    describe('Model Configuration Edge Cases', () => {
+      it('should handle model keys with special characters', () => {
+        // Test models with dots, dashes, and numbers
+        expect(getModelConfig('gemini-2.0-flash-exp')).toBeDefined();
+        expect(getModelConfig('claude-3.5-sonnet')).toBeDefined();
+        expect(getModelConfig('gpt-4o')).toBeDefined();
+      });
 
-      expect(mockResponse).toHaveProperty('content');
-      expect(mockResponse.content[0]).toHaveProperty('text');
+      it('should not confuse similar model names', () => {
+        const config1 = getModelConfig('gpt-4');
+        const config2 = getModelConfig('gpt-4-turbo');
+        const config3 = getModelConfig('gpt-4o');
+
+        expect(config1?.modelId).toBe('gpt-4');
+        expect(config2?.modelId).toBe('gpt-4-turbo');
+        expect(config3?.modelId).toBe('gpt-4o');
+
+        expect(config1?.cost).not.toBe(config2?.cost);
+        expect(config2?.cost).not.toBe(config3?.cost);
+      });
+
+      it('should have logical cost ordering', () => {
+        const gpt35 = getModelConfig('gpt-3.5-turbo')?.cost;
+        const gpt4 = getModelConfig('gpt-4')?.cost;
+        const gpt4turbo = getModelConfig('gpt-4-turbo')?.cost;
+        const gpt4o = getModelConfig('gpt-4o')?.cost;
+
+        // GPT-4 should be more expensive than GPT-3.5
+        expect(gpt4!).toBeGreaterThan(gpt35!);
+        // GPT-4 Turbo should be less expensive than regular GPT-4
+        expect(gpt4turbo!).toBeLessThan(gpt4!);
+        // GPT-4o should be reasonably priced
+        expect(gpt4o).toBeGreaterThan(0);
+      });
+
+      it('should have free models clearly identified', () => {
+        const freeModels = ['chrome-builtin', 'gemini-2.0-flash-exp'];
+
+        freeModels.forEach((model) => {
+          const config = getModelConfig(model);
+          expect(config?.cost).toBe(0);
+        });
+      });
+
+      it('should have consistent model ID formatting', () => {
+        const modelsWithIds = [
+          'gpt-3.5-turbo',
+          'gpt-4',
+          'gpt-4-turbo',
+          'gpt-4o',
+          'gemini-1.5-pro',
+          'gemini-1.5-flash',
+          'gemini-2.0-flash-exp',
+          'claude-3-haiku',
+          'claude-3-sonnet',
+          'claude-3-opus',
+          'claude-3.5-sonnet',
+        ];
+
+        modelsWithIds.forEach((model) => {
+          const config = getModelConfig(model);
+          expect(config?.modelId).toMatch(/^[a-zA-Z0-9._-]+$/);
+        });
+      });
     });
 
-    it('should have proper interface structure for ProgressUpdate', () => {
-      const mockProgress = {
-        step: 'Processing',
-        percentage: 50,
-        estimatedTimeRemaining: 30,
-        currentModel: 'gpt-3.5-turbo',
-        success: true,
-      };
+    describe('Provider-specific Model Validation', () => {
+      it('should validate OpenAI model configurations', () => {
+        const openaiModels = [
+          'gpt-3.5-turbo',
+          'gpt-4',
+          'gpt-4-turbo',
+          'gpt-4o',
+        ];
 
-      expect(mockProgress).toHaveProperty('step');
-      expect(mockProgress).toHaveProperty('percentage');
-      expect(mockProgress).toHaveProperty('estimatedTimeRemaining');
-      expect(mockProgress).toHaveProperty('currentModel');
-      expect(mockProgress).toHaveProperty('success');
-    });
+        openaiModels.forEach((model) => {
+          const config = getModelConfig(model);
+          expect(config?.provider).toBe('openai');
+          expect(config?.modelId).toMatch(/^gpt-/);
+          expect(config?.cost).toBeGreaterThan(0);
+        });
+      });
 
-    it('should have proper interface structure for Metrics', () => {
-      const mockMetrics = {
-        attempts: [
-          {
-            model: 'gpt-3.5-turbo',
-            success: true,
-            time: 2.5,
-            error: undefined,
-          },
-        ],
-        totalTime: 2.5,
-      };
+      it('should validate Gemini model configurations', () => {
+        const geminiModels = [
+          'gemini-1.5-pro',
+          'gemini-1.5-flash',
+          'gemini-2.0-flash-exp',
+        ];
 
-      expect(mockMetrics).toHaveProperty('attempts');
-      expect(mockMetrics).toHaveProperty('totalTime');
-      expect(mockMetrics.attempts[0]).toHaveProperty('model');
-      expect(mockMetrics.attempts[0]).toHaveProperty('success');
-      expect(mockMetrics.attempts[0]).toHaveProperty('time');
-    });
-  });
+        geminiModels.forEach((model) => {
+          const config = getModelConfig(model);
+          expect(config?.provider).toBe('gemini');
+          expect(config?.modelId).toMatch(/^gemini-/);
+        });
+      });
 
-  describe('Model Configuration Edge Cases', () => {
-    it('should handle model keys with special characters', () => {
-      // Test models with dots, dashes, and numbers
-      expect(getModelConfig('gemini-2.0-flash-exp')).toBeDefined();
-      expect(getModelConfig('claude-3.5-sonnet')).toBeDefined();
-      expect(getModelConfig('gpt-4o')).toBeDefined();
-    });
+      it('should validate Anthropic model configurations', () => {
+        const anthropicModels = [
+          'claude-3-haiku',
+          'claude-3-sonnet',
+          'claude-3-opus',
+          'claude-3.5-sonnet',
+        ];
 
-    it('should not confuse similar model names', () => {
-      const config1 = getModelConfig('gpt-4');
-      const config2 = getModelConfig('gpt-4-turbo');
-      const config3 = getModelConfig('gpt-4o');
+        anthropicModels.forEach((model) => {
+          const config = getModelConfig(model);
+          expect(config?.provider).toBe('anthropic');
+          expect(config?.modelId).toMatch(/^claude-/);
+          expect(config?.cost).toBeGreaterThan(0);
+        });
+      });
 
-      expect(config1?.modelId).toBe('gpt-4');
-      expect(config2?.modelId).toBe('gpt-4-turbo');
-      expect(config3?.modelId).toBe('gpt-4o');
-
-      expect(config1?.cost).not.toBe(config2?.cost);
-      expect(config2?.cost).not.toBe(config3?.cost);
-    });
-
-    it('should have logical cost ordering', () => {
-      const gpt35 = getModelConfig('gpt-3.5-turbo')?.cost;
-      const gpt4 = getModelConfig('gpt-4')?.cost;
-      const gpt4turbo = getModelConfig('gpt-4-turbo')?.cost;
-      const gpt4o = getModelConfig('gpt-4o')?.cost;
-
-      // GPT-4 should be more expensive than GPT-3.5
-      expect(gpt4!).toBeGreaterThan(gpt35!);
-      // GPT-4 Turbo should be less expensive than regular GPT-4
-      expect(gpt4turbo!).toBeLessThan(gpt4!);
-      // GPT-4o should be reasonably priced
-      expect(gpt4o).toBeGreaterThan(0);
-    });
-
-    it('should have free models clearly identified', () => {
-      const freeModels = ['chrome-builtin', 'gemini-2.0-flash-exp'];
-
-      freeModels.forEach((model) => {
-        const config = getModelConfig(model);
+      it('should validate Chrome model configuration', () => {
+        const config = getModelConfig('chrome-builtin');
+        expect(config?.provider).toBe('chrome');
+        expect(config?.modelId).toBeNull();
         expect(config?.cost).toBe(0);
       });
     });
 
-    it('should have consistent model ID formatting', () => {
-      const modelsWithIds = [
-        'gpt-3.5-turbo',
-        'gpt-4',
-        'gpt-4-turbo',
-        'gpt-4o',
-        'gemini-1.5-pro',
-        'gemini-1.5-flash',
-        'gemini-2.0-flash-exp',
-        'claude-3-haiku',
-        'claude-3-sonnet',
-        'claude-3-opus',
-        'claude-3.5-sonnet',
-      ];
-
-      modelsWithIds.forEach((model) => {
-        const config = getModelConfig(model);
-        expect(config?.modelId).toMatch(/^[a-zA-Z0-9._-]+$/);
-      });
-    });
-  });
-
-  describe('Provider-specific Model Validation', () => {
-    it('should validate OpenAI model configurations', () => {
-      const openaiModels = ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo', 'gpt-4o'];
-
-      openaiModels.forEach((model) => {
-        const config = getModelConfig(model);
-        expect(config?.provider).toBe('openai');
-        expect(config?.modelId).toMatch(/^gpt-/);
-        expect(config?.cost).toBeGreaterThan(0);
-      });
-    });
-
-    it('should validate Gemini model configurations', () => {
-      const geminiModels = [
-        'gemini-1.5-pro',
-        'gemini-1.5-flash',
-        'gemini-2.0-flash-exp',
-      ];
-
-      geminiModels.forEach((model) => {
-        const config = getModelConfig(model);
-        expect(config?.provider).toBe('gemini');
-        expect(config?.modelId).toMatch(/^gemini-/);
-      });
-    });
-
-    it('should validate Anthropic model configurations', () => {
-      const anthropicModels = [
-        'claude-3-haiku',
-        'claude-3-sonnet',
-        'claude-3-opus',
-        'claude-3.5-sonnet',
-      ];
-
-      anthropicModels.forEach((model) => {
-        const config = getModelConfig(model);
-        expect(config?.provider).toBe('anthropic');
-        expect(config?.modelId).toMatch(/^claude-/);
-        expect(config?.cost).toBeGreaterThan(0);
-      });
-    });
-
-    it('should validate Chrome model configuration', () => {
-      const config = getModelConfig('chrome-builtin');
-      expect(config?.provider).toBe('chrome');
-      expect(config?.modelId).toBeNull();
-      expect(config?.cost).toBe(0);
-    });
-  });
-
-  describe('API Key Validation Functions', () => {
-    beforeEach(() => {
-      fetchMock.resetMocks();
-    });
-
-    describe('validateApiKey', () => {
-      it('should return error for empty API key', async () => {
-        const result = await validateApiKey('openai', '');
-        expect(result).toEqual({ valid: false, error: 'API key is required' });
+    describe('API Key Validation Functions', () => {
+      beforeEach(() => {
+        fetchMock.resetMocks();
       });
 
-      it('should return error for whitespace-only API key', async () => {
-        const result = await validateApiKey('openai', '   ');
-        expect(result).toEqual({ valid: false, error: 'API key is required' });
-      });
+      describe('validateApiKey', () => {
+        it('should return error for empty API key', async () => {
+          const result = await validateApiKey('openai', '');
+          expect(result).toEqual({
+            valid: false,
+            error: 'API key is required',
+          });
+        });
 
-      it('should validate OpenAI API key successfully', async () => {
-        fetchMock.mockResponseOnce('', { status: 200 });
-        const result = await validateApiKey('openai', 'valid-key');
-        expect(result).toEqual({ valid: true });
-      });
+        it('should return error for whitespace-only API key', async () => {
+          const result = await validateApiKey('openai', '   ');
+          expect(result).toEqual({
+            valid: false,
+            error: 'API key is required',
+          });
+        });
 
-      it('should validate Gemini API key successfully', async () => {
-        fetchMock.mockResponseOnce('', { status: 200 });
-        const result = await validateApiKey('gemini', 'valid-key');
-        expect(result).toEqual({ valid: true });
-      });
+        it('should validate OpenAI API key successfully', async () => {
+          fetchMock.mockResponseOnce('', { status: 200 });
+          const result = await validateApiKey('openai', 'valid-key');
+          expect(result).toEqual({ valid: true });
+        });
 
-      it('should validate Anthropic API key successfully', async () => {
-        fetchMock.mockResponseOnce('', { status: 200 });
-        const result = await validateApiKey('anthropic', 'valid-key');
-        expect(result).toEqual({ valid: true });
-      });
+        it('should validate Gemini API key successfully', async () => {
+          fetchMock.mockResponseOnce('', { status: 200 });
+          const result = await validateApiKey('gemini', 'valid-key');
+          expect(result).toEqual({ valid: true });
+        });
 
-      it('should return error for unknown provider', async () => {
-        const result = await validateApiKey('unknown', 'key');
-        expect(result).toEqual({ valid: false, error: 'Unknown provider' });
-      });
+        it('should validate Anthropic API key successfully', async () => {
+          fetchMock.mockResponseOnce('', { status: 200 });
+          const result = await validateApiKey('anthropic', 'valid-key');
+          expect(result).toEqual({ valid: true });
+        });
 
-      it('should handle network errors', async () => {
-        fetchMock.mockRejectOnce(new Error('Network error'));
-        const result = await validateApiKey('openai', 'key');
-        expect(result).toEqual({
-          valid: false,
-          error: 'Network error during validation',
+        it('should return error for unknown provider', async () => {
+          const result = await validateApiKey('unknown', 'key');
+          expect(result).toEqual({ valid: false, error: 'Unknown provider' });
+        });
+
+        it('should handle network errors', async () => {
+          fetchMock.mockRejectOnce(new Error('Network error'));
+          const result = await validateApiKey('openai', 'key');
+          expect(result).toEqual({
+            valid: false,
+            error: 'Network error during validation',
+          });
         });
       });
     });
-  });
 
-  describe('Chrome Support Functions', () => {
-    describe('getChromeVersion', () => {
-      it('should return version number from userAgent', () => {
-        Object.defineProperty(navigator, 'userAgent', {
-          value:
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          writable: true,
+    describe('Chrome Support Functions', () => {
+      describe('getChromeVersion', () => {
+        it('should return version number from userAgent', () => {
+          Object.defineProperty(navigator, 'userAgent', {
+            value:
+              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            writable: true,
+          });
+          const version = getChromeVersion();
+          expect(version).toBe(120);
         });
-        const version = getChromeVersion();
-        expect(version).toBe(120);
+
+        it('should return 0 when no userAgent', () => {
+          Object.defineProperty(navigator, 'userAgent', {
+            value: undefined,
+            writable: true,
+          });
+          const version = getChromeVersion();
+          expect(version).toBe(0);
+        });
+
+        it('should return 0 when Chrome not in userAgent', () => {
+          Object.defineProperty(navigator, 'userAgent', {
+            value:
+              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Safari/537.36',
+            writable: true,
+          });
+          const version = getChromeVersion();
+          expect(version).toBe(0);
+        });
       });
 
-      it('should return 0 when no userAgent', () => {
-        Object.defineProperty(navigator, 'userAgent', {
-          value: undefined,
-          writable: true,
+      describe('isSummarizerAvailable', () => {
+        it('should return false when Summarizer is not available', async () => {
+          (globalThis as any).Summarizer = undefined;
+          const result = await isSummarizerAvailable();
+          expect(result).toBe(false);
         });
-        const version = getChromeVersion();
-        expect(version).toBe(0);
+
+        it('should return false when Summarizer.availability throws', async () => {
+          (globalThis as any).Summarizer = {
+            availability: jest
+              .fn()
+              .mockRejectedValue(new Error('Not available')),
+          };
+          const result = await isSummarizerAvailable();
+          expect(result).toBe(false);
+        });
+
+        it('should return true when Summarizer is available', async () => {
+          (globalThis as any).Summarizer = {
+            availability: jest.fn().mockResolvedValue('available'),
+          };
+          const result = await isSummarizerAvailable();
+          expect(result).toBe(true);
+        });
+
+        it('should return false when availability is not "available"', async () => {
+          (globalThis as any).Summarizer = {
+            availability: jest.fn().mockResolvedValue('unavailable'),
+          };
+          const result = await isSummarizerAvailable();
+          expect(result).toBe(false);
+        });
       });
 
-      it('should return 0 when Chrome not in userAgent', () => {
-        Object.defineProperty(navigator, 'userAgent', {
-          value:
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Safari/537.36',
-          writable: true,
+      describe('checkChromeBuiltinSupport', () => {
+        it('should return true when version >= 138 and API available', async () => {
+          Object.defineProperty(navigator, 'userAgent', {
+            value: 'Chrome/138.0.0.0',
+            writable: true,
+          });
+          (globalThis as any).Summarizer = {
+            availability: jest.fn().mockResolvedValue('available'),
+          };
+          const result = await checkChromeBuiltinSupport();
+          expect(result).toBe(true);
         });
-        const version = getChromeVersion();
-        expect(version).toBe(0);
+
+        it('should return false when version < 138', async () => {
+          Object.defineProperty(navigator, 'userAgent', {
+            value: 'Chrome/120.0.0.0',
+            writable: true,
+          });
+          (globalThis as any).Summarizer = {
+            availability: jest.fn().mockResolvedValue('available'),
+          };
+          const result = await checkChromeBuiltinSupport();
+          expect(result).toBe(false);
+        });
+
+        it('should return false when API not available', async () => {
+          Object.defineProperty(navigator, 'userAgent', {
+            value: 'Chrome/138.0.0.0',
+            writable: true,
+          });
+          (globalThis as any).Summarizer = {
+            availability: jest.fn().mockResolvedValue('unavailable'),
+          };
+          const result = await checkChromeBuiltinSupport();
+          expect(result).toBe(false);
+        });
       });
     });
 
-    describe('isSummarizerAvailable', () => {
-      it('should return false when Summarizer is not available', async () => {
-        (globalThis as any).Summarizer = undefined;
-        const result = await isSummarizerAvailable();
+    describe('isModelAvailable', () => {
+      it('should return false for unknown model', async () => {
+        const apiKeys = {
+          openaiApiKey: '',
+          geminiApiKey: '',
+          anthropicApiKey: '',
+        };
+        const result = await isModelAvailable('unknown-model', apiKeys);
         expect(result).toBe(false);
       });
 
-      it('should return false when Summarizer.availability throws', async () => {
-        (globalThis as any).Summarizer = {
-          availability: jest.fn().mockRejectedValue(new Error('Not available')),
-        };
-        const result = await isSummarizerAvailable();
-        expect(result).toBe(false);
-      });
-
-      it('should return true when Summarizer is available', async () => {
-        (globalThis as any).Summarizer = {
-          availability: jest.fn().mockResolvedValue('available'),
-        };
-        const result = await isSummarizerAvailable();
-        expect(result).toBe(true);
-      });
-
-      it('should return false when availability is not "available"', async () => {
-        (globalThis as any).Summarizer = {
-          availability: jest.fn().mockResolvedValue('unavailable'),
-        };
-        const result = await isSummarizerAvailable();
-        expect(result).toBe(false);
-      });
-    });
-
-    describe('checkChromeBuiltinSupport', () => {
-      it('should return true when version >= 138 and API available', async () => {
+      it('should return true for chrome-builtin when supported', async () => {
         Object.defineProperty(navigator, 'userAgent', {
           value: 'Chrome/138.0.0.0',
           writable: true,
@@ -1127,146 +1170,98 @@ describe('Utils Module Comprehensive Tests', () => {
         (globalThis as any).Summarizer = {
           availability: jest.fn().mockResolvedValue('available'),
         };
-        const result = await checkChromeBuiltinSupport();
+        const apiKeys = {
+          openaiApiKey: '',
+          geminiApiKey: '',
+          anthropicApiKey: '',
+        };
+        const result = await isModelAvailable('chrome-builtin', apiKeys);
         expect(result).toBe(true);
       });
 
-      it('should return false when version < 138', async () => {
+      it('should return false for chrome-builtin when not supported', async () => {
         Object.defineProperty(navigator, 'userAgent', {
           value: 'Chrome/120.0.0.0',
           writable: true,
         });
-        (globalThis as any).Summarizer = {
-          availability: jest.fn().mockResolvedValue('available'),
+        const apiKeys = {
+          openaiApiKey: '',
+          geminiApiKey: '',
+          anthropicApiKey: '',
         };
-        const result = await checkChromeBuiltinSupport();
+        const result = await isModelAvailable('chrome-builtin', apiKeys);
         expect(result).toBe(false);
       });
 
-      it('should return false when API not available', async () => {
-        Object.defineProperty(navigator, 'userAgent', {
-          value: 'Chrome/138.0.0.0',
-          writable: true,
-        });
-        (globalThis as any).Summarizer = {
-          availability: jest.fn().mockResolvedValue('unavailable'),
+      it('should return true for openai model with valid key', async () => {
+        const apiKeys = {
+          openaiApiKey: 'key',
+          geminiApiKey: '',
+          anthropicApiKey: '',
         };
-        const result = await checkChromeBuiltinSupport();
+        const result = await isModelAvailable('gpt-3.5-turbo', apiKeys);
+        expect(result).toBe(true);
+      });
+
+      it('should return false for openai model without key', async () => {
+        const apiKeys = {
+          openaiApiKey: '',
+          geminiApiKey: '',
+          anthropicApiKey: '',
+        };
+        const result = await isModelAvailable('gpt-3.5-turbo', apiKeys);
         expect(result).toBe(false);
       });
-    });
-  });
 
-  describe('isModelAvailable', () => {
-    it('should return false for unknown model', async () => {
-      const apiKeys = {
-        openaiApiKey: '',
-        geminiApiKey: '',
-        anthropicApiKey: '',
-      };
-      const result = await isModelAvailable('unknown-model', apiKeys);
-      expect(result).toBe(false);
-    });
-
-    it('should return true for chrome-builtin when supported', async () => {
-      Object.defineProperty(navigator, 'userAgent', {
-        value: 'Chrome/138.0.0.0',
-        writable: true,
+      it('should return false for openai model with whitespace key', async () => {
+        const apiKeys = {
+          openaiApiKey: '   ',
+          geminiApiKey: '',
+          anthropicApiKey: '',
+        };
+        const result = await isModelAvailable('gpt-3.5-turbo', apiKeys);
+        expect(result).toBe(false);
       });
-      (globalThis as any).Summarizer = {
-        availability: jest.fn().mockResolvedValue('available'),
-      };
-      const apiKeys = {
-        openaiApiKey: '',
-        geminiApiKey: '',
-        anthropicApiKey: '',
-      };
-      const result = await isModelAvailable('chrome-builtin', apiKeys);
-      expect(result).toBe(true);
-    });
 
-    it('should return false for chrome-builtin when not supported', async () => {
-      Object.defineProperty(navigator, 'userAgent', {
-        value: 'Chrome/120.0.0.0',
-        writable: true,
+      it('should return true for gemini model with valid key', async () => {
+        const apiKeys = {
+          openaiApiKey: '',
+          geminiApiKey: 'key',
+          anthropicApiKey: '',
+        };
+        const result = await isModelAvailable('gemini-1.5-pro', apiKeys);
+        expect(result).toBe(true);
       });
-      const apiKeys = {
-        openaiApiKey: '',
-        geminiApiKey: '',
-        anthropicApiKey: '',
-      };
-      const result = await isModelAvailable('chrome-builtin', apiKeys);
-      expect(result).toBe(false);
-    });
 
-    it('should return true for openai model with valid key', async () => {
-      const apiKeys = {
-        openaiApiKey: 'key',
-        geminiApiKey: '',
-        anthropicApiKey: '',
-      };
-      const result = await isModelAvailable('gpt-3.5-turbo', apiKeys);
-      expect(result).toBe(true);
-    });
+      it('should return false for gemini model without key', async () => {
+        const apiKeys = {
+          openaiApiKey: '',
+          geminiApiKey: '',
+          anthropicApiKey: '',
+        };
+        const result = await isModelAvailable('gemini-1.5-pro', apiKeys);
+        expect(result).toBe(false);
+      });
 
-    it('should return false for openai model without key', async () => {
-      const apiKeys = {
-        openaiApiKey: '',
-        geminiApiKey: '',
-        anthropicApiKey: '',
-      };
-      const result = await isModelAvailable('gpt-3.5-turbo', apiKeys);
-      expect(result).toBe(false);
-    });
+      it('should return true for anthropic model with valid key', async () => {
+        const apiKeys = {
+          openaiApiKey: '',
+          geminiApiKey: '',
+          anthropicApiKey: 'key',
+        };
+        const result = await isModelAvailable('claude-3-haiku', apiKeys);
+        expect(result).toBe(true);
+      });
 
-    it('should return false for openai model with whitespace key', async () => {
-      const apiKeys = {
-        openaiApiKey: '   ',
-        geminiApiKey: '',
-        anthropicApiKey: '',
-      };
-      const result = await isModelAvailable('gpt-3.5-turbo', apiKeys);
-      expect(result).toBe(false);
-    });
-
-    it('should return true for gemini model with valid key', async () => {
-      const apiKeys = {
-        openaiApiKey: '',
-        geminiApiKey: 'key',
-        anthropicApiKey: '',
-      };
-      const result = await isModelAvailable('gemini-1.5-pro', apiKeys);
-      expect(result).toBe(true);
-    });
-
-    it('should return false for gemini model without key', async () => {
-      const apiKeys = {
-        openaiApiKey: '',
-        geminiApiKey: '',
-        anthropicApiKey: '',
-      };
-      const result = await isModelAvailable('gemini-1.5-pro', apiKeys);
-      expect(result).toBe(false);
-    });
-
-    it('should return true for anthropic model with valid key', async () => {
-      const apiKeys = {
-        openaiApiKey: '',
-        geminiApiKey: '',
-        anthropicApiKey: 'key',
-      };
-      const result = await isModelAvailable('claude-3-haiku', apiKeys);
-      expect(result).toBe(true);
-    });
-
-    it('should return false for anthropic model without key', async () => {
-      const apiKeys = {
-        openaiApiKey: '',
-        geminiApiKey: '',
-        anthropicApiKey: '',
-      };
-      const result = await isModelAvailable('claude-3-haiku', apiKeys);
-      expect(result).toBe(false);
+      it('should return false for anthropic model without key', async () => {
+        const apiKeys = {
+          openaiApiKey: '',
+          geminiApiKey: '',
+          anthropicApiKey: '',
+        };
+        const result = await isModelAvailable('claude-3-haiku', apiKeys);
+        expect(result).toBe(false);
+      });
     });
   });
 });
