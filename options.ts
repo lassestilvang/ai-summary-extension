@@ -37,9 +37,7 @@ interface ValidationStatus {
 }
 
 // Browser compatibility functions imported from utils
-import {
-  checkChromeBuiltinSupport,
-} from './utils.js';
+import { checkChromeBuiltinSupport } from './utils.js';
 
 // Inline utility functions to avoid ES6 import issues
 async function validateApiKey(
@@ -1486,7 +1484,9 @@ document.addEventListener('DOMContentLoaded', function () {
   async function loadCurrentShortcut() {
     try {
       const commands = await chrome.commands.getAll();
-      const executeActionCommand = commands.find(cmd => cmd.name === '_execute_action');
+      const executeActionCommand = commands.find(
+        (cmd) => cmd.name === '_execute_action'
+      );
       if (executeActionCommand && executeActionCommand.shortcut) {
         currentShortcutInput.value = executeActionCommand.shortcut;
         shortcutValidationDiv.textContent = `Current shortcut: ${executeActionCommand.shortcut}`;
@@ -1494,7 +1494,8 @@ document.addEventListener('DOMContentLoaded', function () {
         shortcutValidationDiv.style.display = 'block';
       } else {
         currentShortcutInput.value = 'No shortcut set';
-        shortcutValidationDiv.textContent = 'No keyboard shortcut is currently set for this extension.';
+        shortcutValidationDiv.textContent =
+          'No keyboard shortcut is currently set for this extension.';
         shortcutValidationDiv.className = 'status';
         shortcutValidationDiv.style.display = 'block';
       }
@@ -1505,6 +1506,14 @@ document.addEventListener('DOMContentLoaded', function () {
       shortcutValidationDiv.className = 'status error';
       shortcutValidationDiv.style.display = 'block';
     }
+  }
+
+  // Handle "Open Chrome Shortcuts" button
+  const openShortcutsBtn = document.getElementById('openShortcutsBtn');
+  if (openShortcutsBtn) {
+    openShortcutsBtn.addEventListener('click', () => {
+      chrome.tabs.create({ url: 'chrome://extensions/shortcuts' });
+    });
   }
 
   // Integrate with navigation: load shortcut when shortcuts page becomes active
