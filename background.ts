@@ -807,6 +807,17 @@ chrome.runtime.onMessage.addListener(function (
         metrics: result.modelMetrics || {},
       });
     });
+  } else if (request.action === 'update_keyboard_shortcut') {
+    if (chrome.commands && (chrome.commands as any).update) {
+      (chrome.commands as any)
+        .update({
+          name: '_execute_action',
+          shortcut: request.shortcut,
+        })
+        .catch((error: any) => {
+          console.error('Error updating keyboard shortcut:', error);
+        });
+    }
   }
 });
 

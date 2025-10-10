@@ -520,16 +520,19 @@ export function validateShortcut(shortcut: string): string | null {
 }
 
 /**
- * Saves the shortcut to chrome.storage.sync and updates the extension's commands
+ * Saves the shortcut to chrome.storage.sync
+ */
+/**
+ * Saves the shortcut to chrome.storage.sync
  */
 export async function saveShortcut(shortcut: string): Promise<void> {
   try {
     // Save to storage
     await chrome.storage.sync.set({ keyboardShortcut: shortcut });
 
-    // Update the command shortcut
-    await (chrome.commands as any).update({
-      name: COMMAND_NAME,
+    // Notify background script to update the command
+    chrome.runtime.sendMessage({
+      action: 'update_keyboard_shortcut',
       shortcut: shortcut,
     });
   } catch (error) {
