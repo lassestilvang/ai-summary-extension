@@ -4,6 +4,8 @@ dist/
 .kilocode/
 .kiro/
 screenshots/
+.stryker-tmp/
+reports/
 
 # Node.js
 node_modules/
