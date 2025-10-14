@@ -84,7 +84,8 @@ const onClickedListener = jest.fn(
 const onCommandListener = jest.fn(
   (chrome.commands.onCommand.addListener as jest.Mock).mock.calls[0][0]
 );
-const onMessageListener = (chrome.runtime.onMessage.addListener as jest.Mock).mock.calls[0][0];
+const onMessageListener = (chrome.runtime.onMessage.addListener as jest.Mock)
+  .mock.calls[0][0];
 const onRemovedListener = jest.fn(
   (chrome.tabs.onRemoved.addListener as jest.Mock).mock.calls[0][0]
 );
