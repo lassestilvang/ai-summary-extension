@@ -32,7 +32,7 @@ interface TryModelResult {
   error?: string;
 }
 
-interface SummarizeResult {
+export interface SummarizeResult {
   summary: string;
   model: string;
   time: string;
