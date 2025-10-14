@@ -32,7 +32,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["readability.js", "showdown.js", "content.js"]
     }
   ],
   "web_accessible_resources": [
