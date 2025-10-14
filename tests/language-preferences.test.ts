@@ -330,9 +330,9 @@ describe('Language Preferences Comprehensive Tests', () => {
       `;
     });
 
-    it('should display language indicator for English', () => {
+    it('should display language indicator for English', async () => {
       // Import and test the content script functions
-      require('../content');
+      await import('../content');
 
       // Mock chrome storage to return English
       (chrome.storage.sync.get as any).mockResolvedValueOnce({
@@ -406,9 +406,9 @@ describe('Language Preferences Comprehensive Tests', () => {
       });
     });
 
-    it('should load saved language preference', () => {
+    it('should load saved language preference', async () => {
       // Import options script
-      require('../options');
+      await import('../options');
 
       // The options script should set the language select value
       const languageSelect = document.getElementById(
@@ -417,13 +417,12 @@ describe('Language Preferences Comprehensive Tests', () => {
       expect(languageSelect).toBeDefined();
     });
 
-    it('should save language preference', () => {
-      require('../options');
+    it('should save language preference', async () => {
+      await import('../options');
 
       const languageSelect = document.getElementById(
         'language'
       ) as HTMLSelectElement;
-      const saveButton = document.getElementById('save') as HTMLButtonElement;
 
       // Set language to French
       languageSelect.value = 'fr';

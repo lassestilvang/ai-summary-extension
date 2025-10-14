@@ -2,3 +2,4 @@ node_modules/
 *.min.js
 dist/
 readability.js
+showdown.js
