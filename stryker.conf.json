@@ -11,6 +11,10 @@
     "break": 50
   },
   "jest": {
-    "configFile": "jest.config.cjs"
-  }
+    "projectType": "custom",
+    "configFile": "jest.config.cjs",
+    "enableFindRelatedTests": true
+  },
+  "tsconfigFile": "tsconfig.json",
+  "buildCommand": "tsc --noEmit"
 }
