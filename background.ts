@@ -375,6 +375,9 @@ export async function tryModel(
       `Language '${language}' not supported by ${modelConfig.provider}, falling back to English`
     );
   }
+
+  let result: TryModelResult;
+
   switch (modelConfig.provider) {
     case 'chrome': {
       const isSupported = await checkChromeBuiltinSupport();
@@ -384,11 +387,19 @@ export async function tryModel(
           error: 'Chrome built-in AI not supported on this browser version',
         };
       }
-      return await tryChromeBuiltinAI(
-        content,
-        effectiveLanguage,
-        progressCallback
-      );
+      result = await tryChromeBuiltinAI(content, progressCallback);
+
+      // If successful and language is not English, translate the summary
+      if (result.success && effectiveLanguage !== 'en') {
+        const translatedSummary = await translateSummary(
+          result.summary!,
+          effectiveLanguage,
+          progressCallback
+        );
+        result.summary = translatedSummary;
+      }
+
+      return result;
     }
     case 'openai':
       return await tryOpenAI(
@@ -627,33 +638,10 @@ async function translateSummary(
 }
 async function tryChromeBuiltinAI(
   content: string,
-  language: string = 'en',
   progressCallback?: (progress: ProgressUpdate) => void
 ): Promise<TryModelResult> {
   try {
     if ('Summarizer' in globalThis) {
-      // Check language support for translation if needed
-      let translationSupported = false;
-      if (language !== 'en') {
-        try {
-          if ('Translator' in globalThis) {
-            const availability = await (
-              globalThis as any
-            ).Translator.availability({
-              sourceLanguage: 'en',
-              targetLanguage: language,
-            });
-            translationSupported = availability === 'available';
-          }
-        } catch (availabilityError) {
-          console.log(
-            'Error checking translation availability:',
-            availabilityError
-          );
-          translationSupported = false;
-        }
-      }
-
       // Generate summary in English first
       if (progressCallback) {
         progressCallback({
@@ -683,122 +671,7 @@ async function tryChromeBuiltinAI(
       const englishSummary = await summarizer.summarize(content);
       summarizer.destroy();
 
-      // If target language is not English, translate the summary
-      if (language !== 'en') {
-        if (translationSupported) {
-          try {
-            if (progressCallback) {
-              progressCallback({
-                step: 'Checking translation model availability',
-                percentage: 60,
-                estimatedTimeRemaining: 1,
-                currentModel: 'chrome-builtin',
-              });
-            }
-
-            const translatorAvailability = await (
-              globalThis as any
-            ).Translator.availability({
-              sourceLanguage: 'en',
-              targetLanguage: language,
-            });
-
-            if (translatorAvailability === 'available') {
-              if (progressCallback) {
-                progressCallback({
-                  step: 'Translating summary',
-                  percentage: 80,
-                  estimatedTimeRemaining: 0.5,
-                  currentModel: 'chrome-builtin',
-                });
-              }
-
-              const translator = await (globalThis as any).Translator.create({
-                sourceLanguage: 'en',
-                targetLanguage: language,
-              });
-              const translatedSummary =
-                await translator.translate(englishSummary);
-              translator.destroy();
-              return { success: true, summary: translatedSummary };
-            } else if (translatorAvailability === 'after-download') {
-              // Language model needs to be downloaded
-              if (progressCallback) {
-                progressCallback({
-                  step: 'Downloading language model',
-                  percentage: 60,
-                  estimatedTimeRemaining: 5,
-                  currentModel: 'chrome-builtin',
-                });
-              }
-
-              try {
-                const translator = await (globalThis as any).Translator.create({
-                  sourceLanguage: 'en',
-                  targetLanguage: language,
-                  monitor: (monitor: any) => {
-                    monitor.addEventListener('downloadprogress', (e: any) => {
-                      if (progressCallback && e.loaded && e.total) {
-                        const downloadProgress = (e.loaded / e.total) * 100;
-                        progressCallback({
-                          step: `Downloading language model (${Math.round(downloadProgress)}%)`,
-                          percentage: 60 + downloadProgress * 0.3,
-                          estimatedTimeRemaining:
-                            (e.total - e.loaded) /
-                            (e.loaded / (Date.now() - monitor.startTime || 1)) /
-                            1000,
-                          currentModel: 'chrome-builtin',
-                        });
-                      }
-                    });
-                  },
-                });
-
-                if (progressCallback) {
-                  progressCallback({
-                    step: 'Translating summary',
-                    percentage: 90,
-                    estimatedTimeRemaining: 0.5,
-                    currentModel: 'chrome-builtin',
-                  });
-                }
-
-                const translatedSummary =
-                  await translator.translate(englishSummary);
-                translator.destroy();
-                return { success: true, summary: translatedSummary };
-              } catch (downloadError) {
-                console.log(
-                  'Language model download failed, using English summary:',
-                  downloadError
-                );
-                return { success: true, summary: englishSummary };
-              }
-            } else {
-              // Translation not available, use English summary
-              console.log(
-                `Translation not available for ${language}, using English summary`
-              );
-              return { success: true, summary: englishSummary };
-            }
-          } catch (translationError) {
-            console.log(
-              'Translation failed, using English summary:',
-              translationError
-            );
-            return { success: true, summary: englishSummary };
-          }
-        } else {
-          // Translation not supported, use English summary
-          console.log(
-            `Translation not supported for ${language}, using English summary`
-          );
-          return { success: true, summary: englishSummary };
-        }
-      } else {
-        // Target language is English, return the summary as is
-        return { success: true, summary: englishSummary };
-      }
+      return { success: true, summary: englishSummary };
     } else {
       return { success: false, error: 'Chrome built-in AI not available' };
     }
