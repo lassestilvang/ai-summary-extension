@@ -6,7 +6,8 @@ import {
   GeminiResponse,
   AnthropicResponse,
   checkChromeBuiltinSupport,
-} from './utils.js';
+  validateLanguageSupport,
+} from './utils';
 
 interface SummaryState {
   [tabId: number]: {
@@ -185,13 +186,17 @@ export async function summarizeWithAI(
     geminiApiKey,
     anthropicApiKey,
     enableFallback,
+    language,
   } = await chrome.storage.sync.get([
     'selectedModel',
     'openaiApiKey',
     'geminiApiKey',
     'anthropicApiKey',
     'enableFallback',
+    'language',
   ]);
+
+  const selectedLanguage = language || 'en';
 
   const preferredModel = forceModel || selectedModel || 'chrome-builtin';
   const metrics: Metrics = { attempts: [], totalTime: 0 };
@@ -211,11 +216,16 @@ export async function summarizeWithAI(
     });
   }
 
-  let result = await tryModel(preferredModel, content, {
-    openaiApiKey,
-    geminiApiKey,
-    anthropicApiKey,
-  });
+  let result = await tryModel(
+    preferredModel,
+    content,
+    {
+      openaiApiKey,
+      geminiApiKey,
+      anthropicApiKey,
+    },
+    selectedLanguage
+  );
 
   metrics.attempts.push({
     model: preferredModel,
@@ -257,11 +267,16 @@ export async function summarizeWithAI(
         });
       }
 
-      result = await tryModel(model, content, {
-        openaiApiKey,
-        geminiApiKey,
-        anthropicApiKey,
-      });
+      result = await tryModel(
+        model,
+        content,
+        {
+          openaiApiKey,
+          geminiApiKey,
+          anthropicApiKey,
+        },
+        selectedLanguage
+      );
 
       metrics.attempts.push({
         model,
@@ -337,13 +352,29 @@ export async function summarizeWithAI(
 export async function tryModel(
   model: string,
   content: string,
-  apiKeys: ApiKeys
+  apiKeys: ApiKeys,
+  language: string = 'en',
+  progressCallback?: (progress: ProgressUpdate) => void
 ): Promise<TryModelResult> {
   const modelConfig = getModelConfig(model);
   if (!modelConfig) {
     return { success: false, error: 'Unknown model' };
   }
 
+  // Validate language support and determine fallback
+  const languageValidation = validateLanguageSupport(
+    modelConfig.provider,
+    language
+  );
+  const effectiveLanguage = languageValidation.fallbackLanguage;
+  const needsFallback = languageValidation.needsFallback;
+
+  // If fallback occurred, notify the user
+  if (needsFallback) {
+    console.log(
+      `Language '${language}' not supported by ${modelConfig.provider}, falling back to English`
+    );
+  }
   switch (modelConfig.provider) {
     case 'chrome': {
       const isSupported = await checkChromeBuiltinSupport();
@@ -353,25 +384,32 @@ export async function tryModel(
           error: 'Chrome built-in AI not supported on this browser version',
         };
       }
-      return await tryChromeBuiltinAI(content);
+      return await tryChromeBuiltinAI(
+        content,
+        effectiveLanguage,
+        progressCallback
+      );
     }
     case 'openai':
       return await tryOpenAI(
         content,
         apiKeys.openaiApiKey,
-        modelConfig.modelId!
+        modelConfig.modelId!,
+        effectiveLanguage
       );
     case 'gemini':
       return await tryGeminiAPI(
         content,
         apiKeys.geminiApiKey,
-        modelConfig.modelId!
+        modelConfig.modelId!,
+        effectiveLanguage
       );
     case 'anthropic':
       return await tryAnthropicAPI(
         content,
         apiKeys.anthropicApiKey,
-        modelConfig.modelId!
+        modelConfig.modelId!,
+        effectiveLanguage
       );
     default:
       return { success: false, error: 'Unknown provider' };
@@ -472,17 +510,295 @@ export async function storeSummaryHistory(
   }
 }
 
-async function tryChromeBuiltinAI(content: string): Promise<TryModelResult> {
+async function translateSummary(
+  summary: string,
+  targetLanguage: string,
+  progressCallback?: (progress: ProgressUpdate) => void
+): Promise<string> {
+  if (targetLanguage === 'en') {
+    return summary;
+  }
+
+  try {
+    if ('Translator' in globalThis) {
+      if (progressCallback) {
+        progressCallback({
+          step: 'Checking translation model availability',
+          percentage: 60,
+          estimatedTimeRemaining: 1,
+          currentModel: 'chrome-builtin',
+        });
+      }
+
+      const translatorAvailability = await (
+        globalThis as any
+      ).Translator.availability({
+        sourceLanguage: 'en',
+        targetLanguage: targetLanguage,
+      });
+
+      if (translatorAvailability === 'available') {
+        if (progressCallback) {
+          progressCallback({
+            step: 'Translating summary',
+            percentage: 80,
+            estimatedTimeRemaining: 0.5,
+            currentModel: 'chrome-builtin',
+          });
+        }
+
+        const translator = await (globalThis as any).Translator.create({
+          sourceLanguage: 'en',
+          targetLanguage: targetLanguage,
+        });
+        const translatedSummary = await translator.translate(summary);
+        translator.destroy();
+        return translatedSummary;
+      } else if (translatorAvailability === 'after-download') {
+        // Language model needs to be downloaded
+        if (progressCallback) {
+          progressCallback({
+            step: 'Downloading language model',
+            percentage: 60,
+            estimatedTimeRemaining: 5,
+            currentModel: 'chrome-builtin',
+          });
+        }
+
+        try {
+          const translator = await (globalThis as any).Translator.create({
+            sourceLanguage: 'en',
+            targetLanguage: targetLanguage,
+            monitor: (monitor: any) => {
+              monitor.addEventListener('downloadprogress', (e: any) => {
+                if (progressCallback && e.loaded && e.total) {
+                  const downloadProgress = (e.loaded / e.total) * 100;
+                  progressCallback({
+                    step: `Downloading language model (${Math.round(downloadProgress)}%)`,
+                    percentage: 60 + downloadProgress * 0.3,
+                    estimatedTimeRemaining:
+                      (e.total - e.loaded) /
+                      (e.loaded / (Date.now() - monitor.startTime || 1)) /
+                      1000,
+                    currentModel: 'chrome-builtin',
+                  });
+                }
+              });
+            },
+          });
+
+          if (progressCallback) {
+            progressCallback({
+              step: 'Translating summary',
+              percentage: 90,
+              estimatedTimeRemaining: 0.5,
+              currentModel: 'chrome-builtin',
+            });
+          }
+
+          const translatedSummary = await translator.translate(summary);
+          translator.destroy();
+          return translatedSummary;
+        } catch (downloadError) {
+          console.log(
+            'Language model download failed, using English summary:',
+            downloadError
+          );
+          return summary;
+        }
+      } else {
+        // Translation not available, use English summary
+        console.log(
+          `Translation not available for ${targetLanguage}, using English summary`
+        );
+        return summary;
+      }
+    } else {
+      // Translation not supported, use English summary
+      console.log(
+        `Translation not supported for ${targetLanguage}, using English summary`
+      );
+      return summary;
+    }
+  } catch (translationError) {
+    console.log('Translation failed, using English summary:', translationError);
+    return summary;
+  }
+}
+async function tryChromeBuiltinAI(
+  content: string,
+  language: string = 'en',
+  progressCallback?: (progress: ProgressUpdate) => void
+): Promise<TryModelResult> {
   try {
     if ('Summarizer' in globalThis) {
+      // Check language support for translation if needed
+      let translationSupported = false;
+      if (language !== 'en') {
+        try {
+          if ('Translator' in globalThis) {
+            const availability = await (
+              globalThis as any
+            ).Translator.availability({
+              sourceLanguage: 'en',
+              targetLanguage: language,
+            });
+            translationSupported = availability === 'available';
+          }
+        } catch (availabilityError) {
+          console.log(
+            'Error checking translation availability:',
+            availabilityError
+          );
+          translationSupported = false;
+        }
+      }
+
+      // Generate summary in English first
+      if (progressCallback) {
+        progressCallback({
+          step: 'Creating summarizer',
+          percentage: 20,
+          estimatedTimeRemaining: 2,
+          currentModel: 'chrome-builtin',
+        });
+      }
+
       const summarizer = await (globalThis as any).Summarizer.create({
         type: 'key-points',
         format: 'markdown',
         length: 'medium',
+        outputLanguage: 'en',
       });
-      const summary = await summarizer.summarize(content);
+
+      if (progressCallback) {
+        progressCallback({
+          step: 'Summarizing content',
+          percentage: 50,
+          estimatedTimeRemaining: 1.5,
+          currentModel: 'chrome-builtin',
+        });
+      }
+
+      const englishSummary = await summarizer.summarize(content);
       summarizer.destroy();
-      return { success: true, summary };
+
+      // If target language is not English, translate the summary
+      if (language !== 'en') {
+        if (translationSupported) {
+          try {
+            if (progressCallback) {
+              progressCallback({
+                step: 'Checking translation model availability',
+                percentage: 60,
+                estimatedTimeRemaining: 1,
+                currentModel: 'chrome-builtin',
+              });
+            }
+
+            const translatorAvailability = await (
+              globalThis as any
+            ).Translator.availability({
+              sourceLanguage: 'en',
+              targetLanguage: language,
+            });
+
+            if (translatorAvailability === 'available') {
+              if (progressCallback) {
+                progressCallback({
+                  step: 'Translating summary',
+                  percentage: 80,
+                  estimatedTimeRemaining: 0.5,
+                  currentModel: 'chrome-builtin',
+                });
+              }
+
+              const translator = await (globalThis as any).Translator.create({
+                sourceLanguage: 'en',
+                targetLanguage: language,
+              });
+              const translatedSummary =
+                await translator.translate(englishSummary);
+              translator.destroy();
+              return { success: true, summary: translatedSummary };
+            } else if (translatorAvailability === 'after-download') {
+              // Language model needs to be downloaded
+              if (progressCallback) {
+                progressCallback({
+                  step: 'Downloading language model',
+                  percentage: 60,
+                  estimatedTimeRemaining: 5,
+                  currentModel: 'chrome-builtin',
+                });
+              }
+
+              try {
+                const translator = await (globalThis as any).Translator.create({
+                  sourceLanguage: 'en',
+                  targetLanguage: language,
+                  monitor: (monitor: any) => {
+                    monitor.addEventListener('downloadprogress', (e: any) => {
+                      if (progressCallback && e.loaded && e.total) {
+                        const downloadProgress = (e.loaded / e.total) * 100;
+                        progressCallback({
+                          step: `Downloading language model (${Math.round(downloadProgress)}%)`,
+                          percentage: 60 + downloadProgress * 0.3,
+                          estimatedTimeRemaining:
+                            (e.total - e.loaded) /
+                            (e.loaded / (Date.now() - monitor.startTime || 1)) /
+                            1000,
+                          currentModel: 'chrome-builtin',
+                        });
+                      }
+                    });
+                  },
+                });
+
+                if (progressCallback) {
+                  progressCallback({
+                    step: 'Translating summary',
+                    percentage: 90,
+                    estimatedTimeRemaining: 0.5,
+                    currentModel: 'chrome-builtin',
+                  });
+                }
+
+                const translatedSummary =
+                  await translator.translate(englishSummary);
+                translator.destroy();
+                return { success: true, summary: translatedSummary };
+              } catch (downloadError) {
+                console.log(
+                  'Language model download failed, using English summary:',
+                  downloadError
+                );
+                return { success: true, summary: englishSummary };
+              }
+            } else {
+              // Translation not available, use English summary
+              console.log(
+                `Translation not available for ${language}, using English summary`
+              );
+              return { success: true, summary: englishSummary };
+            }
+          } catch (translationError) {
+            console.log(
+              'Translation failed, using English summary:',
+              translationError
+            );
+            return { success: true, summary: englishSummary };
+          }
+        } else {
+          // Translation not supported, use English summary
+          console.log(
+            `Translation not supported for ${language}, using English summary`
+          );
+          return { success: true, summary: englishSummary };
+        }
+      } else {
+        // Target language is English, return the summary as is
+        return { success: true, summary: englishSummary };
+      }
     } else {
       return { success: false, error: 'Chrome built-in AI not available' };
     }
@@ -495,7 +811,8 @@ async function tryChromeBuiltinAI(content: string): Promise<TryModelResult> {
 async function tryOpenAI(
   content: string,
   apiKey: string,
-  model: string = 'gpt-3.5-turbo'
+  model: string = 'gpt-3.5-turbo',
+  language: string = 'en'
 ): Promise<TryModelResult> {
   try {
     if (!apiKey) {
@@ -534,6 +851,8 @@ async function tryOpenAI(
 <li>[Fifth bullet content]</li>
 </ul>
 
+Provide the summary in the following language: ${language}
+
 Content to summarize:
 ${content.substring(0, 12000)}`,
           },
@@ -558,7 +877,8 @@ ${content.substring(0, 12000)}`,
 async function tryGeminiAPI(
   content: string,
   apiKey: string,
-  model: string = 'gemini-2.0-flash-exp'
+  model: string = 'gemini-2.0-flash-exp',
+  language: string = 'en'
 ): Promise<TryModelResult> {
   try {
     if (!apiKey) {
@@ -588,7 +908,9 @@ async function tryGeminiAPI(
             {
               parts: [
                 {
-                  text: `IMPORTANT: Provide ONLY a <ul> list with 5 <li> items and no introduction, titles, or extra text. Format like this:
+                  text: `Provide the summary in the following language: ${language}
+
+IMPORTANT: Provide ONLY a <ul> list with 5 <li> items and no introduction, titles, or extra text. Format like this:
 
 <ul>
 <li>[First bullet content]</li>
@@ -634,7 +956,8 @@ ${content.substring(0, 12000)}`,
 async function tryAnthropicAPI(
   content: string,
   apiKey: string,
-  model: string = 'claude-3-haiku-20240307'
+  model: string = 'claude-3-haiku-20240307',
+  language: string = 'en'
 ): Promise<TryModelResult> {
   try {
     if (!apiKey) {
@@ -663,7 +986,7 @@ async function tryAnthropicAPI(
         model: model,
         max_tokens: 300,
         temperature: 0.3,
-        system: 'You are a helpful assistant that provides concise summaries.',
+        system: `You are a helpful assistant that provides concise summaries in ${language}.`,
         messages: [
           {
             role: 'user',

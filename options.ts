@@ -384,6 +384,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const selectedModelSelect = document.getElementById(
     'selectedModel'
   ) as HTMLSelectElement;
+  const languageSelect = document.getElementById(
+    'language'
+  ) as HTMLSelectElement;
   const temperatureInput = document.getElementById(
     'temperature'
   ) as HTMLInputElement;
@@ -576,6 +579,7 @@ document.addEventListener('DOMContentLoaded', function () {
   chrome.storage.sync.get(
     [
       'selectedModel',
+      'language',
       'temperature',
       'maxTokens',
       'enableFallback',
@@ -589,6 +593,11 @@ document.addEventListener('DOMContentLoaded', function () {
       } else {
         // Set default to chrome-builtin if no model selected
         selectedModelSelect.value = 'chrome-builtin';
+      }
+      if (result.language) {
+        languageSelect.value = result.language;
+      } else {
+        languageSelect.value = 'en';
       }
       if (result.temperature !== undefined) {
         temperatureInput.value = result.temperature.toString();
@@ -712,6 +721,7 @@ document.addEventListener('DOMContentLoaded', function () {
     chrome.storage.sync.set(
       {
         selectedModel: selectedModel,
+        language: languageSelect.value,
         temperature: temperature,
         maxTokens: maxTokens,
         enableFallback: enableFallback,

@@ -11,6 +11,11 @@ import {
 // Mock utils module
 jest.mock('../utils', () => ({
   checkChromeBuiltinSupport: jest.fn().mockResolvedValue(true),
+  validateLanguageSupport: jest.fn().mockReturnValue({
+    supported: true,
+    fallbackLanguage: 'en',
+    needsFallback: false,
+  }),
   getModelConfig: jest.fn((model: string) => {
     const configs: Record<string, any> = {
       'chrome-builtin': {

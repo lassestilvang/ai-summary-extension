@@ -2297,7 +2297,7 @@
               /(^|\n)/g,
               '$1  '
             )).replace(/(\s*<pre>[^\r]+?<\/pre>)/gm, function (e, r) {
-              return r.replace(/^  /gm, '¨0').replace(/¨0/g, '');
+              return r.replace(/^ {2}/gm, '¨0').replace(/¨0/g, '');
             })),
             x.subParser('hashBlock')(
               '<blockquote>\n' + e + '\n</blockquote>',

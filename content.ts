@@ -393,7 +393,8 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
     fontStyle: string,
     model?: string,
     time?: string,
-    metrics?: any
+    metrics?: any,
+    language?: string
   ): void {
     const themeColors: ThemeColors =
       contentThemes[theme]?.colors || contentThemes.light.colors;
@@ -1002,6 +1003,28 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
         }
       });
 
+      // Language indicator
+      const languageIndicator = document.createElement('div');
+      languageIndicator.id = 'ai-summary-language-indicator';
+      languageIndicator.style.cssText = `
+      font-size: 11px !important;
+      color: ${themeColors.titleColor} !important;
+      background-color: ${themeColors.backgroundColor} !important;
+      border: 1px solid ${themeColors.borderColor} !important;
+      border-radius: 3px !important;
+      padding: 2px 6px !important;
+      margin-right: 8px !important;
+      flex-shrink: 0 !important;
+      font-family: Arial, sans-serif !important;
+    `;
+      if (language) {
+        languageIndicator.textContent = language.toUpperCase();
+        languageIndicator.title = `Summary language: ${language}`;
+      } else {
+        languageIndicator.textContent = 'EN';
+        languageIndicator.title = 'Summary language: English (default)';
+      }
+
       // Status text container
       const statusText = document.createElement('div');
       statusText.id = 'ai-summary-status-text';
@@ -1015,6 +1038,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
       font-family: Arial, sans-serif !important;
     `;
 
+      footerDiv.appendChild(languageIndicator);
       footerDiv.appendChild(modelSelect);
       footerDiv.appendChild(statusText);
       summaryDiv.appendChild(footerDiv);
@@ -1326,7 +1350,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
     if (request.action === 'display_inline_summary') {
       isGeneratingSummary = false;
       chrome.storage.sync.get(
-        ['theme', 'fontFamily', 'fontSize', 'fontStyle'],
+        ['theme', 'fontFamily', 'fontSize', 'fontStyle', 'language'],
         function (result) {
           createOrUpdateSummaryDiv(
             request.summary,
@@ -1336,20 +1360,25 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
             result.fontStyle || 'normal',
             request.model,
             request.time,
-            request.metrics
+            request.metrics,
+            result.language || 'en'
           );
         }
       );
     } else if (request.action === 'show_loading_spinner') {
       chrome.storage.sync.get(
-        ['theme', 'fontFamily', 'fontSize', 'fontStyle'],
+        ['theme', 'fontFamily', 'fontSize', 'fontStyle', 'language'],
         function (result) {
           createOrUpdateSummaryDiv(
             null,
             result.theme || 'nord',
             result.fontFamily || 'Arial',
             result.fontSize || 14,
-            result.fontStyle || 'normal'
+            result.fontStyle || 'normal',
+            undefined,
+            undefined,
+            undefined,
+            result.language || 'en'
           );
         }
       );
@@ -1367,7 +1396,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
         } else {
           // Show existing summary
           chrome.storage.sync.get(
-            ['theme', 'fontFamily', 'fontSize', 'fontStyle'],
+            ['theme', 'fontFamily', 'fontSize', 'fontStyle', 'language'],
             function (result) {
               createOrUpdateSummaryDiv(
                 request.summary,
@@ -1377,7 +1406,8 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
                 result.fontStyle || 'normal',
                 request.model,
                 request.time,
-                request.metrics
+                request.metrics,
+                result.language || 'en'
               );
             }
           );
@@ -1399,14 +1429,18 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
             if (!chromeSupported && !hasAlternatives) {
               // No models available at all
               chrome.storage.sync.get(
-                ['theme', 'fontFamily', 'fontSize', 'fontStyle'],
+                ['theme', 'fontFamily', 'fontSize', 'fontStyle', 'language'],
                 function (result) {
                   createOrUpdateSummaryDiv(
                     '<div style="color: #ff6b6b; text-align: center; padding: 20px;"><h3>AI Summarization Unavailable</h3><p>Chrome Built-in AI requires Chrome 138+ and API support.</p><p>No alternative models are configured. Please configure API keys in settings.</p><button onclick="chrome.runtime.sendMessage({action: \'open_options_page\'})" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Open Settings</button></div>',
                     result.theme || 'nord',
                     result.fontFamily || 'Arial',
                     result.fontSize || 14,
-                    result.fontStyle || 'normal'
+                    result.fontStyle || 'normal',
+                    undefined,
+                    undefined,
+                    undefined,
+                    result.language || 'en'
                   );
                 }
               );
