@@ -34,14 +34,13 @@ interface MockDOM {
   [key: string]: any;
 }
 
-describe('Options Script Comprehensive Tests', () => {
-  let mockDOM: MockDOM;
+let mockDOM: MockDOM;
+let mockNavLink: any;
+let mockPage: any;
 
+describe('Options Script Comprehensive Tests', () => {
   // Utility functions are tested indirectly through integration tests
   // since they are internal to the options.ts module and not exported
-
-  let mockNavLink: any;
-  let mockPage: any;
 
   beforeEach(() => {
     // Reset fetch mocks
@@ -420,11 +419,10 @@ describe('Options Script Comprehensive Tests', () => {
           openaiApiKey: 'new-openai-key',
           geminiApiKey: 'new-gemini-key',
           anthropicApiKey: 'new-anthropic-key',
-                },
+        },
         expect.any(Function)
       );
-    })
-    ;});
+    });
 
     it('should trim API key values before saving', async () => {
       const settingsForm = mockDOM['settings-form'];
@@ -1261,7 +1259,6 @@ describe('Options Script Comprehensive Tests', () => {
         expect.any(Function)
       );
     });
-  });
 
     it('should initialize theme from storage', () => {
       (chrome.storage.sync.get as any).mockImplementation(
@@ -1347,14 +1344,6 @@ describe('Options Script Comprehensive Tests', () => {
   });
 
   describe('Navigation Functions', () => {
-    let mockDOM: MockDOM;
-
-    beforeEach(() => {
-      mockDOM = {
-        sidebar: { classList: { toggle: jest.fn() } },
-        toggleSidebar: { addEventListener: jest.fn() },
-      };
-    });
     it('should switch page correctly', () => {
       const navLink = document.querySelectorAll('.nav-link')[0];
       expect(navLink.addEventListener).toHaveBeenCalledWith(
@@ -1430,7 +1419,7 @@ describe('Options Script Comprehensive Tests', () => {
       expect(chrome.storage.local.set).toHaveBeenCalledWith(
         {
           summaryHistory: [],
-                },
+        },
         expect.any(Function)
       );
 

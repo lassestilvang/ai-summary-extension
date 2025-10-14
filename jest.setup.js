@@ -93,6 +93,12 @@ const createChromeMock = () => ({
       return Promise.resolve();
     }),
     lastError: null,
+    onInstalled: {
+      addListener: jest.fn(),
+    },
+    onStartup: {
+      addListener: jest.fn(),
+    },
   },
   action: {
     onClicked: {

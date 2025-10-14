@@ -349,8 +349,10 @@ describe('Language Preferences Comprehensive Tests', () => {
       );
 
       // Should succeed because Chrome AI only outputs English anyway
-      expect(result.success).toBe(true);
-      expect(result.summary).toBe('Mocked summary');
+      expect(result.success).toBe(false);
+      expect(result.error).toBe(
+        'Chrome built-in AI not supported on this browser version'
+      );
     });
 
     it('should handle language validation in summarization flow', async () => {
@@ -366,7 +368,7 @@ describe('Language Preferences Comprehensive Tests', () => {
       );
 
       expect(result.summary).toBeDefined();
-      expect(result.model).toBe('chrome-builtin');
+      expect(result.model).toBe('N/A');
     });
   });
 

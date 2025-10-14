@@ -79,14 +79,14 @@ if (
 const summaryState: SummaryState = {}; // Stores { tabId: { summary: "...", visible: true/false } }
 
 chrome.action.onClicked.addListener(async (tab: chrome.tabs.Tab) => {
-  console.log('Extension clicked on tab URL:', tab.url);
   if (tab.url && tab.url.startsWith('chrome://')) {
     console.log(
-      'Skipping chrome:// URL - extension does not work on Chrome internal pages'
+      'chrome.action.onClicked: Skipping chrome:// URL - extension does not work on Chrome internal pages'
     );
     return;
   }
   // Inject library scripts dynamically
+  if (!tab.id) return; // Add check for undefined tab.id
   await chrome.scripting.executeScript({
     target: { tabId: tab.id! },
     files: ['readability.js', 'showdown.js', 'content.js'],
@@ -128,12 +128,11 @@ if (chrome.commands && chrome.commands.onCommand) {
         active: true,
         currentWindow: true,
       });
-      if (!tab) return;
+      if (!tab || !tab.id) return; // Add check for undefined tab.id
 
-      console.log('Shortcut triggered on tab URL:', tab.url);
       if (tab.url && tab.url.startsWith('chrome://')) {
         console.log(
-          'Skipping chrome:// URL - extension does not work on Chrome internal pages'
+          'chrome.commands.onCommand: Skipping chrome:// URL - extension does not work on Chrome internal pages'
         );
         return;
       }
@@ -540,8 +539,6 @@ async function translateSummary(
   effectiveLanguage: string,
   progressCallback?: (progress: ProgressUpdate) => void
 ): Promise<string> {
-  console.log(`Translating summary to ${effectiveLanguage}`);
-
   if (effectiveLanguage === 'en') {
     return summary;
   }
@@ -627,20 +624,13 @@ async function translateSummary(
         return translatedSummary;
       } else {
         // Translation not available, use English summary
-        console.log(
-          `Translation not available for ${effectiveLanguage}, using English summary`
-        );
         return summary;
       }
     } else {
       // Translation not supported, use English summary
-      console.log(
-        `Translation not supported for ${effectiveLanguage}, using English summary`
-      );
       return summary;
     }
-  } catch (translationError) {
-    console.log('Translation failed, using English summary:', translationError);
+  } catch {
     return summary;
   }
 }
@@ -649,7 +639,7 @@ async function tryChromeBuiltinAI(
   progressCallback?: (progress: ProgressUpdate) => void
 ): Promise<TryModelResult> {
   try {
-    if ('Summarizer' in globalThis) {
+    if ('Summarizer' in globalThis && (globalThis as any).Summarizer) {
       // Generate summary in English first
       if (progressCallback) {
         progressCallback({
@@ -659,7 +649,6 @@ async function tryChromeBuiltinAI(
           currentModel: 'chrome-builtin',
         });
       }
-
       const summarizer = await (globalThis as any).Summarizer.create({
         type: 'key-points',
         format: 'markdown',
@@ -675,7 +664,6 @@ async function tryChromeBuiltinAI(
           currentModel: 'chrome-builtin',
         });
       }
-
       const englishSummary = await summarizer.summarize(content);
       summarizer.destroy();
 
@@ -687,7 +675,6 @@ async function tryChromeBuiltinAI(
       return { success: false, error: 'Chrome built-in AI not available' };
     }
   } catch (error) {
-    console.log('Chrome built-in AI error:', error);
     return { success: false, error: (error as Error).message };
   }
 }
@@ -713,7 +700,6 @@ async function tryOpenAI(
           'Permission denied for OpenAI API access. Please save your settings again in the extension options to grant permissions.',
       };
     }
-
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -726,7 +712,7 @@ async function tryOpenAI(
           {
             role: 'user',
             content: `IMPORTANT: Provide ONLY a <ul> list with 5 <li> items and no introduction, titles, or extra text. Format like this:
-
+ 
 <ul>
 <li>[First bullet content]</li>
 <li>[Second bullet content]</li>
@@ -734,9 +720,9 @@ async function tryOpenAI(
 <li>[Fourth bullet content]</li>
 <li>[Fifth bullet content]</li>
 </ul>
-
+ 
 Provide the summary in the following language: ${language}
-
+ 
 Content to summarize:
 ${content.substring(0, 12000)}`,
           },
@@ -779,7 +765,6 @@ async function tryGeminiAPI(
           'Permission denied for Gemini API access. Please save your settings again in the extension options to grant permissions.',
       };
     }
-
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
       {
@@ -793,9 +778,9 @@ async function tryGeminiAPI(
               parts: [
                 {
                   text: `Provide the summary in the following language: ${language}
-
+ 
 IMPORTANT: Provide ONLY a <ul> list with 5 <li> items and no introduction, titles, or extra text. Format like this:
-
+ 
 <ul>
 <li>[First bullet content]</li>
 <li>[Second bullet content]</li>
@@ -803,7 +788,7 @@ IMPORTANT: Provide ONLY a <ul> list with 5 <li> items and no introduction, title
 <li>[Fourth bullet content]</li>
 <li>[Fifth bullet content]</li>
 </ul>
-
+ 
 Content to summarize:
 ${content.substring(0, 12000)}`,
                 },
@@ -858,7 +843,6 @@ async function tryAnthropicAPI(
           'Permission denied for Anthropic API access. Please save your settings again in the extension options to grant permissions.',
       };
     }
-
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -875,7 +859,7 @@ async function tryAnthropicAPI(
           {
             role: 'user',
             content: `IMPORTANT: Provide ONLY a <ul> list with 5 <li> items and no introduction, titles, or extra text. Format like this:
-
+ 
 <ul>
 <li>[First bullet content]</li>
 <li>[Second bullet content]</li>
@@ -883,7 +867,7 @@ async function tryAnthropicAPI(
 <li>[Fourth bullet content]</li>
 <li>[Fifth bullet content]</li>
 </ul>
-
+ 
 Content to summarize:
 ${content.substring(0, 12000)}`,
           },
@@ -911,13 +895,13 @@ chrome.runtime.onMessage.addListener(function (
   request: any,
   sender: chrome.runtime.MessageSender
 ) {
-  if (!request || !request.action) return;
+  if (!request || !request.action) return false; // Explicitly return false for invalid messages
   if (request.action === 'process_content') {
     const tabId = sender.tab!.id!;
 
     // Check if already processing for this tab
     if (summaryState[tabId]?.isProcessing) {
-      return;
+      return false; // Explicitly return false when concurrent processing is prevented
     }
 
     // Set processing flag
@@ -993,13 +977,16 @@ chrome.runtime.onMessage.addListener(function (
             console.log('Content script message failed:', error);
           });
       });
+    return true; // Indicate that the response will be sent asynchronously
   } else if (request.action === 'update_summary_visibility') {
     const tabId = sender.tab!.id!;
     if (summaryState[tabId]) {
       summaryState[tabId].visible = request.visible;
     }
+    return false; // Synchronous operation
   } else if (request.action === 'open_options_page') {
     chrome.runtime.openOptionsPage();
+    return false; // Synchronous operation
   } else if (request.action === 'switch_model') {
     chrome.storage.sync.set({ selectedModel: request.model }, () => {
       chrome.runtime.sendMessage({
@@ -1007,6 +994,7 @@ chrome.runtime.onMessage.addListener(function (
         model: request.model,
       });
     });
+    return true; // Asynchronous operation
   } else if (request.action === 'get_model_metrics') {
     chrome.storage.local.get('modelMetrics', (result) => {
       chrome.runtime.sendMessage({
@@ -1014,7 +1002,9 @@ chrome.runtime.onMessage.addListener(function (
         metrics: result.modelMetrics || {},
       });
     });
+    return true; // Asynchronous operation
   }
+  return false; // For synchronous messages or unrecognized actions
 });
 
 // Clear summary state when a tab is closed
