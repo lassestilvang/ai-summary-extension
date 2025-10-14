@@ -521,6 +521,20 @@ export async function storeSummaryHistory(
   }
 }
 
+function markdownToHtml(markdown: string): string {
+  // Simple markdown to HTML converter focused on lists
+  // Replace markdown list items with HTML
+  let html = markdown
+    .replace(/^- (.+)$/gm, '<li>$1</li>') // Convert - item to <li>item</li>
+    .replace(/^\* (.+)$/gm, '<li>$1</li>') // Convert * item to <li>item</li>
+    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>'); // Convert 1. item to <li>item</li>
+
+  // Wrap consecutive <li> elements in <ul>
+  html = html.replace(/(<li>.*?<\/li>\s*)+/gs, '<ul>$&</ul>');
+
+  return html;
+}
+
 async function translateSummary(
   summary: string,
   effectiveLanguage: string,
@@ -665,7 +679,10 @@ async function tryChromeBuiltinAI(
       const englishSummary = await summarizer.summarize(content);
       summarizer.destroy();
 
-      return { success: true, summary: englishSummary };
+      // Convert Markdown to HTML to preserve list structure during translation
+      const htmlSummary = markdownToHtml(englishSummary);
+
+      return { success: true, summary: htmlSummary };
     } else {
       return { success: false, error: 'Chrome built-in AI not available' };
     }
