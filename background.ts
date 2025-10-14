@@ -76,7 +76,7 @@ if (
   });
 }
 
-const summaryState: SummaryState = {}; // Stores { tabId: { summary: "...", visible: true/false } }
+export const summaryState: SummaryState = {}; // Stores { tabId: { summary: "...", visible: true/false } }
 
 chrome.action.onClicked.addListener(async (tab: chrome.tabs.Tab) => {
   if (tab.url && tab.url.startsWith('chrome://')) {

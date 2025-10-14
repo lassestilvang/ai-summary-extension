@@ -72,6 +72,7 @@ const {
   getFallbackModels,
   storeModelMetrics,
   storeSummaryHistory,
+  summaryState,
 } = backgroundModule;
 
 // Capture listeners after background.ts has registered them
@@ -83,9 +84,7 @@ const onClickedListener = jest.fn(
 const onCommandListener = jest.fn(
   (chrome.commands.onCommand.addListener as jest.Mock).mock.calls[0][0]
 );
-const onMessageListener = jest.fn(
-  (chrome.runtime.onMessage.addListener as jest.Mock).mock.calls[0][0]
-);
+const onMessageListener = (chrome.runtime.onMessage.addListener as jest.Mock).mock.calls[0][0];
 const onRemovedListener = jest.fn(
   (chrome.tabs.onRemoved.addListener as jest.Mock).mock.calls[0][0]
 );
@@ -108,7 +107,7 @@ describe('Background Script Comprehensive Tests', () => {
     // Clear call history for captured listener functions
     onClickedListener.mockClear();
     onCommandListener.mockClear();
-    onMessageListener.mockClear();
+    // onMessageListener is not a jest mock, so no mockClear needed
     onRemovedListener.mockClear();
     onUpdatedListener.mockClear();
     onInstalledListener.mockClear();
@@ -1174,7 +1173,7 @@ describe('Background Script Comprehensive Tests', () => {
       await Promise.resolve(); // Allow any pending microtasks to run after timers
 
       // Ensure summarizeWithAI was only called once
-      expect(backgroundModule.summarizeWithAI).toHaveBeenCalledTimes(1);
+      expect((backgroundModule.summarizeWithAI as any)).toHaveBeenCalledTimes(1);
 
       // Ensure the correct messages were sent for the first (and only) successful processing
       expect((chrome as any).tabs.sendMessage).toHaveBeenCalledWith(123, {
