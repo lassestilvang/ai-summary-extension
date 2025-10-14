@@ -742,34 +742,6 @@ document.addEventListener('DOMContentLoaded', function () {
     );
   });
 
-  // Add informational messages about model configuration
-  const infoDiv = document.createElement('div');
-  infoDiv.id = 'model-info';
-  if (infoDiv.style) {
-    infoDiv.style.cssText = `
-      margin-top: 20px;
-      padding: 15px;
-      background-color: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      font-size: 14px;
-      line-height: 1.5;
-    `;
-  }
-  infoDiv.innerHTML = `
-    <h4 style="margin: 0 0 10px 0; color: #39ff14;">Model Configuration Info</h4>
-    <p style="margin: 0 0 8px 0;"><strong>Chrome Built-in AI:</strong> Requires Chrome 138+ and Summarizer API support. Free but limited availability.</p>
-    <p style="margin: 0 0 8px 0;"><strong>API-based Models:</strong> Require valid API keys from respective providers. Check the provider's website for pricing and limits.</p>
-    <p style="margin: 0;"><strong>Fallback:</strong> When enabled, the extension will automatically try alternative models if the primary one fails.</p>
-  `;
-  // Insert before the first form-group (AI Model)
-  const firstFormGroup = settingsForm.querySelector(
-    '.form-group'
-  ) as HTMLElement;
-  if (firstFormGroup) {
-    settingsForm.insertBefore(infoDiv, firstFormGroup);
-  }
-
   // Load and display metrics
   function loadMetrics() {
     chrome.runtime.sendMessage({ action: 'get_model_metrics' });

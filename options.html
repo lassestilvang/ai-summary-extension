@@ -1296,7 +1296,7 @@
           <div class="security-notice">
             <i class="fas fa-lock"></i>
             <div>
-              <h3>Your API keys are secure:</h3>
+              <h3>Your API keys are secure</h3>
               <p>
                 All keys are stored encrypted locally on your device only and
                 are never sent to any external servers, third parties, or cloud
@@ -1307,9 +1307,22 @@
           </div>
 
           <div class="info-box">
-            <strong>Note:</strong> Choose your preferred AI provider. If your
-            selected provider is unavailable, the extension will automatically
-            try other providers as fallbacks.
+            <h4 style="margin: 0 0 10px 0; color: #39ff14">
+              Model Configuration Info
+            </h4>
+            <p style="margin: 0 0 8px 0">
+              <strong>Chrome Built-in AI:</strong> Requires Chrome 138+ and
+              Summarizer API support. Free but limited availability.
+            </p>
+            <p style="margin: 0 0 8px 0">
+              <strong>API-based Models:</strong> Require valid API keys from
+              respective providers. Check the provider's website for pricing and
+              limits.
+            </p>
+            <p style="margin: 0">
+              <strong>Fallback:</strong> When enabled, the extension will
+              automatically try alternative models if the primary one fails.
+            </p>
           </div>
 
           <form id="settings-form">
@@ -1357,6 +1370,7 @@
                   </option>
                 </optgroup>
               </select>
+            </div>
             <div class="form-group">
               <label class="form-label" for="language">Language:</label>
               <select class="form-select" id="language">
@@ -1373,7 +1387,6 @@
                 <option value="ar">Arabic</option>
                 <option value="hi">Hindi</option>
               </select>
-            </div>
             </div>
 
             <div class="form-group">
@@ -1405,7 +1418,10 @@
             <div class="form-group">
               <div class="checkbox-group">
                 <input type="checkbox" id="enableFallback" checked />
-                <label class="form-label" for="enableFallback"
+                <label
+                  class="form-label"
+                  style="margin-bottom: 0"
+                  for="enableFallback"
                   >Enable automatic fallback to other models if primary
                   fails</label
                 >
@@ -1531,7 +1547,9 @@
           </form>
 
           <div class="form-group">
-            <h3 style="color: #00d4ff; margin-bottom: 15px">Preview</h3>
+            <h2 style="color: #39ff14; margin-top: 20px; margin-bottom: 5px">
+              Preview
+            </h2>
             <div
               id="themePreview"
               style="
