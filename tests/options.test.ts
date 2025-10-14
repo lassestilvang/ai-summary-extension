@@ -70,6 +70,7 @@ describe('Options Script Comprehensive Tests', () => {
 
       // Settings elements
       selectedModel: { value: 'chrome-builtin' },
+      language: { value: 'en', addEventListener: jest.fn() },
       temperature: { value: '0.7', addEventListener: jest.fn() },
       'temperature-value': { textContent: '0.7' },
       maxTokens: { value: '1000' },
@@ -163,6 +164,7 @@ describe('Options Script Comprehensive Tests', () => {
         insertBefore: jest.fn(),
       },
       'theme-form': { addEventListener: jest.fn() },
+      openShortcutsBtn: { addEventListener: jest.fn() },
     };
 
     // Mock document.getElementById
@@ -370,6 +372,7 @@ describe('Options Script Comprehensive Tests', () => {
       expect(chrome.storage.sync.get).toHaveBeenCalledWith(
         [
           'selectedModel',
+          'language',
           'temperature',
           'maxTokens',
           'enableFallback',
@@ -410,16 +413,18 @@ describe('Options Script Comprehensive Tests', () => {
       expect(chrome.storage.sync.set).toHaveBeenCalledWith(
         {
           selectedModel: 'gpt-4',
+          language: 'en',
           temperature: 0.7,
           maxTokens: 1000,
           enableFallback: false,
           openaiApiKey: 'new-openai-key',
           geminiApiKey: 'new-gemini-key',
           anthropicApiKey: 'new-anthropic-key',
-        },
+                },
         expect.any(Function)
       );
-    });
+    })
+    ;});
 
     it('should trim API key values before saving', async () => {
       const settingsForm = mockDOM['settings-form'];
@@ -1079,6 +1084,7 @@ describe('Options Script Comprehensive Tests', () => {
         },
         expect.any(Function)
       );
+
       expect(mockDOM.historyStatus.textContent).toBe(
         'History cleared successfully!'
       );
@@ -1255,6 +1261,7 @@ describe('Options Script Comprehensive Tests', () => {
         expect.any(Function)
       );
     });
+  });
 
     it('should initialize theme from storage', () => {
       (chrome.storage.sync.get as any).mockImplementation(
@@ -1340,6 +1347,14 @@ describe('Options Script Comprehensive Tests', () => {
   });
 
   describe('Navigation Functions', () => {
+    let mockDOM: MockDOM;
+
+    beforeEach(() => {
+      mockDOM = {
+        sidebar: { classList: { toggle: jest.fn() } },
+        toggleSidebar: { addEventListener: jest.fn() },
+      };
+    });
     it('should switch page correctly', () => {
       const navLink = document.querySelectorAll('.nav-link')[0];
       expect(navLink.addEventListener).toHaveBeenCalledWith(
@@ -1415,7 +1430,7 @@ describe('Options Script Comprehensive Tests', () => {
       expect(chrome.storage.local.set).toHaveBeenCalledWith(
         {
           summaryHistory: [],
-        },
+                },
         expect.any(Function)
       );
 

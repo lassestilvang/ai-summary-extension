@@ -24,14 +24,47 @@ Object.defineProperty(global, 'chrome', {
         set: jest.fn().mockResolvedValue(undefined),
       },
     },
+    permissions: {
+      contains: jest.fn().mockResolvedValue(true),
+    },
     runtime: {
       sendMessage: jest.fn().mockResolvedValue(undefined),
       onMessage: {
         addListener: jest.fn(),
       },
+      onInstalled: {
+        addListener: jest.fn(),
+      },
+      onStartup: {
+        addListener: jest.fn(),
+      },
+      openOptionsPage: jest.fn(),
     },
     tabs: {
       sendMessage: jest.fn().mockResolvedValue(undefined),
+      onRemoved: {
+        addListener: jest.fn(),
+      },
+      onUpdated: {
+        addListener: jest.fn(),
+      },
+      query: jest.fn().mockResolvedValue([]),
+      get: jest
+        .fn()
+        .mockResolvedValue({ url: 'https://example.com', title: 'Test' }),
+    },
+    action: {
+      onClicked: {
+        addListener: jest.fn(),
+      },
+    },
+    commands: {
+      onCommand: {
+        addListener: jest.fn(),
+      },
+    },
+    scripting: {
+      executeScript: jest.fn().mockResolvedValue(undefined),
     },
   },
   writable: true,
@@ -43,6 +76,7 @@ Object.defineProperty(global, 'chrome', {
     summarize: jest.fn().mockResolvedValue('Mocked summary'),
     destroy: jest.fn(),
   }),
+  availability: jest.fn().mockResolvedValue('available'),
 };
 
 describe('Language Preferences Comprehensive Tests', () => {
@@ -93,7 +127,7 @@ describe('Language Preferences Comprehensive Tests', () => {
       });
 
       it('should return false for unsupported languages', () => {
-        expect(isLanguageSupported('chrome', 'es')).toBe(false);
+        expect(isLanguageSupported('chrome', 'unsupported')).toBe(false);
         expect(isLanguageSupported('openai', 'unsupported')).toBe(false);
       });
 
@@ -104,7 +138,7 @@ describe('Language Preferences Comprehensive Tests', () => {
 
     describe('getSupportedLanguages function', () => {
       it('should return correct languages for each provider', () => {
-        expect(getSupportedLanguages('chrome')).toEqual(['en']);
+        expect(getSupportedLanguages('chrome')).toContain('en');
         expect(getSupportedLanguages('openai')).toContain('en');
         expect(getSupportedLanguages('gemini')).toContain('en');
         expect(getSupportedLanguages('anthropic')).toContain('en');
@@ -118,21 +152,39 @@ describe('Language Preferences Comprehensive Tests', () => {
 
   describe('Provider-Specific Language Support', () => {
     describe('Chrome Built-in AI', () => {
-      it('should only support English', () => {
-        expect(isLanguageSupported('chrome', 'en')).toBe(true);
-        expect(isLanguageSupported('chrome', 'es')).toBe(false);
-        expect(isLanguageSupported('chrome', 'fr')).toBe(false);
-        expect(isLanguageSupported('chrome', 'de')).toBe(false);
+      it('should support all documented languages', () => {
+        const chromeLanguages = LANGUAGE_SUPPORT.chrome;
+        chromeLanguages.forEach((lang) => {
+          expect(isLanguageSupported('chrome', lang)).toBe(true);
+        });
       });
 
-      it('should fallback to English for any non-English language', () => {
-        const languages = ['es', 'fr', 'de', 'it', 'pt', 'zh', 'ja', 'ko'];
+      it('should include major languages', () => {
+        const majorLanguages = [
+          'en',
+          'es',
+          'fr',
+          'de',
+          'it',
+          'pt',
+          'zh',
+          'ja',
+          'ko',
+          'ru',
+          'ar',
+          'hi',
+        ];
+        majorLanguages.forEach((lang) => {
+          expect(LANGUAGE_SUPPORT.chrome).toContain(lang);
+        });
+      });
 
-        languages.forEach((lang) => {
+      it('should not need fallback for supported languages', () => {
+        LANGUAGE_SUPPORT.chrome.slice(0, 5).forEach((lang) => {
           const result = validateLanguageSupport('chrome', lang);
-          expect(result.supported).toBe(false);
-          expect(result.fallbackLanguage).toBe('en');
-          expect(result.needsFallback).toBe(true);
+          expect(result.supported).toBe(true);
+          expect(result.fallbackLanguage).toBe(lang);
+          expect(result.needsFallback).toBe(false);
         });
       });
     });
