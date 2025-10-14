@@ -517,7 +517,7 @@ describe('Background Script Comprehensive Tests', () => {
       expect(fetchMock).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
-          body: expect.stringContaining('a'.repeat(12000)),
+          body: expect.stringContaining(longContent.substring(0, 12000)),
         })
       );
     });
@@ -1429,7 +1429,7 @@ describe('Background Script Comprehensive Tests', () => {
       expect(fetchMock).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
-          body: expect.stringContaining('a'.repeat(12000)),
+          body: expect.stringContaining(longContent.substring(0, 12000)),
         })
       );
     });
