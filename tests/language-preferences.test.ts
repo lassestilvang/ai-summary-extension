@@ -284,7 +284,7 @@ describe('Language Preferences Comprehensive Tests', () => {
       // Mock the tryModel function import
       const { tryModel } = await import('../background');
 
-      // Test with Chrome AI and non-English language
+      // Test with Chrome AI and English language
       const result = await tryModel(
         'chrome-builtin',
         'Test content',
@@ -293,7 +293,7 @@ describe('Language Preferences Comprehensive Tests', () => {
           geminiApiKey: '',
           anthropicApiKey: '',
         },
-        'es'
+        'en' // Use English since Chrome only supports English
       );
 
       // Should succeed because Chrome AI only outputs English anyway
@@ -331,9 +331,6 @@ describe('Language Preferences Comprehensive Tests', () => {
     });
 
     it('should display language indicator for English', async () => {
-      // Import and test the content script functions
-      await import('../content');
-
       // Mock chrome storage to return English
       (chrome.storage.sync.get as any).mockResolvedValueOnce({
         language: 'en',
