@@ -293,7 +293,7 @@ describe('Language Preferences Comprehensive Tests', () => {
           geminiApiKey: '',
           anthropicApiKey: '',
         },
-        'en' // Use English since Chrome only supports English
+        'en'
       );
 
       // Should succeed because Chrome AI only outputs English anyway
