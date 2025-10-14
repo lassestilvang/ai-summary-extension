@@ -523,10 +523,12 @@ export async function storeSummaryHistory(
 
 async function translateSummary(
   summary: string,
-  targetLanguage: string,
+  effectiveLanguage: string,
   progressCallback?: (progress: ProgressUpdate) => void
 ): Promise<string> {
-  if (targetLanguage === 'en') {
+  console.log(`Translating summary to ${effectiveLanguage}`);
+
+  if (effectiveLanguage === 'en') {
     return summary;
   }
 
@@ -545,7 +547,7 @@ async function translateSummary(
         globalThis as any
       ).Translator.availability({
         sourceLanguage: 'en',
-        targetLanguage: targetLanguage,
+        targetLanguage: effectiveLanguage,
       });
 
       if (translatorAvailability === 'available') {
@@ -560,12 +562,12 @@ async function translateSummary(
 
         const translator = await (globalThis as any).Translator.create({
           sourceLanguage: 'en',
-          targetLanguage: targetLanguage,
+          targetLanguage: effectiveLanguage,
         });
         const translatedSummary = await translator.translate(summary);
         translator.destroy();
         return translatedSummary;
-      } else if (translatorAvailability === 'after-download') {
+      } else if (translatorAvailability === 'downloadable') {
         // Language model needs to be downloaded
         if (progressCallback) {
           progressCallback({
@@ -576,58 +578,50 @@ async function translateSummary(
           });
         }
 
-        try {
-          const translator = await (globalThis as any).Translator.create({
-            sourceLanguage: 'en',
-            targetLanguage: targetLanguage,
-            monitor: (monitor: any) => {
-              monitor.addEventListener('downloadprogress', (e: any) => {
-                if (progressCallback && e.loaded && e.total) {
-                  const downloadProgress = (e.loaded / e.total) * 100;
-                  progressCallback({
-                    step: `Downloading language model (${Math.round(downloadProgress)}%)`,
-                    percentage: 60 + downloadProgress * 0.3,
-                    estimatedTimeRemaining:
-                      (e.total - e.loaded) /
-                      (e.loaded / (Date.now() - monitor.startTime || 1)) /
-                      1000,
-                    currentModel: 'chrome-builtin',
-                  });
-                }
-              });
-            },
-          });
-
-          if (progressCallback) {
-            progressCallback({
-              step: 'Translating summary',
-              percentage: 90,
-              estimatedTimeRemaining: 0.5,
-              currentModel: 'chrome-builtin',
+        const translator = await (globalThis as any).Translator.create({
+          sourceLanguage: 'en',
+          targetLanguage: effectiveLanguage,
+          monitor: (monitor: any) => {
+            monitor.addEventListener('downloadprogress', (e: any) => {
+              if (progressCallback && e.loaded && e.total) {
+                const downloadProgress = (e.loaded / e.total) * 100;
+                progressCallback({
+                  step: `Downloading language model (${Math.round(downloadProgress)}%)`,
+                  percentage: 60 + downloadProgress * 0.3,
+                  estimatedTimeRemaining:
+                    (e.total - e.loaded) /
+                    (e.loaded / (Date.now() - monitor.startTime || 1)) /
+                    1000,
+                  currentModel: 'chrome-builtin',
+                });
+              }
             });
-          }
+          },
+        });
 
-          const translatedSummary = await translator.translate(summary);
-          translator.destroy();
-          return translatedSummary;
-        } catch (downloadError) {
-          console.log(
-            'Language model download failed, using English summary:',
-            downloadError
-          );
-          return summary;
+        if (progressCallback) {
+          progressCallback({
+            step: 'Translating summary',
+            percentage: 90,
+            estimatedTimeRemaining: 0.5,
+            currentModel: 'chrome-builtin',
+          });
         }
+
+        const translatedSummary = await translator.translate(summary);
+        translator.destroy();
+        return translatedSummary;
       } else {
         // Translation not available, use English summary
         console.log(
-          `Translation not available for ${targetLanguage}, using English summary`
+          `Translation not available for ${effectiveLanguage}, using English summary`
         );
         return summary;
       }
     } else {
       // Translation not supported, use English summary
       console.log(
-        `Translation not supported for ${targetLanguage}, using English summary`
+        `Translation not supported for ${effectiveLanguage}, using English summary`
       );
       return summary;
     }
