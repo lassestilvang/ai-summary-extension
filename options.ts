@@ -426,6 +426,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const maxTokensInput = document.getElementById(
     'maxTokens'
   ) as HTMLInputElement;
+  const summaryLengthSelect = document.getElementById(
+    'summaryLength'
+  ) as HTMLSelectElement;
   const enableFallbackCheckbox = document.getElementById(
     'enableFallback'
   ) as HTMLInputElement;
@@ -612,6 +615,7 @@ document.addEventListener('DOMContentLoaded', function () {
       'language',
       'temperature',
       'maxTokens',
+      'summaryLength',
       'enableFallback',
       'openaiApiKey',
       'geminiApiKey',
@@ -641,6 +645,11 @@ document.addEventListener('DOMContentLoaded', function () {
       } else {
         maxTokensInput.value = '1000';
       }
+      if (result.summaryLength) {
+        summaryLengthSelect.value = result.summaryLength;
+      } else {
+        summaryLengthSelect.value = 'medium';
+      }
       if (result.enableFallback !== undefined) {
         enableFallbackCheckbox.checked = result.enableFallback;
       } else {
@@ -667,6 +676,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const selectedModel = selectedModelSelect.value;
     const temperature = parseFloat(temperatureInput.value);
     const maxTokens = parseInt(maxTokensInput.value);
+    const summaryLength = summaryLengthSelect.value;
     const enableFallback = enableFallbackCheckbox.checked;
     const openaiApiKey = openaiApiKeyInput.value.trim();
     const geminiApiKey = geminiApiKeyInput.value.trim();
@@ -694,6 +704,7 @@ document.addEventListener('DOMContentLoaded', function () {
             selectedModel: defaultModel,
             temperature: temperature,
             maxTokens: maxTokens,
+            summaryLength: summaryLength,
             enableFallback: enableFallback,
             openaiApiKey: openaiApiKey,
             geminiApiKey: geminiApiKey,
@@ -754,6 +765,7 @@ document.addEventListener('DOMContentLoaded', function () {
         language: languageSelect.value,
         temperature: temperature,
         maxTokens: maxTokens,
+        summaryLength: summaryLength,
         enableFallback: enableFallback,
         openaiApiKey: openaiApiKey,
         geminiApiKey: geminiApiKey,
