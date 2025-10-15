@@ -73,6 +73,7 @@ describe('Options Script Comprehensive Tests', () => {
       temperature: { value: '0.7', addEventListener: jest.fn() },
       'temperature-value': { textContent: '0.7' },
       maxTokens: { value: '1000' },
+      summaryLength: { value: 'medium' },
       enableFallback: { checked: true },
       openaiApiKey: { value: 'test-openai-key', addEventListener: jest.fn() },
       geminiApiKey: { value: 'test-gemini-key', addEventListener: jest.fn() },
@@ -234,6 +235,7 @@ describe('Options Script Comprehensive Tests', () => {
           selectedModel: 'chrome-builtin',
           temperature: 0.7,
           maxTokens: 1000,
+          summaryLength: 'medium',
           enableFallback: true,
           openaiApiKey: 'test-openai-key',
           geminiApiKey: 'test-gemini-key',
@@ -337,6 +339,7 @@ describe('Options Script Comprehensive Tests', () => {
       expect(document.getElementById).toHaveBeenCalledWith('temperature');
       expect(document.getElementById).toHaveBeenCalledWith('temperature-value');
       expect(document.getElementById).toHaveBeenCalledWith('maxTokens');
+      expect(document.getElementById).toHaveBeenCalledWith('summaryLength');
       expect(document.getElementById).toHaveBeenCalledWith('enableFallback');
       expect(document.getElementById).toHaveBeenCalledWith('openaiApiKey');
       expect(document.getElementById).toHaveBeenCalledWith('geminiApiKey');
@@ -374,6 +377,7 @@ describe('Options Script Comprehensive Tests', () => {
           'language',
           'temperature',
           'maxTokens',
+          'summaryLength',
           'enableFallback',
           'openaiApiKey',
           'geminiApiKey',
@@ -415,6 +419,7 @@ describe('Options Script Comprehensive Tests', () => {
           language: 'en',
           temperature: 0.7,
           maxTokens: 1000,
+          summaryLength: 'medium',
           enableFallback: false,
           openaiApiKey: 'new-openai-key',
           geminiApiKey: 'new-gemini-key',
@@ -1740,6 +1745,7 @@ describe('Options Script Comprehensive Tests', () => {
         expect(chrome.storage.sync.set).toHaveBeenCalledWith(
           expect.objectContaining({
             selectedModel: model,
+            summaryLength: 'medium',
           }),
           expect.any(Function)
         );
