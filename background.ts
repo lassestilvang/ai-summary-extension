@@ -32,6 +32,12 @@ interface TryModelResult {
   error?: string;
 }
 
+const lengthConfigs = {
+  short: { items: 3, tokens: 1000 },
+  medium: { items: 5, tokens: 2000 },
+  long: { items: 7, tokens: 3000 },
+};
+
 export interface SummarizeResult {
   summary: string;
   model: string;
@@ -186,6 +192,7 @@ export async function summarizeWithAI(
     anthropicApiKey,
     enableFallback,
     language,
+    summaryLength,
   } = await chrome.storage.sync.get([
     'selectedModel',
     'openaiApiKey',
@@ -193,6 +200,7 @@ export async function summarizeWithAI(
     'anthropicApiKey',
     'enableFallback',
     'language',
+    'summaryLength',
   ]);
 
   const selectedLanguage = language || 'en';
@@ -223,7 +231,8 @@ export async function summarizeWithAI(
       geminiApiKey,
       anthropicApiKey,
     },
-    selectedLanguage
+    selectedLanguage,
+    summaryLength || 'medium'
   );
 
   metrics.attempts.push({
@@ -274,7 +283,8 @@ export async function summarizeWithAI(
           geminiApiKey,
           anthropicApiKey,
         },
-        selectedLanguage
+        selectedLanguage,
+        summaryLength || 'medium'
       );
 
       metrics.attempts.push({
@@ -353,6 +363,7 @@ export async function tryModel(
   content: string,
   apiKeys: ApiKeys,
   language: string = 'en',
+  length: string = 'medium',
   progressCallback?: (progress: ProgressUpdate) => void
 ): Promise<TryModelResult> {
   const modelConfig = getModelConfig(model);
@@ -386,7 +397,7 @@ export async function tryModel(
           error: 'Chrome built-in AI not supported on this browser version',
         };
       }
-      result = await tryChromeBuiltinAI(content, progressCallback);
+      result = await tryChromeBuiltinAI(content, length, progressCallback);
 
       // If successful and language is not English, translate the summary
       if (result.success && effectiveLanguage !== 'en') {
@@ -405,21 +416,24 @@ export async function tryModel(
         content,
         apiKeys.openaiApiKey,
         modelConfig.modelId!,
-        effectiveLanguage
+        effectiveLanguage,
+        length
       );
     case 'gemini':
       return await tryGeminiAPI(
         content,
         apiKeys.geminiApiKey,
         modelConfig.modelId!,
-        effectiveLanguage
+        effectiveLanguage,
+        length
       );
     case 'anthropic':
       return await tryAnthropicAPI(
         content,
         apiKeys.anthropicApiKey,
         modelConfig.modelId!,
-        effectiveLanguage
+        effectiveLanguage,
+        length
       );
     default:
       return { success: false, error: 'Unknown provider' };
@@ -636,6 +650,7 @@ async function translateSummary(
 }
 async function tryChromeBuiltinAI(
   content: string,
+  length: string = 'medium',
   progressCallback?: (progress: ProgressUpdate) => void
 ): Promise<TryModelResult> {
   try {
@@ -652,7 +667,7 @@ async function tryChromeBuiltinAI(
       const summarizer = await (globalThis as any).Summarizer.create({
         type: 'key-points',
         format: 'markdown',
-        length: 'medium',
+        length: length,
         outputLanguage: 'en',
       });
 
@@ -683,7 +698,8 @@ async function tryOpenAI(
   content: string,
   apiKey: string,
   model: string = 'gpt-3.5-turbo',
-  language: string = 'en'
+  language: string = 'en',
+  length: string = 'medium'
 ): Promise<TryModelResult> {
   try {
     if (!apiKey) {
@@ -700,6 +716,15 @@ async function tryOpenAI(
           'Permission denied for OpenAI API access. Please save your settings again in the extension options to grant permissions.',
       };
     }
+    const config =
+      lengthConfigs[length as keyof typeof lengthConfigs] ||
+      lengthConfigs.medium;
+    const bulletItems = Array.from(
+      { length: config.items },
+      (_, i) =>
+        `<li>[${i + 1}${i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'} bullet content]</li>`
+    ).join('\n');
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -711,14 +736,10 @@ async function tryOpenAI(
         messages: [
           {
             role: 'user',
-            content: `IMPORTANT: Provide ONLY a <ul> list with 5 <li> items and no introduction, titles, or extra text. Format like this:
+            content: `IMPORTANT: Provide ONLY a <ul> list with ${config.items} <li> items and no introduction, titles, or extra text. Format like this:
 
 <ul>
-<li>[First bullet content]</li>
-<li>[Second bullet content]</li>
-<li>[Third bullet content]</li>
-<li>[Fourth bullet content]</li>
-<li>[Fifth bullet content]</li>
+${bulletItems}
 </ul>
 
 Provide the summary in the following language: ${language}
@@ -727,7 +748,7 @@ Content to summarize:
 ${content.substring(0, 12000)}`,
           },
         ],
-        max_tokens: 300,
+        max_tokens: config.tokens,
         temperature: 0.3,
       }),
     });
@@ -748,7 +769,8 @@ async function tryGeminiAPI(
   content: string,
   apiKey: string,
   model: string = 'gemini-2.0-flash-exp',
-  language: string = 'en'
+  language: string = 'en',
+  length: string = 'medium'
 ): Promise<TryModelResult> {
   try {
     if (!apiKey) {
@@ -765,11 +787,21 @@ async function tryGeminiAPI(
           'Permission denied for Gemini API access. Please save your settings again in the extension options to grant permissions.',
       };
     }
+    const config =
+      lengthConfigs[length as keyof typeof lengthConfigs] ||
+      lengthConfigs.medium;
+    const bulletItems = Array.from(
+      { length: config.items },
+      (_, i) =>
+        `<li>[${i + 1}${i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'} bullet content]</li>`
+    ).join('\n');
+
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
       {
         method: 'POST',
         headers: {
+          'x-goog-api-key': apiKey,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -779,14 +811,10 @@ async function tryGeminiAPI(
                 {
                   text: `Provide the summary in the following language: ${language}
 
-IMPORTANT: Provide ONLY a <ul> list with 5 <li> items and no introduction, titles, or extra text. Format like this:
+IMPORTANT: Provide ONLY a <ul> list with ${config.items} <li> items and no introduction, titles, or extra text. Format like this:
 
 <ul>
-<li>[First bullet content]</li>
-<li>[Second bullet content]</li>
-<li>[Third bullet content]</li>
-<li>[Fourth bullet content]</li>
-<li>[Fifth bullet content]</li>
+${bulletItems}
 </ul>
 
 Content to summarize:
@@ -797,7 +825,7 @@ ${content.substring(0, 12000)}`,
           ],
           generationConfig: {
             temperature: 0.3,
-            maxOutputTokens: 300,
+            maxOutputTokens: config.tokens,
           },
         }),
       }
@@ -826,7 +854,8 @@ async function tryAnthropicAPI(
   content: string,
   apiKey: string,
   model: string = 'claude-3-haiku-20240307',
-  language: string = 'en'
+  language: string = 'en',
+  length: string = 'medium'
 ): Promise<TryModelResult> {
   try {
     if (!apiKey) {
@@ -843,6 +872,15 @@ async function tryAnthropicAPI(
           'Permission denied for Anthropic API access. Please save your settings again in the extension options to grant permissions.',
       };
     }
+    const config =
+      lengthConfigs[length as keyof typeof lengthConfigs] ||
+      lengthConfigs.medium;
+    const bulletItems = Array.from(
+      { length: config.items },
+      (_, i) =>
+        `<li>[${i + 1}${i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'} bullet content]</li>`
+    ).join('\n');
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -852,20 +890,16 @@ async function tryAnthropicAPI(
       },
       body: JSON.stringify({
         model: model,
-        max_tokens: 300,
+        max_tokens: config.tokens,
         temperature: 0.3,
         system: `You are a helpful assistant that provides concise summaries in ${language}.`,
         messages: [
           {
             role: 'user',
-            content: `IMPORTANT: Provide ONLY a <ul> list with 5 <li> items and no introduction, titles, or extra text. Format like this:
+            content: `IMPORTANT: Provide ONLY a <ul> list with ${config.items} <li> items and no introduction, titles, or extra text. Format like this:
 
 <ul>
-<li>[First bullet content]</li>
-<li>[Second bullet content]</li>
-<li>[Third bullet content]</li>
-<li>[Fourth bullet content]</li>
-<li>[Fifth bullet content]</li>
+${bulletItems}
 </ul>
 
 Content to summarize:
