@@ -778,7 +778,7 @@ describe('Options Script Comprehensive Tests', () => {
           geminiApiKey: 'key',
           anthropicApiKey: '',
         };
-        const result = await window.isModelAvailable('gemini-1.5-pro', apiKeys);
+        const result = await window.isModelAvailable('gemini-2.5-pro', apiKeys);
         expect(result).toBe(true);
       });
 
@@ -788,7 +788,7 @@ describe('Options Script Comprehensive Tests', () => {
           geminiApiKey: '',
           anthropicApiKey: '',
         };
-        const result = await window.isModelAvailable('gemini-1.5-pro', apiKeys);
+        const result = await window.isModelAvailable('gemini-2.5-pro', apiKeys);
         expect(result).toBe(false);
       });
 
@@ -869,23 +869,23 @@ describe('Options Script Comprehensive Tests', () => {
         });
       });
 
-      it('should return config for gemini-1.5-pro', () => {
-        const result = window.optionsGetModelConfig('gemini-1.5-pro');
+      it('should return config for gemini-2.5-pro', () => {
+        const result = window.optionsGetModelConfig('gemini-2.5-pro');
         expect(result).toEqual({
           provider: 'gemini',
-          modelId: 'gemini-1.5-pro',
-          name: 'Gemini 1.5 Pro',
+          modelId: 'gemini-2.5-pro',
+          name: 'Gemini 2.5 Pro',
           cost: 0.00125,
         });
       });
 
-      it('should return config for gemini-1.5-flash', () => {
-        const result = window.optionsGetModelConfig('gemini-1.5-flash');
+      it('should return config for gemini-2.5-flash', () => {
+        const result = window.optionsGetModelConfig('gemini-2.5-flash');
         expect(result).toEqual({
           provider: 'gemini',
-          modelId: 'gemini-1.5-flash',
-          name: 'Gemini 1.5 Flash',
-          cost: 0.000075,
+          modelId: 'gemini-2.5-flash',
+          name: 'Gemini 2.5 Flash',
+          cost: 0.00003,
         });
       });
 
@@ -1720,8 +1720,8 @@ describe('Options Script Comprehensive Tests', () => {
         'gpt-4',
         'gpt-4-turbo',
         'gpt-4o',
-        'gemini-1.5-pro',
-        'gemini-1.5-flash',
+        'gemini-2.5-pro',
+        'gemini-2.5-flash',
         'gemini-2.0-flash-exp',
         'claude-3-haiku',
         'claude-3-sonnet',

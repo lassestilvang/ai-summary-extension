@@ -204,10 +204,10 @@ describe('Background Script Comprehensive Tests', () => {
             name: 'GPT-4',
             cost: 0.03,
           },
-          'gemini-1.5-pro': {
+          'gemini-2.5-pro': {
             provider: 'gemini',
-            modelId: 'gemini-1.5-pro',
-            name: 'Gemini 1.5 Pro',
+            modelId: 'gemini-2.5-pro',
+            name: 'Gemini 2.5 Pro',
             cost: 0.00125,
           },
           'gemini-2.0-flash-exp': {
@@ -824,7 +824,7 @@ describe('Background Script Comprehensive Tests', () => {
     });
 
     it('should return correct fallback models for Gemini', async () => {
-      const fallbacks = await getFallbackModels('gemini-1.5-pro');
+      const fallbacks = await getFallbackModels('gemini-2.5-pro');
       expect(fallbacks).toEqual([
         'gpt-3.5-turbo',
         'claude-3-haiku',

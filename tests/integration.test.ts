@@ -88,10 +88,10 @@ jest.mock('../utils', () => ({
         name: 'GPT-4',
         cost: 0.03,
       },
-      'gemini-1.5-pro': {
+      'gemini-2.5-pro': {
         provider: 'gemini',
-        modelId: 'gemini-1.5-pro',
-        name: 'Gemini 1.5 Pro',
+        modelId: 'gemini-2.5-pro',
+        name: 'Gemini 2.5 Pro',
         cost: 0.00125,
       },
       'gemini-2.0-flash-exp': {

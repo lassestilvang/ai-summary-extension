@@ -83,24 +83,24 @@ describe('Utils Module Comprehensive Tests', () => {
     });
 
     it('should return correct config for Gemini 1.5 Pro', () => {
-      const config = getModelConfig('gemini-1.5-pro');
+      const config = getModelConfig('gemini-2.5-pro');
 
       expect(config).toEqual({
         provider: 'gemini',
-        modelId: 'gemini-1.5-pro',
-        name: 'Gemini 1.5 Pro',
+        modelId: 'gemini-2.5-pro',
+        name: 'Gemini 2.5 Pro',
         cost: 0.00125,
       });
     });
 
     it('should return correct config for Gemini 1.5 Flash', () => {
-      const config = getModelConfig('gemini-1.5-flash');
+      const config = getModelConfig('gemini-2.5-flash');
 
       expect(config).toEqual({
         provider: 'gemini',
-        modelId: 'gemini-1.5-flash',
-        name: 'Gemini 1.5 Flash',
-        cost: 0.000075,
+        modelId: 'gemini-2.5-flash',
+        name: 'Gemini 2.5 Flash',
+        cost: 0.00003,
       });
     });
 
@@ -190,8 +190,8 @@ describe('Utils Module Comprehensive Tests', () => {
         'gpt-4',
         'gpt-4-turbo',
         'gpt-4o',
-        'gemini-1.5-pro',
-        'gemini-1.5-flash',
+        'gemini-2.5-pro',
+        'gemini-2.5-flash',
         'gemini-2.0-flash-exp',
         'claude-3-haiku',
         'claude-3-sonnet',
@@ -216,8 +216,8 @@ describe('Utils Module Comprehensive Tests', () => {
         'gpt-4',
         'gpt-4-turbo',
         'gpt-4o', // openai
-        'gemini-1.5-pro',
-        'gemini-1.5-flash',
+        'gemini-2.5-pro',
+        'gemini-2.5-flash',
         'gemini-2.0-flash-exp', // gemini
         'claude-3-haiku',
         'claude-3-sonnet',
@@ -239,8 +239,8 @@ describe('Utils Module Comprehensive Tests', () => {
         'gpt-4',
         'gpt-4-turbo',
         'gpt-4o',
-        'gemini-1.5-pro',
-        'gemini-1.5-flash',
+        'gemini-2.5-pro',
+        'gemini-2.5-flash',
         'gemini-2.0-flash-exp',
         'claude-3-haiku',
         'claude-3-sonnet',
@@ -266,8 +266,8 @@ describe('Utils Module Comprehensive Tests', () => {
         'gpt-4',
         'gpt-4-turbo',
         'gpt-4o',
-        'gemini-1.5-pro',
-        'gemini-1.5-flash',
+        'gemini-2.5-pro',
+        'gemini-2.5-flash',
         'gemini-2.0-flash-exp',
         'claude-3-haiku',
         'claude-3-sonnet',
@@ -286,9 +286,9 @@ describe('Utils Module Comprehensive Tests', () => {
       const models = [
         'chrome-builtin', // 0
         'gemini-2.0-flash-exp', // 0
-        'gemini-1.5-flash', // 0.000075
+        'gemini-2.5-flash', // 0.00003
         'claude-3-haiku', // 0.00025
-        'gemini-1.5-pro', // 0.00125
+        'gemini-2.5-pro', // 0.00125
         'gpt-4o', // 0.005
         'gpt-4-turbo', // 0.01
         'claude-3-sonnet', // 0.003
@@ -312,8 +312,8 @@ describe('Utils Module Comprehensive Tests', () => {
         'gpt-4',
         'gpt-4-turbo',
         'gpt-4o',
-        'gemini-1.5-pro',
-        'gemini-1.5-flash',
+        'gemini-2.5-pro',
+        'gemini-2.5-flash',
         'gemini-2.0-flash-exp',
         'claude-3-haiku',
         'claude-3-sonnet',
@@ -347,8 +347,8 @@ describe('Utils Module Comprehensive Tests', () => {
     it('should have consistent naming patterns', () => {
       const openaiModels = ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo', 'gpt-4o'];
       const geminiModels = [
-        'gemini-1.5-pro',
-        'gemini-1.5-flash',
+        'gemini-2.5-pro',
+        'gemini-2.5-flash',
         'gemini-2.0-flash-exp',
       ];
       const claudeModels = [
@@ -520,8 +520,8 @@ describe('Utils Module Comprehensive Tests', () => {
           'gpt-4',
           'gpt-4-turbo',
           'gpt-4o',
-          'gemini-1.5-pro',
-          'gemini-1.5-flash',
+          'gemini-2.5-pro',
+          'gemini-2.5-flash',
           'gemini-2.0-flash-exp',
           'claude-3-haiku',
           'claude-3-sonnet',
@@ -555,8 +555,8 @@ describe('Utils Module Comprehensive Tests', () => {
 
       it('should validate Gemini model configurations', () => {
         const geminiModels = [
-          'gemini-1.5-pro',
-          'gemini-1.5-flash',
+          'gemini-2.5-pro',
+          'gemini-2.5-flash',
           'gemini-2.0-flash-exp',
         ];
 
@@ -830,7 +830,7 @@ describe('Utils Module Comprehensive Tests', () => {
           geminiApiKey: 'key',
           anthropicApiKey: '',
         };
-        const result = await isModelAvailable('gemini-1.5-pro', apiKeys);
+        const result = await isModelAvailable('gemini-2.5-pro', apiKeys);
         expect(result).toBe(true);
       });
 
@@ -840,7 +840,7 @@ describe('Utils Module Comprehensive Tests', () => {
           geminiApiKey: '',
           anthropicApiKey: '',
         };
-        const result = await isModelAvailable('gemini-1.5-pro', apiKeys);
+        const result = await isModelAvailable('gemini-2.5-pro', apiKeys);
         expect(result).toBe(false);
       });
 

@@ -287,17 +287,17 @@ function optionsGetModelConfig(model: string): ModelConfig | undefined {
       name: 'GPT-4o',
       cost: 0.005,
     },
-    'gemini-1.5-pro': {
+    'gemini-2.5-pro': {
       provider: 'gemini',
-      modelId: 'gemini-1.5-pro',
-      name: 'Gemini 1.5 Pro',
+      modelId: 'gemini-2.5-pro',
+      name: 'Gemini 2.5 Pro',
       cost: 0.00125,
     },
-    'gemini-1.5-flash': {
+    'gemini-2.5-flash': {
       provider: 'gemini',
-      modelId: 'gemini-1.5-flash',
-      name: 'Gemini 1.5 Flash',
-      cost: 0.000075,
+      modelId: 'gemini-2.5-flash',
+      name: 'Gemini 2.5 Flash',
+      cost: 0.00003,
     },
     'gemini-2.0-flash-exp': {
       provider: 'gemini',
