@@ -1110,6 +1110,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
         });
       });
       closeButton.title = getMessage('close');
+      closeButton.setAttribute('data-i18n-title', 'close');
 
       const minimizeButton = document.createElement('div');
       minimizeButton.style.cssText = `
@@ -1146,6 +1147,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
         }
       });
       minimizeButton.title = getMessage('minimize');
+      minimizeButton.setAttribute('data-i18n-title', 'minimize');
 
       const maximizeButton = document.createElement('div');
       maximizeButton.style.cssText = `
@@ -1193,6 +1195,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
         }
       });
       maximizeButton.title = getMessage('maximize');
+      maximizeButton.setAttribute('data-i18n-title', 'maximize');
 
       buttons.appendChild(closeButton);
       buttons.appendChild(minimizeButton);
@@ -1206,6 +1209,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
 
       const summaryTitle = document.createElement('div');
       summaryTitle.textContent = getMessage('aiSummary');
+      summaryTitle.setAttribute('data-i18n', 'aiSummary');
       summaryTitle.style.cssText = `
       color: ${themeColors.titleColor} !important;
       font-family: Arial, sans-serif !important;
@@ -1236,6 +1240,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
         }
       });
       copyButton.title = getMessage('copySummary');
+      copyButton.setAttribute('data-i18n-title', 'copySummary');
 
       const shareButton = document.createElement('span');
       shareButton.textContent = '🔗';
@@ -1259,6 +1264,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
         }
       });
       shareButton.title = getMessage('shareSummary');
+      shareButton.setAttribute('data-i18n-title', 'shareSummary');
 
       const settingsLink = document.createElement('a');
       settingsLink.addEventListener('click', (event) => {
@@ -1283,6 +1289,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
 
       settingsLink.appendChild(settingsIcon);
       settingsLink.title = getMessage('openSettings');
+      settingsLink.setAttribute('data-i18n-title', 'openSettings');
 
       actionButtons.appendChild(copyButton);
       actionButtons.appendChild(shareButton);
@@ -1430,6 +1437,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
       margin-bottom: 5px !important;
     `;
       progressText.textContent = getMessage('initializing');
+      progressText.setAttribute('data-i18n', 'initializing');
       loadingContainer.appendChild(progressText);
 
       // Model and time info
@@ -1643,6 +1651,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
         }
         if (statusText) {
           statusText.textContent = getMessage('regenerating');
+          statusText.setAttribute('data-i18n', 'regenerating');
         }
         if (loadingContainer) {
           loadingContainer.style.display = 'block';
@@ -1662,6 +1671,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
           // Handle case where no content is available
           if (statusText) {
             statusText.textContent = getMessage('noContentAvailable');
+            statusText.setAttribute('data-i18n', 'noContentAvailable');
           }
           if (loadingContainer) {
             loadingContainer.style.display = 'none';
@@ -1762,6 +1772,13 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
           statusContent += ` • ${metrics.attempts.length} attempts`;
         }
         statusText.textContent = statusContent;
+        // Clear any i18n attribute since this is dynamic content
+        statusText.removeAttribute('data-i18n');
+      }
+
+      // Apply language updates to the summary div after creation
+      if (summaryDiv) {
+        updateUILanguage(summaryDiv, language);
       }
       if (summaryDiv) summaryDiv.style.display = 'flex';
       stopProgressAnimation();
@@ -2019,6 +2036,22 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
 
   // Initialize i18n system with language detection and UI updates
   initializeI18n();
+
+  // Listen for language preference changes
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'sync' && changes.userLanguage) {
+      const newLanguage = changes.userLanguage.newValue;
+      console.log(`Language preference changed to: ${newLanguage}`);
+      updateUILanguage(document, newLanguage);
+      // Also update existing summary div if it exists
+      const summaryDiv = document.getElementById(
+        'ai-summary-extension-summary-div'
+      );
+      if (summaryDiv) {
+        updateUILanguage(summaryDiv, newLanguage);
+      }
+    }
+  });
 
   // Listener for messages from background.js
   chrome.runtime.onMessage.addListener(function (request: any) {

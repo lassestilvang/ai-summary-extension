@@ -980,6 +980,9 @@ export function updateUILanguage(
   rootElement: Document | Element = document,
   languageOverride?: string
 ): void {
+  console.log(
+    `Updating UI language to: ${languageOverride || getCurrentLanguage()}`
+  );
   try {
     // Update elements with data-i18n attribute
     const i18nElements = rootElement.querySelectorAll('[data-i18n]');

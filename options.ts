@@ -42,6 +42,7 @@ import {
   getUserLanguage,
   initializeI18n,
   setUserLanguage,
+  updateUILanguage,
 } from './utils.js';
 
 // Inline utility functions to avoid ES6 import issues
@@ -368,10 +369,10 @@ function optionsGetModelConfig(model: string): ModelConfig | undefined {
   return models[model];
 }
 
-// Initialize i18n on page load with language detection and UI updates
-initializeI18n();
-
-document.addEventListener('DOMContentLoaded', function () {
+// Initialize i18n inside DOMContentLoaded to ensure DOM elements exist
+document.addEventListener('DOMContentLoaded', async function () {
+  // Initialize i18n after DOM is ready
+  await initializeI18n();
   // Theme toggle functionality
   const themeToggle = document.getElementById(
     'themeToggle'
@@ -425,6 +426,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const selectedModelSelect = document.getElementById(
     'selectedModel'
   ) as HTMLSelectElement;
+  // Add real-time language change listener
+  languageSelect.addEventListener('change', () => {
+    updateUILanguage(document, languageSelect.value);
+  });
   const temperatureInput = document.getElementById(
     'temperature'
   ) as HTMLInputElement;

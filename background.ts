@@ -737,7 +737,6 @@ async function initializeLanguagePreference(): Promise<void> {
   }
 }
 
-
 interface SummaryState {
   [tabId: number]: {
     summary: string;
