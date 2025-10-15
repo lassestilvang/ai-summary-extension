@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr" data-i18n-root>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Summary Options</title>
+    <title data-i18n="options_title">AI Summary Options</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -14,6 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="rtl.css" media="screen and (dir: rtl)" />
     <style>
       /* ===== CSS CUSTOM PROPERTIES ===== */
       :root {
@@ -1144,6 +1145,74 @@
         color: var(--ocean-deep);
       }
 
+      /* ===== RTL SUPPORT ===== */
+      [dir="rtl"] .sidebar {
+        right: 0;
+        left: auto;
+      }
+
+      [dir="rtl"] .sidebar::before {
+        left: 0;
+        right: auto;
+      }
+
+      [dir="rtl"] .nav-link {
+        border-left: none;
+        border-right: 3px solid transparent;
+        text-align: right;
+      }
+
+      [dir="rtl"] .nav-link:hover,
+      [dir="rtl"] .nav-link.active {
+        border-right-color: var(--sunrise-gold);
+      }
+
+      [dir="rtl"] .nav-link i {
+        margin-right: 0;
+        margin-left: var(--space-lg);
+      }
+
+      [dir="rtl"] .sidebar.collapsed .nav-link i {
+        margin-left: 0;
+      }
+
+      [dir="rtl"] .form-label::before {
+        left: auto;
+        right: -10px;
+      }
+
+      [dir="rtl"] .checkbox-group {
+        flex-direction: row-reverse;
+      }
+
+      [dir="rtl"] .security-notice i {
+        margin-left: var(--space-lg);
+        margin-right: 0;
+      }
+
+      [dir="rtl"] .history-actions {
+        flex-direction: row-reverse;
+      }
+
+      [dir="rtl"] .search-filter {
+        flex-direction: row-reverse;
+      }
+
+      [dir="rtl"] .metric-card::before {
+        left: 0;
+        right: auto;
+      }
+
+      [dir="rtl"] .info-box::before {
+        left: 0;
+        right: auto;
+      }
+
+      [dir="rtl"] .security-notice::before {
+        left: 0;
+        right: auto;
+      }
+
       /* ===== FOCUS STYLES FOR ACCESSIBILITY ===== */
       .nav-link:focus,
       .btn:focus,
@@ -1206,7 +1275,7 @@
   </head>
   <body>
     <!-- Theme Toggle Button -->
-    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+    <button class="theme-toggle" id="themeToggle" data-i18n-title="toggle_dark_mode" aria-label="Toggle dark mode">
       <i class="fas fa-sun"></i>
     </button>
 
@@ -1214,7 +1283,7 @@
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
           <img src="icon-1024.png" alt="AI Summary Icon" class="app-icon" />
-          <h1 class="sidebar-title">AI Summary</h1>
+          <h1 class="sidebar-title" data-i18n="app_title">AI Summary</h1>
         </div>
         <nav>
           <ul class="nav-menu">
@@ -1226,7 +1295,7 @@
                 aria-label="Model Settings"
               >
                 <i class="fas fa-cogs"></i>
-                <span class="nav-text">Model Settings</span>
+                <span class="nav-text" data-i18n="nav_model_settings">Model Settings</span>
               </a>
             </li>
             <li class="nav-item">
@@ -1237,7 +1306,7 @@
                 aria-label="Theme Customization"
               >
                 <i class="fas fa-palette"></i>
-                <span class="nav-text">Theme</span>
+                <span class="nav-text" data-i18n="nav_theme">Theme</span>
               </a>
             </li>
             <li class="nav-item">
@@ -1248,7 +1317,7 @@
                 aria-label="Model Performance Analytics"
               >
                 <i class="fas fa-chart-line"></i>
-                <span class="nav-text">Performance</span>
+                <span class="nav-text" data-i18n="nav_performance">Performance</span>
               </a>
             </li>
             <li class="nav-item">
@@ -1259,7 +1328,7 @@
                 aria-label="Summary History"
               >
                 <i class="fas fa-history"></i>
-                <span class="nav-text">History</span>
+                <span class="nav-text" data-i18n="nav_history">History</span>
               </a>
             </li>
             <li class="nav-item">
@@ -1270,7 +1339,7 @@
                 aria-label="Feedback"
               >
                 <i class="fas fa-comments"></i>
-                <span class="nav-text">Feedback</span>
+                <span class="nav-text" data-i18n="nav_feedback">Feedback</span>
               </a>
             </li>
             <li class="nav-item">
@@ -1281,7 +1350,7 @@
                 aria-label="Keyboard Shortcuts"
               >
                 <i class="fas fa-keyboard"></i>
-                <span class="nav-text">Keyboard Shortcuts</span>
+                <span class="nav-text" data-i18n="nav_shortcuts">Keyboard Shortcuts</span>
               </a>
             </li>
           </ul>
@@ -1291,35 +1360,32 @@
       <main class="main-content">
         <!-- Model Settings Page -->
         <div id="settings-page" class="page active">
-          <h2 class="page-title">Model Settings</h2>
+          <h2 class="page-title" data-i18n="page_model_settings">Model Settings</h2>
 
           <div class="security-notice">
             <i class="fas fa-lock"></i>
             <div>
-              <h3>Your API keys are secure</h3>
+              <h3 data-i18n="security_title">Your API keys are secure</h3>
               <p>
-                All keys are stored encrypted locally on your device only and
-                are never sent to any external servers, third parties, or cloud
-                services. This ensures complete privacy and protection against
-                data breaches.
+                <span data-i18n="security_description">All keys are stored encrypted locally on your device only and are never sent to any external servers, third parties, or cloud services. This ensures complete privacy and protection against data breaches.</span>
               </p>
             </div>
           </div>
 
           <div class="info-box">
-            <h4 style="margin: 0 0 10px 0; color: #39ff14">
+            <h4 style="margin: 0 0 10px 0; color: #39ff14" data-i18n="model_config_title">
               Model Configuration Info
             </h4>
-            <p style="margin: 0 0 8px 0">
+            <p style="margin: 0 0 8px 0" data-i18n="chrome_builtin_desc">
               <strong>Chrome Built-in AI:</strong> Requires Chrome 138+ and
               Summarizer API support. Free but limited availability.
             </p>
-            <p style="margin: 0 0 8px 0">
+            <p style="margin: 0 0 8px 0" data-i18n="api_models_desc">
               <strong>API-based Models:</strong> Require valid API keys from
               respective providers. Check the provider's website for pricing and
               limits.
             </p>
-            <p style="margin: 0">
+            <p style="margin: 0" data-i18n="fallback_desc">
               <strong>Fallback:</strong> When enabled, the extension will
               automatically try alternative models if the primary one fails.
             </p>
@@ -1327,9 +1393,9 @@
 
           <form id="settings-form">
             <div class="form-group">
-              <label class="form-label" for="selectedModel">AI Model:</label>
+              <label class="form-label" for="selectedModel" data-i18n="label_ai_model">AI Model:</label>
               <select class="form-select" id="selectedModel">
-                <optgroup label="Free Models">
+                <optgroup data-i18n="optgroup_free_models" label="Free Models">
                   <option value="chrome-builtin">
                     Chrome Built-in AI (Free)
                   </option>
@@ -1337,7 +1403,7 @@
                     Gemini 2.0 Flash (Experimental, Free)
                   </option>
                 </optgroup>
-                <optgroup label="OpenAI Models">
+                <optgroup data-i18n="optgroup_openai_models" label="OpenAI Models">
                   <option value="gpt-3.5-turbo">
                     GPT-3.5 Turbo ($0.002/1K tokens)
                   </option>
@@ -1354,7 +1420,7 @@
                     GPT-5 nano ($0.00005/1K tokens)
                   </option>
                 </optgroup>
-                <optgroup label="Google Gemini Models">
+                <optgroup data-i18n="optgroup_gemini_models" label="Google Gemini Models">
                   <option value="gemini-2.5-pro">
                     Gemini 2.5 Pro ($0.00125/1K tokens)
                   </option>
@@ -1362,7 +1428,7 @@
                     Gemini 2.5 Flash ($0.00003/1K tokens)
                   </option>
                 </optgroup>
-                <optgroup label="Anthropic Claude Models">
+                <optgroup data-i18n="optgroup_claude_models" label="Anthropic Claude Models">
                   <option value="claude-3-haiku">
                     Claude 3 Haiku ($0.00025/1K tokens)
                   </option>
@@ -1385,7 +1451,7 @@
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label" for="language">Language:</label>
+              <label class="form-label" for="language" data-i18n="label_language">Language:</label>
               <select class="form-select" id="language">
                 <option value="en">English</option>
                 <option value="es">Spanish</option>
@@ -1410,7 +1476,7 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="temperature">Temperature:</label>
+              <label class="form-label" for="temperature" data-i18n="label_temperature">Temperature:</label>
               <input
                 type="range"
                 class="form-input"
@@ -1424,7 +1490,7 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="maxTokens">Max Tokens:</label>
+              <label class="form-label" for="maxTokens" data-i18n="label_max_tokens">Max Tokens:</label>
               <input
                 type="number"
                 class="form-input"
@@ -1436,7 +1502,7 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="summaryLength">Summary Length:</label>
+              <label class="form-label" for="summaryLength" data-i18n="label_summary_length">Summary Length:</label>
               <select class="form-select" id="summaryLength">
                 <option value="short">Short</option>
                 <option value="medium" selected>Medium</option>
@@ -1451,38 +1517,38 @@
                   class="form-label"
                   style="margin-bottom: 0"
                   for="enableFallback"
-                  >Enable automatic fallback to other models if primary
+                  data-i18n="label_enable_fallback">Enable automatic fallback to other models if primary
                   fails</label
                 >
               </div>
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="openaiApiKey"
+              <label class="form-label" for="openaiApiKey" data-i18n="label_openai_api_key"
                 >OpenAI API Key:</label
               >
               <input
                 type="password"
                 class="form-input"
                 id="openaiApiKey"
-                placeholder="sk-..."
+                data-i18n-placeholder="placeholder_openai_key" placeholder="sk-..."
               />
-              <small style="color: rgba(255, 255, 255, 0.7)"
+              <small style="color: rgba(255, 255, 255, 0.7)" data-i18n="hint_openai_key"
                 >Optional - only needed for OpenAI models</small
               >
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="geminiApiKey"
+              <label class="form-label" for="geminiApiKey" data-i18n="label_gemini_api_key"
                 >Google Gemini API Key:</label
               >
               <input
                 type="password"
                 class="form-input"
                 id="geminiApiKey"
-                placeholder="AIza..."
+                data-i18n-placeholder="placeholder_gemini_key" placeholder="AIza..."
               />
-              <small style="color: rgba(255, 255, 255, 0.7)"
+              <small style="color: rgba(255, 255, 255, 0.7)" data-i18n="hint_gemini_key"
                 >Optional - only needed for Gemini models</small
               >
 
@@ -1491,26 +1557,26 @@
                   href="https://aistudio.google.com/apikey"
                   target="_blank"
                   style="color: var(--sunrise-gold)"
-                  >Get a <strong>free</strong> API Key</a
+                  data-i18n="link_get_free_key">Get a <strong>free</strong> API Key</a
                 >
               </p>
             </div>
             <div class="form-group">
-              <label class="form-label" for="anthropicApiKey"
+              <label class="form-label" for="anthropicApiKey" data-i18n="label_anthropic_api_key"
                 >Anthropic API Key:</label
               >
               <input
                 type="password"
                 class="form-input"
                 id="anthropicApiKey"
-                placeholder="sk-ant-..."
+                data-i18n-placeholder="placeholder_anthropic_key" placeholder="sk-ant-..."
               />
-              <small style="color: rgba(255, 255, 255, 0.7)"
+              <small style="color: rgba(255, 255, 255, 0.7)" data-i18n="hint_anthropic_key"
                 >Optional - only needed for Claude models</small
               >
             </div>
 
-            <button type="submit" class="btn btn-primary" id="save">
+            <button type="submit" class="btn btn-primary" id="save" data-i18n="button_save_settings">
               Save Settings
             </button>
           </form>
@@ -1520,21 +1586,21 @@
 
         <!-- Theme Page -->
         <div id="theme-page" class="page">
-          <h2 class="page-title">Theme</h2>
+          <h2 class="page-title" data-i18n="page_theme">Theme</h2>
 
           <div class="info-box">
-            <strong>Note:</strong> Customize the appearance of the summary
-            popup. Changes are applied in real-time to the preview below.
+            <strong data-i18n="theme_note">Note:</strong> <span data-i18n="theme_description">Customize the appearance of the summary
+            popup. Changes are applied in real-time to the preview below.</span>
           </div>
 
           <form id="theme-form">
             <div class="form-group">
-              <label class="form-label" for="theme">Theme:</label>
+              <label class="form-label" for="theme" data-i18n="label_theme">Theme:</label>
               <select class="form-select" id="theme"></select>
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="fontFamily">Font Family:</label>
+              <label class="form-label" for="fontFamily" data-i18n="label_font_family">Font Family:</label>
               <select class="form-select" id="fontFamily">
                 <option value="Arial">Arial</option>
                 <option value="Times New Roman">Times New Roman</option>
@@ -1548,7 +1614,7 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="fontSize"
+              <label class="form-label" for="fontSize" data-i18n="label_font_size"
                 >Font Size (8-24px):</label
               >
               <input
@@ -1562,7 +1628,7 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="fontStyle">Font Style:</label>
+              <label class="form-label" for="fontStyle" data-i18n="label_font_style">Font Style:</label>
               <select class="form-select" id="fontStyle">
                 <option value="normal">Normal</option>
                 <option value="italic">Italic</option>
@@ -1570,13 +1636,13 @@
               </select>
             </div>
 
-            <button type="submit" class="btn btn-primary" id="saveTheme">
+            <button type="submit" class="btn btn-primary" id="saveTheme" data-i18n="button_save_theme">
               Save Theme Settings
             </button>
           </form>
 
           <div class="form-group">
-            <h2 style="color: #39ff14; margin-top: 20px; margin-bottom: 5px">
+            <h2 style="color: #39ff14; margin-top: 20px; margin-bottom: 5px" data-i18n="preview_title">
               Preview
             </h2>
             <div
@@ -1589,7 +1655,7 @@
                 min-height: 150px;
               "
             >
-              <p id="previewText" style="margin: 0; line-height: 1.5">
+              <p id="previewText" style="margin: 0; line-height: 1.5" data-i18n="preview_text">
                 This is a sample summary text to demonstrate how the theme and
                 font settings will appear in the actual summary popup. The text
                 will update in real-time as you change the theme, font family,
@@ -1603,39 +1669,39 @@
 
         <!-- Model Performance Page -->
         <div id="performance-page" class="page">
-          <h2 class="page-title">Model Performance</h2>
+          <h2 class="page-title" data-i18n="page_performance">Model Performance</h2>
 
           <div class="form-group">
-            <button class="btn btn-secondary" id="refreshMetrics">
+            <button class="btn btn-secondary" id="refreshMetrics" data-i18n="button_refresh_metrics">
               Refresh Model Metrics
             </button>
           </div>
 
           <div class="metrics-grid" id="metricsContainer">
-            <p style="color: rgba(255, 255, 255, 0.7)">Loading metrics...</p>
+            <p style="color: rgba(255, 255, 255, 0.7)" data-i18n="loading_metrics">Loading metrics...</p>
           </div>
         </div>
 
         <!-- History Page -->
         <div id="history-page" class="page">
-          <h2 class="page-title">Summary History</h2>
+          <h2 class="page-title" data-i18n="page_history">Summary History</h2>
 
           <div class="search-filter">
             <input
               type="text"
               class="form-input search-input"
               id="searchInput"
-              placeholder="Search summaries..."
+              data-i18n-placeholder="placeholder_search" placeholder="Search summaries..."
             />
             <select class="form-select filter-select" id="filterModel">
-              <option value="">All Models</option>
+              <option value="" data-i18n="option_all_models">All Models</option>
             </select>
             <select
               class="form-select filter-select"
               id="exportFormat"
               aria-label="Export format"
             >
-              <option value="">Export Format</option>
+              <option value="" data-i18n="option_export_format">Export Format</option>
               <option value="csv">CSV</option>
               <option value="json">JSON</option>
               <option value="html">HTML</option>
@@ -1646,18 +1712,18 @@
               disabled
               aria-label="Export history"
             >
-              <i class="fas fa-download"></i> Export
+              <i class="fas fa-download"></i> <span data-i18n="button_export">Export</span>
             </button>
-            <button class="btn btn-secondary" id="refreshHistory">
+            <button class="btn btn-secondary" id="refreshHistory" data-i18n="button_refresh_history">
               Refresh History
             </button>
-            <button class="btn btn-secondary" id="clearHistory">
+            <button class="btn btn-secondary" id="clearHistory" data-i18n="button_clear_history">
               Clear History
             </button>
           </div>
 
           <div class="history-list" id="historyContainer">
-            <p style="color: rgba(255, 255, 255, 0.7)">Loading history...</p>
+            <p style="color: rgba(255, 255, 255, 0.7)" data-i18n="loading_history">Loading history...</p>
           </div>
 
           <div id="historyStatus"></div>
@@ -1665,14 +1731,14 @@
 
         <!-- Feedback Page -->
         <div id="feedback-page" class="page">
-          <h2 class="page-title">Feedback</h2>
+          <h2 class="page-title" data-i18n="page_feedback">Feedback</h2>
 
           <div class="info-box">
-            <p>
+            <p data-i18n="feedback_description_1">
               We value your feedback! Help us improve the AI Summary extension
               by sharing your thoughts, suggestions, or reporting issues.
             </p>
-            <p>
+            <p data-i18n="feedback_description_2">
               Your feedback is submitted through a secure Typeform. Click the
               button below to access the feedback form.
             </p>
@@ -1686,9 +1752,9 @@
                 text-decoration: none;
               "
             >
-              Submit Feedback via Typeform
+              <span data-i18n="button_submit_feedback">Submit Feedback via Typeform</span>
             </a>
-            <p style="font-size: 0.9em; color: rgba(255, 255, 255, 0.7)">
+            <p style="font-size: 0.9em; color: rgba(255, 255, 255, 0.7)" data-i18n="feedback_privacy_note">
               Privacy note: Your feedback is collected anonymously and used only
               to improve our extension.
             </p>
@@ -1697,27 +1763,27 @@
 
         <!-- Keyboard Shortcuts Page -->
         <div id="shortcuts-page" class="page">
-          <h2 class="page-title">Keyboard Shortcuts</h2>
+          <h2 class="page-title" data-i18n="page_shortcuts">Keyboard Shortcuts</h2>
 
           <div class="info-box">
-            <p>
+            <p data-i18n="shortcuts_description">
               Keyboard shortcuts for this extension are managed by Chrome. To
               set or change shortcuts:
             </p>
             <ol
               style="margin: var(--space-lg) 0; padding-left: var(--space-xl)"
             >
-              <li>
+              <li data-i18n="shortcuts_step_1">
                 Click the button below to open Chrome's extension shortcuts page
               </li>
-              <li>Find "AI Summary" in the list</li>
-              <li>
+              <li data-i18n="shortcuts_step_2">Find "AI Summary" in the list</li>
+              <li data-i18n="shortcuts_step_3">
                 Click in the shortcut field and press your desired key
                 combination
               </li>
-              <li>The shortcut will be saved automatically</li>
+              <li data-i18n="shortcuts_step_4">The shortcut will be saved automatically</li>
             </ol>
-            <p>
+            <p data-i18n="shortcuts_note">
               <strong>Note:</strong> Chrome only allows certain key combinations
               to prevent conflicts with browser shortcuts.
             </p>
@@ -1731,12 +1797,12 @@
                 text-decoration: none;
               "
             >
-              <i class="fas fa-external-link-alt"></i> Open Chrome Shortcuts
+              <i class="fas fa-external-link-alt"></i> <span data-i18n="button_open_shortcuts">Open Chrome Shortcuts</span>
             </a>
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="currentShortcut"
+            <label class="form-label" for="currentShortcut" data-i18n="label_current_shortcut"
               >Current Shortcut:</label
             >
             <input
@@ -1745,7 +1811,7 @@
               id="currentShortcut"
               readonly
               aria-label="Current keyboard shortcut"
-              placeholder="Loading..."
+              data-i18n-placeholder="placeholder_loading" placeholder="Loading..."
             />
           </div>
 
@@ -1763,6 +1829,7 @@
     <button
       class="toggle-sidebar"
       id="toggleSidebar"
+      data-i18n-title="toggle_sidebar"
       aria-label="Toggle sidebar"
     >
       <i class="fas fa-bars"></i>

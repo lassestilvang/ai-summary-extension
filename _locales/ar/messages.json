@@ -1,0 +1,924 @@
+{
+  "appName": {
+    "message": "ملخص الذكاء الاصطناعي",
+    "description": "Extension name"
+  },
+  "appDescription": {
+    "message": "🚀 ملخص ذكاء اصطناعي بنقرة واحدة لأي صفحة ويب! يدعم GPT-4، Gemini، Claude، والذكاء الاصطناعي المجاني من Chrome. فوري، آمن، وقابل للتخصيص",
+    "description": "Extension description"
+  },
+  "summarizeCurrentPage": {
+    "message": "تلخيص الصفحة الحالية",
+    "description": "Keyboard shortcut description"
+  },
+  "aiSummary": {
+    "message": "ملخص الذكاء الاصطناعي",
+    "description": "Action title"
+  },
+  "chromeBuiltinAi": {
+    "message": "الذكاء الاصطناعي المدمج في Chrome",
+    "description": "Model name"
+  },
+  "chromeBuiltinAiDescription": {
+    "message": "ذكاء اصطناعي مجاني من Chrome لا يتطلب مفتاح API",
+    "description": "Model description"
+  },
+  "gpt35Turbo": {
+    "message": "GPT-3.5 Turbo",
+    "description": "Model name"
+  },
+  "gpt35TurboDescription": {
+    "message": "نموذج OpenAI سريع وفعال من حيث التكلفة",
+    "description": "Model description"
+  },
+  "gpt4": {
+    "message": "GPT-4",
+    "description": "Model name"
+  },
+  "gpt4Description": {
+    "message": "نموذج OpenAI المتقدم بدقة عالية",
+    "description": "Model description"
+  },
+  "gpt4Turbo": {
+    "message": "GPT-4 Turbo",
+    "description": "Model name"
+  },
+  "gpt4TurboDescription": {
+    "message": "GPT-4 الأسرع بأداء محسن",
+    "description": "Model description"
+  },
+  "gpt4o": {
+    "message": "GPT-4o",
+    "description": "Model name"
+  },
+  "gpt4oDescription": {
+    "message": "GPT-4 المحسن للسرعة والكفاءة",
+    "description": "Model description"
+  },
+  "gpt5": {
+    "message": "GPT-5",
+    "description": "Model name"
+  },
+  "gpt5Description": {
+    "message": "أحدث نموذج OpenAI بقدرات متقدمة",
+    "description": "Model description"
+  },
+  "gpt5Mini": {
+    "message": "GPT-5 Mini",
+    "description": "Model name"
+  },
+  "gpt5MiniDescription": {
+    "message": "النسخة المدمجة من GPT-5",
+    "description": "Model description"
+  },
+  "gpt5Nano": {
+    "message": "GPT-5 Nano",
+    "description": "Model name"
+  },
+  "gpt5NanoDescription": {
+    "message": "GPT-5 الخفيف للمهام الأساسية",
+    "description": "Model description"
+  },
+  "gemini25Pro": {
+    "message": "Gemini 2.5 Pro",
+    "description": "Model name"
+  },
+  "gemini25ProDescription": {
+    "message": "النموذج المتقدم Gemini من Google",
+    "description": "Model description"
+  },
+  "gemini25Flash": {
+    "message": "Gemini 2.5 Flash",
+    "description": "Model name"
+  },
+  "gemini25FlashDescription": {
+    "message": "نموذج Gemini السريع للاستجابات السريعة",
+    "description": "Model description"
+  },
+  "gemini20FlashExp": {
+    "message": "Gemini 2.0 Flash (تجريبي)",
+    "description": "Model name"
+  },
+  "gemini20FlashExpDescription": {
+    "message": "نموذج Gemini Flash التجريبي",
+    "description": "Model description"
+  },
+  "claude3Haiku": {
+    "message": "Claude 3 Haiku",
+    "description": "Model name"
+  },
+  "claude3HaikuDescription": {
+    "message": "نموذج Anthropic سريع وفعال",
+    "description": "Model description"
+  },
+  "claude3Sonnet": {
+    "message": "Claude 3 Sonnet",
+    "description": "Model name"
+  },
+  "claude3SonnetDescription": {
+    "message": "نموذج Anthropic متوازن",
+    "description": "Model description"
+  },
+  "claude3Opus": {
+    "message": "Claude 3 Opus",
+    "description": "Model name"
+  },
+  "claude3OpusDescription": {
+    "message": "أقوى نموذج Anthropic",
+    "description": "Model description"
+  },
+  "claude35Sonnet": {
+    "message": "Claude 3.5 Sonnet",
+    "description": "Model name"
+  },
+  "claude35SonnetDescription": {
+    "message": "Claude 3 Sonnet المحسن",
+    "description": "Model description"
+  },
+  "claudeSonnet45": {
+    "message": "Claude Sonnet 4.5",
+    "description": "Model name"
+  },
+  "claudeSonnet45Description": {
+    "message": "أحدث نموذج Claude Sonnet",
+    "description": "Model description"
+  },
+  "claudeHaiku45": {
+    "message": "Claude Haiku 4.5",
+    "description": "Model name"
+  },
+  "claudeHaiku45Description": {
+    "message": "أحدث نموذج Claude Haiku",
+    "description": "Model description"
+  },
+  "modelSettings": {
+    "message": "إعدادات النموذج",
+    "description": "Page title"
+  },
+  "theme": {
+    "message": "الموضوع",
+    "description": "Page title"
+  },
+  "performance": {
+    "message": "الأداء",
+    "description": "Page title"
+  },
+  "history": {
+    "message": "التاريخ",
+    "description": "Page title"
+  },
+  "feedback": {
+    "message": "الملاحظات",
+    "description": "Page title"
+  },
+  "keyboardShortcuts": {
+    "message": "اختصارات لوحة المفاتيح",
+    "description": "Page title"
+  },
+  "aiModel": {
+    "message": "نموذج الذكاء الاصطناعي:",
+    "description": "Form label"
+  },
+  "language": {
+    "message": "اللغة:",
+    "description": "Form label"
+  },
+  "temperature": {
+    "message": "درجة الحرارة:",
+    "description": "Form label"
+  },
+  "maxTokens": {
+    "message": "الحد الأقصى للرموز:",
+    "description": "Form label"
+  },
+  "summaryLength": {
+    "message": "طول الملخص:",
+    "description": "Form label"
+  },
+  "short": {
+    "message": "قصير",
+    "description": "Summary length option"
+  },
+  "medium": {
+    "message": "متوسط",
+    "description": "Summary length option"
+  },
+  "long": {
+    "message": "طويل",
+    "description": "Summary length option"
+  },
+  "enableFallback": {
+    "message": "تمكين الاحتياط التلقائي إلى نماذج أخرى إذا فشل النموذج الأساسي",
+    "description": "Checkbox label"
+  },
+  "openaiApiKey": {
+    "message": "مفتاح OpenAI API:",
+    "description": "Form label"
+  },
+  "openaiApiKeyHelp": {
+    "message": "اختياري - مطلوب فقط لنماذج OpenAI",
+    "description": "Help text"
+  },
+  "geminiApiKey": {
+    "message": "مفتاح Google Gemini API:",
+    "description": "Form label"
+  },
+  "geminiApiKeyHelp": {
+    "message": "اختياري - مطلوب فقط لنماذج Gemini",
+    "description": "Help text"
+  },
+  "getFreeApiKey": {
+    "message": "احصل على مفتاح API مجاني",
+    "description": "Link text"
+  },
+  "anthropicApiKey": {
+    "message": "مفتاح Anthropic API:",
+    "description": "Form label"
+  },
+  "anthropicApiKeyHelp": {
+    "message": "اختياري - مطلوب فقط لنماذج Claude",
+    "description": "Help text"
+  },
+  "saveSettings": {
+    "message": "حفظ الإعدادات",
+    "description": "Button text"
+  },
+  "settingsSaved": {
+    "message": "تم حفظ الإعدادات بنجاح!",
+    "description": "Success message"
+  },
+  "apiKeysSecure": {
+    "message": "مفاتيح API الخاصة بك آمنة",
+    "description": "Security notice title"
+  },
+  "apiKeysSecureDescription": {
+    "message": "يتم حفظ جميع المفاتيح مشفرة محليًا على جهازك فقط ولن يتم إرسالها إلى خوادم خارجية أو أطراف ثالثة أو خدمات سحابية. هذا يضمن الخصوصية الكاملة وحماية من اختراقات البيانات.",
+    "description": "Security notice description"
+  },
+  "modelConfigInfo": {
+    "message": "معلومات تكوين النموذج",
+    "description": "Info box title"
+  },
+  "chromeBuiltinInfo": {
+    "message": "الذكاء الاصطناعي المدمج في Chrome: يتطلب Chrome 138+ ودعم API التلخيص. مجاني ولكن التوافر محدود.",
+    "description": "Info text"
+  },
+  "apiModelsInfo": {
+    "message": "النماذج المعتمدة على API: تتطلب مفاتيح API صالحة من الموفرين المعنيين. تحقق من موقع الموفر للأسعار والقيود.",
+    "description": "Info text"
+  },
+  "fallbackInfo": {
+    "message": "الاحتياط: عند التمكين، سيحاول الامتداد تلقائيًا نماذج بديلة إذا فشل النموذج الأساسي.",
+    "description": "Info text"
+  },
+  "themeSettings": {
+    "message": "الموضوع:",
+    "description": "Form label"
+  },
+  "fontFamily": {
+    "message": "عائلة الخط:",
+    "description": "Form label"
+  },
+  "fontSize": {
+    "message": "حجم الخط (8-24px):",
+    "description": "Form label"
+  },
+  "fontStyle": {
+    "message": "نمط الخط:",
+    "description": "Form label"
+  },
+  "normal": {
+    "message": "عادي",
+    "description": "Font style option"
+  },
+  "italic": {
+    "message": "مائل",
+    "description": "Font style option"
+  },
+  "bold": {
+    "message": "غامق",
+    "description": "Font style option"
+  },
+  "saveThemeSettings": {
+    "message": "حفظ إعدادات الموضوع",
+    "description": "Button text"
+  },
+  "themeSaved": {
+    "message": "تم حفظ إعدادات الموضوع بنجاح!",
+    "description": "Success message"
+  },
+  "preview": {
+    "message": "معاينة",
+    "description": "Section title"
+  },
+  "previewText": {
+    "message": "هذا نص ملخص عينة لتوضيح كيفية ظهور إعدادات الموضوع والخط في نافذة التلخيص الفعلية. سيتم تحديث النص في الوقت الفعلي عند تغيير خيارات الموضوع وعائلة الخط والحجم والنمط أعلاه.",
+    "description": "Preview text"
+  },
+  "refreshMetrics": {
+    "message": "تحديث مقاييس النموذج",
+    "description": "Button text"
+  },
+  "noMetrics": {
+    "message": "لا توجد بيانات أداء متاحة حاليًا. استخدم الامتداد لإنشاء ملخصات وسيظهر المقاييس هنا.",
+    "description": "Empty state message"
+  },
+  "totalRequests": {
+    "message": "إجمالي الطلبات",
+    "description": "Metric label"
+  },
+  "successRate": {
+    "message": "معدل النجاح",
+    "description": "Metric label"
+  },
+  "avgResponseTime": {
+    "message": "متوسط وقت الاستجابة",
+    "description": "Metric label"
+  },
+  "lastUsed": {
+    "message": "آخر استخدام",
+    "description": "Metric label"
+  },
+  "searchSummaries": {
+    "message": "البحث في الملخصات...",
+    "description": "Search placeholder"
+  },
+  "allModels": {
+    "message": "جميع النماذج",
+    "description": "Filter option"
+  },
+  "exportFormat": {
+    "message": "تنسيق التصدير",
+    "description": "Select label"
+  },
+  "export": {
+    "message": "تصدير",
+    "description": "Button text"
+  },
+  "refreshHistory": {
+    "message": "تحديث التاريخ",
+    "description": "Button text"
+  },
+  "clearHistory": {
+    "message": "مسح التاريخ",
+    "description": "Button text"
+  },
+  "loadingHistory": {
+    "message": "جاري تحميل التاريخ...",
+    "description": "Loading message"
+  },
+  "noHistory": {
+    "message": "لا يوجد تاريخ ملخصات متاح حاليًا.",
+    "description": "Empty state message"
+  },
+  "noMatchingHistory": {
+    "message": "لم يتم العثور على عناصر تاريخ مطابقة.",
+    "description": "Empty state message"
+  },
+  "copy": {
+    "message": "نسخ",
+    "description": "Button text"
+  },
+  "share": {
+    "message": "مشاركة",
+    "description": "Button text"
+  },
+  "summaryCopied": {
+    "message": "تم نسخ الملخص إلى الحافظة!",
+    "description": "Success message"
+  },
+  "exportedSuccessfully": {
+    "message": "تم تصدير التاريخ بنجاح كـ $FORMAT$.",
+    "description": "Success message",
+    "placeholders": {
+      "format": {
+        "content": "$1",
+        "example": "CSV"
+      }
+    }
+  },
+  "noHistoryToExport": {
+    "message": "لا يوجد تاريخ للتصدير.",
+    "description": "Error message"
+  },
+  "noMatchingHistoryToExport": {
+    "message": "لا توجد عناصر تاريخ مطابقة للتصدير.",
+    "description": "Error message"
+  },
+  "exportFailed": {
+    "message": "فشل التصدير. يرجى المحاولة مرة أخرى.",
+    "description": "Error message"
+  },
+  "historyCleared": {
+    "message": "تم مسح التاريخ بنجاح!",
+    "description": "Success message"
+  },
+  "confirmClearHistory": {
+    "message": "هل أنت متأكد من أنك تريد مسح كل تاريخ الملخصات؟ لا يمكن التراجع عن هذا الإجراء.",
+    "description": "Confirmation message"
+  },
+  "feedbackTitle": {
+    "message": "الملاحظات",
+    "description": "Page title"
+  },
+  "feedbackDescription": {
+    "message": "نحن نقدر ملاحظاتك! ساعدنا في تحسين امتداد ملخص الذكاء الاصطناعي من خلال مشاركة أفكارك واقتراحاتك أو الإبلاغ عن المشكلات.",
+    "description": "Feedback description"
+  },
+  "feedbackTypeform": {
+    "message": "يتم إرسال ملاحظاتك من خلال Typeform آمن. انقر على الزر أدناه للوصول إلى نموذج الملاحظات.",
+    "description": "Typeform description"
+  },
+  "submitFeedback": {
+    "message": "إرسال الملاحظات عبر Typeform",
+    "description": "Button text"
+  },
+  "feedbackPrivacy": {
+    "message": "ملاحظة الخصوصية: يتم جمع ملاحظاتك بشكل مجهول وتُستخدم فقط لتحسين امتدادنا.",
+    "description": "Privacy note"
+  },
+  "shortcutsDescription": {
+    "message": "يتم إدارة اختصارات لوحة المفاتيح لهذا الامتداد بواسطة Chrome. لتعيين أو تغيير الاختصارات:",
+    "description": "Shortcuts description"
+  },
+  "shortcutsStep1": {
+    "message": "انقر على الزر أدناه لفتح صفحة اختصارات امتداد Chrome",
+    "description": "Step 1"
+  },
+  "shortcutsStep2": {
+    "message": "ابحث عن \"ملخص الذكاء الاصطناعي\" في القائمة",
+    "description": "Step 2"
+  },
+  "shortcutsStep3": {
+    "message": "انقر في حقل الاختصار واضغط على مجموعة المفاتيح المرغوبة",
+    "description": "Step 3"
+  },
+  "shortcutsStep4": {
+    "message": "سيتم حفظ الاختصار تلقائيًا",
+    "description": "Step 4"
+  },
+  "shortcutsNote": {
+    "message": "ملاحظة: يسمح Chrome بمجموعات مفاتيح معينة فقط لتجنب التعارض مع اختصارات المتصفح.",
+    "description": "Note"
+  },
+  "openChromeShortcuts": {
+    "message": "فتح اختصارات Chrome",
+    "description": "Button text"
+  },
+  "currentShortcut": {
+    "message": "الاختصار الحالي:",
+    "description": "Label"
+  },
+  "loadingShortcut": {
+    "message": "جاري التحميل...",
+    "description": "Loading text"
+  },
+  "noShortcutSet": {
+    "message": "لا يوجد اختصار لوحة مفاتيح محدد حاليًا لهذا الامتداد.",
+    "description": "Status message"
+  },
+  "unableToLoadShortcut": {
+    "message": "تعذر تحميل الاختصار الحالي.",
+    "description": "Error message"
+  },
+  "close": {
+    "message": "إغلاق",
+    "description": "Button title"
+  },
+  "minimize": {
+    "message": "تصغير",
+    "description": "Button title"
+  },
+  "maximize": {
+    "message": "تكبير",
+    "description": "Button title"
+  },
+  "copySummary": {
+    "message": "نسخ الملخص إلى الحافظة",
+    "description": "Button title"
+  },
+  "shareSummary": {
+    "message": "مشاركة الملخص",
+    "description": "Button title"
+  },
+  "openSettings": {
+    "message": "فتح الإعدادات",
+    "description": "Button title"
+  },
+  "summaryLanguage": {
+    "message": "لغة الملخص: $LANGUAGE$",
+    "description": "Language indicator title",
+    "placeholders": {
+      "language": {
+        "content": "$1",
+        "example": "العربية"
+      }
+    }
+  },
+  "summaryLanguageDefault": {
+    "message": "لغة الملخص: الإنجليزية (افتراضي)",
+    "description": "Default language indicator title"
+  },
+  "initializing": {
+    "message": "جاري التهيئة...",
+    "description": "Progress step"
+  },
+  "extractingContent": {
+    "message": "جاري استخراج المحتوى",
+    "description": "Progress step"
+  },
+  "processingResponse": {
+    "message": "جاري معالجة الاستجابة",
+    "description": "Progress step"
+  },
+  "tryingFallbackModels": {
+    "message": "جاري محاولة نماذج الاحتياط",
+    "description": "Progress step"
+  },
+  "tryingModel": {
+    "message": "جاري محاولة $MODEL$",
+    "description": "Progress step",
+    "placeholders": {
+      "model": {
+        "content": "$1",
+        "example": "GPT-3.5 Turbo"
+      }
+    }
+  },
+  "finalizingSummary": {
+    "message": "جاري إنهاء الملخص",
+    "description": "Progress step"
+  },
+  "complete": {
+    "message": "مكتمل",
+    "description": "Progress step"
+  },
+  "usingModel": {
+    "message": "استخدام $MODEL$",
+    "description": "Progress details",
+    "placeholders": {
+      "model": {
+        "content": "$1",
+        "example": "الذكاء الاصطناعي المدمج في Chrome"
+      }
+    }
+  },
+  "estimatedTimeRemaining": {
+    "message": "المتبقي حوالي $TIME$",
+    "description": "Time estimate",
+    "placeholders": {
+      "time": {
+        "content": "$1",
+        "example": "5s"
+      }
+    }
+  },
+  "lessThan1Second": {
+    "message": "< 1s",
+    "description": "Time estimate"
+  },
+  "success": {
+    "message": "(نجح)",
+    "description": "Status indicator"
+  },
+  "failed": {
+    "message": "(فشل، جاري محاولة البدائل)",
+    "description": "Status indicator"
+  },
+  "checkingTranslationModel": {
+    "message": "جاري التحقق من توافر نموذج الترجمة",
+    "description": "Progress step"
+  },
+  "translatingSummary": {
+    "message": "جاري ترجمة الملخص",
+    "description": "Progress step"
+  },
+  "downloadingLanguageModel": {
+    "message": "جاري تحميل نموذج اللغة",
+    "description": "Progress step"
+  },
+  "downloadingLanguageModelProgress": {
+    "message": "جاري تحميل نموذج اللغة ($PERCENTAGE%)",
+    "description": "Progress step with percentage",
+    "placeholders": {
+      "percentage": {
+        "content": "$1",
+        "example": "50"
+      }
+    }
+  },
+  "unableToSummarize": {
+    "message": "تعذر تلخيص المحتوى. يرجى التحقق من إعداداتك وإعادة المحاولة.",
+    "description": "Error message"
+  },
+  "errorSummarizing": {
+    "message": "خطأ في تلخيص المحتوى. يرجى إعادة المحاولة.",
+    "description": "Error message"
+  },
+  "noContentAvailable": {
+    "message": "لا يوجد محتوى متاح للتلخيص",
+    "description": "Error message"
+  },
+  "noApiKeyConfigured": {
+    "message": "لم يتم تكوين مفتاح $PROVIDER$ API",
+    "description": "Error message",
+    "placeholders": {
+      "provider": {
+        "content": "$1",
+        "example": "OpenAI"
+      }
+    }
+  },
+  "permissionDenied": {
+    "message": "تم رفض الوصول إلى $PROVIDER$ API. يرجى حفظ إعداداتك مرة أخرى في خيارات الامتداد لمنح الصلاحيات.",
+    "description": "Error message",
+    "placeholders": {
+      "provider": {
+        "content": "$1",
+        "example": "OpenAI"
+      }
+    }
+  },
+  "apiRequestFailed": {
+    "message": "فشل طلب $PROVIDER$ API: $STATUS$",
+    "description": "Error message",
+    "placeholders": {
+      "provider": {
+        "content": "$1",
+        "example": "OpenAI"
+      },
+      "status": {
+        "content": "$2",
+        "example": "429"
+      }
+    }
+  },
+  "invalidApiKey": {
+    "message": "مفتاح API غير صالح",
+    "description": "Error message"
+  },
+  "networkError": {
+    "message": "خطأ شبكة أثناء التحقق",
+    "description": "Error message"
+  },
+  "unknownModel": {
+    "message": "نموذج غير معروف",
+    "description": "Error message"
+  },
+  "unknownProvider": {
+    "message": "موفر غير معروف",
+    "description": "Error message"
+  },
+  "chromeAiNotSupported": {
+    "message": "الذكاء الاصطناعي المدمج في Chrome غير مدعوم في هذا الإصدار من المتصفح",
+    "description": "Error message"
+  },
+  "chromeAiNotAvailable": {
+    "message": "الذكاء الاصطناعي المدمج في Chrome غير متاح",
+    "description": "Error message"
+  },
+  "invalidResponseFormat": {
+    "message": "تنسيق استجابة غير صالح من $PROVIDER$ API",
+    "description": "Error message",
+    "placeholders": {
+      "provider": {
+        "content": "$1",
+        "example": "Gemini"
+      }
+    }
+  },
+  "languageNotSupported": {
+    "message": "$PROVIDER$ لا يدعم اللغة '$LANGUAGE$'، العودة إلى الإنجليزية",
+    "description": "Warning message",
+    "placeholders": {
+      "language": {
+        "content": "$1",
+        "example": "العربية"
+      },
+      "provider": {
+        "content": "$2",
+        "example": "Chrome"
+      }
+    }
+  },
+  "apiKeyRequired": {
+    "message": "مفتاح API مطلوب - تكوين في الإعدادات",
+    "description": "Tooltip text"
+  },
+  "cannotSaveModelUnavailable": {
+    "message": "لا يمكن الحفظ: النموذج المحدد يتطلب مفتاح API صالح. يرجى تكوين مفتاح API المناسب أو اختيار نموذج آخر.",
+    "description": "Error message"
+  },
+  "permissionDeniedSave": {
+    "message": "تم رفض الوصول لموفر API واحد أو أكثر. يرجى منح الصلاحيات لحفظ الإعدادات.",
+    "description": "Error message"
+  },
+  "chromeAiRequirements": {
+    "message": "الذكاء الاصطناعي المدمج في Chrome يتطلب:\n• إصدار Chrome 138 أو أعلى\n• دعم API التلخيص\n\nنظرًا لعدم توفر هذا، فكر في استخدام نماذج بديلة مثل GPT-3.5 Turbo أو Gemini.",
+    "description": "Alert message"
+  },
+  "aiUnavailable": {
+    "message": "ملخص الذكاء الاصطناعي غير متاح",
+    "description": "Error title"
+  },
+  "chromeAiRequirementsShort": {
+    "message": "الذكاء الاصطناعي المدمج في Chrome يتطلب Chrome 138+ ودعم API.",
+    "description": "Error message"
+  },
+  "noAlternativeModels": {
+    "message": "لم يتم تكوين نماذج بديلة. يرجى تكوين مفاتيح API في الإعدادات.",
+    "description": "Error message"
+  },
+  "openSettings": {
+    "message": "فتح الإعدادات",
+    "description": "Button text"
+  },
+  "regenerating": {
+    "message": "جاري إعادة التوليد...",
+    "description": "Status message"
+  },
+  "english": {
+    "message": "الإنجليزية",
+    "description": "Language name"
+  },
+  "spanish": {
+    "message": "الإسبانية",
+    "description": "Language name"
+  },
+  "french": {
+    "message": "الفرنسية",
+    "description": "Language name"
+  },
+  "german": {
+    "message": "الألمانية",
+    "description": "Language name"
+  },
+  "italian": {
+    "message": "الإيطالية",
+    "description": "Language name"
+  },
+  "portuguese": {
+    "message": "البرتغالية",
+    "description": "Language name"
+  },
+  "chinese": {
+    "message": "الصينية",
+    "description": "Language name"
+  },
+  "japanese": {
+    "message": "اليابانية",
+    "description": "Language name"
+  },
+  "korean": {
+    "message": "الكورية",
+    "description": "Language name"
+  },
+  "russian": {
+    "message": "الروسية",
+    "description": "Language name"
+  },
+  "arabic": {
+    "message": "العربية",
+    "description": "Language name"
+  },
+  "hindi": {
+    "message": "الهندية",
+    "description": "Language name"
+  },
+  "danish": {
+    "message": "الدنماركية",
+    "description": "Language name"
+  },
+  "norwegian": {
+    "message": "النرويجية",
+    "description": "Language name"
+  },
+  "swedish": {
+    "message": "السويدية",
+    "description": "Language name"
+  },
+  "finnish": {
+    "message": "الفنلندية",
+    "description": "Language name"
+  },
+  "polish": {
+    "message": "البولندية",
+    "description": "Language name"
+  },
+  "ukrainian": {
+    "message": "الأوكرانية",
+    "description": "Language name"
+  },
+  "dutch": {
+    "message": "الهولندية",
+    "description": "Language name"
+  },
+  "freeModels": {
+    "message": "النماذج المجانية",
+    "description": "Optgroup label"
+  },
+  "openaiModels": {
+    "message": "نماذج OpenAI",
+    "description": "Optgroup label"
+  },
+  "googleGeminiModels": {
+    "message": "نماذج Google Gemini",
+    "description": "Optgroup label"
+  },
+  "anthropicClaudeModels": {
+    "message": "نماذج Anthropic Claude",
+    "description": "Optgroup label"
+  },
+  "chromeAiFree": {
+    "message": "Chrome AI (مجاني)",
+    "description": "Model option"
+  },
+  "never": {
+    "message": "أبدًا",
+    "description": "Last used value"
+  },
+  "seconds": {
+    "message": "ث",
+    "description": "Time unit"
+  },
+  "attempts": {
+    "message": "محاولات",
+    "description": "Attempts label"
+  },
+  "validating": {
+    "message": "جاري التحقق...",
+    "description": "Validation status"
+  },
+  "validApiKey": {
+    "message": "مفتاح API صالح",
+    "description": "Validation status"
+  },
+  "apiKeyRequiredError": {
+    "message": "مفتاح API مطلوب",
+    "description": "Validation error"
+  },
+  "validationFailed": {
+    "message": "فشل التحقق",
+    "description": "Validation error"
+  },
+  "toggleSidebar": {
+    "message": "تبديل الشريط الجانبي",
+    "description": "Button aria-label"
+  },
+  "toggleDarkMode": {
+    "message": "تبديل الوضع المظلم",
+    "description": "Button aria-label"
+  },
+  "modelSettingsAria": {
+    "message": "إعدادات النموذج",
+    "description": "Aria label"
+  },
+  "themeCustomizationAria": {
+    "message": "تخصيص الموضوع",
+    "description": "Aria label"
+  },
+  "performanceAnalyticsAria": {
+    "message": "تحليلات أداء النموذج",
+    "description": "Aria label"
+  },
+  "summaryHistoryAria": {
+    "message": "تاريخ الملخصات",
+    "description": "Aria label"
+  },
+  "feedbackAria": {
+    "message": "الملاحظات",
+    "description": "Aria label"
+  },
+  "keyboardShortcutsAria": {
+    "message": "اختصارات لوحة المفاتيح",
+    "description": "Aria label"
+  },
+  "currentShortcutAria": {
+    "message": "اختصار لوحة المفاتيح الحالي",
+    "description": "Aria label"
+  },
+  "exportFormatAria": {
+    "message": "تنسيق التصدير",
+    "description": "Aria label"
+  },
+  "exportAria": {
+    "message": "تصدير التاريخ",
+    "description": "Aria label"
+  },
+  "refreshHistoryAria": {
+    "message": "تحديث التاريخ",
+    "description": "Aria label"
+  },
+  "clearHistoryAria": {
+    "message": "مسح التاريخ",
+    "description": "Aria label"
+  },
+  "openChromeShortcutsAria": {
+    "message": "فتح صفحة اختصارات Chrome",
+    "description": "Aria label"
+  },
+  "themeNote": {
+    "message": "ملاحظة: تخصيص مظهر نافذة التلخيص المنبثقة. يتم تطبيق التغييرات في الوقت الفعلي على المعاينة أدناه.",
+    "description": "Theme page note"
+  }
+}

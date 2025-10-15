@@ -10,6 +10,14 @@ declare const showdown: {
   };
 };
 
+// Import i18n utilities from utils.ts
+import {
+  getMessage,
+  getCurrentLanguage,
+  isRTLLanguage,
+  initializeI18n,
+} from './utils';
+
 // Browser compatibility functions
 function getChromeVersion(): number {
   const userAgent = navigator?.userAgent;
@@ -65,7 +73,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
         return article.textContent.trim();
       }
     } catch (error) {
-      console.log('Readability extraction failed:', error);
+      console.log(getMessage('readabilityExtractionFailed'), error);
     }
 
     // Strategy 2: Expanded element selection
@@ -437,10 +445,12 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
     if (!summaryDiv) {
       summaryDiv = document.createElement('div');
       summaryDiv.id = 'ai-summary-extension-summary-div';
+      const currentLang = getCurrentLanguage();
+      const isRTL = isRTLLanguage(currentLang);
       summaryDiv.style.cssText = `
       position: fixed !important;
       top: 10px !important;
-      right: 10px !important;
+      ${isRTL ? 'left: 10px !important;' : 'right: 10px !important;'}
       width: 400px !important;
       height: 400px !important;
       background-color: ${themeColors.backgroundColor} !important;
@@ -453,6 +463,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
       flex-direction: column !important;
       padding-bottom: 32px !important;
       font-family: sans-serif;
+      direction: ${isRTL ? 'rtl' : 'ltr'} !important;
     `;
 
       const titleBar = document.createElement('div');
@@ -487,7 +498,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
           visible: false,
         });
       });
-      closeButton.title = 'Close';
+      closeButton.title = getMessage('close');
 
       const minimizeButton = document.createElement('div');
       minimizeButton.style.cssText = `
@@ -523,7 +534,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
           isMinimized = true;
         }
       });
-      minimizeButton.title = 'Minimize';
+      minimizeButton.title = getMessage('minimize');
 
       const maximizeButton = document.createElement('div');
       maximizeButton.style.cssText = `
@@ -570,7 +581,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
           if (footerDiv) footerDiv.style.display = 'flex';
         }
       });
-      maximizeButton.title = 'Maximize';
+      maximizeButton.title = getMessage('maximize');
 
       buttons.appendChild(closeButton);
       buttons.appendChild(minimizeButton);
@@ -583,7 +594,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
     `;
 
       const summaryTitle = document.createElement('div');
-      summaryTitle.textContent = 'AI Summary';
+      summaryTitle.textContent = getMessage('aiSummary');
       summaryTitle.style.cssText = `
       color: ${themeColors.titleColor} !important;
       font-family: Arial, sans-serif !important;
@@ -613,7 +624,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
           navigator.clipboard.writeText(summaryContent.textContent || '');
         }
       });
-      copyButton.title = 'Copy summary to clipboard';
+      copyButton.title = getMessage('copySummary');
 
       const shareButton = document.createElement('span');
       shareButton.textContent = '🔗';
@@ -636,7 +647,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
             .catch(console.error);
         }
       });
-      shareButton.title = 'Share summary';
+      shareButton.title = getMessage('shareSummary');
 
       const settingsLink = document.createElement('a');
       settingsLink.addEventListener('click', (event) => {
@@ -660,7 +671,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
     `;
 
       settingsLink.appendChild(settingsIcon);
-      settingsLink.title = 'Open settings';
+      settingsLink.title = getMessage('openSettings');
 
       actionButtons.appendChild(copyButton);
       actionButtons.appendChild(shareButton);
@@ -672,6 +683,8 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
 
       const summaryContent = document.createElement('div');
       summaryContent.id = 'ai-summary-extension-summary-content';
+      const contentLang = getCurrentLanguage();
+      const contentIsRTL = isRTLLanguage(contentLang);
       summaryContent.style.cssText = `
       padding: 15px !important;
       overflow-y: auto !important;
@@ -682,7 +695,8 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
       font-style: ${fontStyle === 'italic' ? 'italic' : 'normal'} !important;
       color: ${themeColors.textColor} !important;
       background-color: ${themeColors.backgroundColor} !important;
-      text-align: left;
+      text-align: ${contentIsRTL ? 'right' : 'left'};
+      direction: ${contentIsRTL ? 'rtl' : 'ltr'} !important;
     `;
 
       const style = document.createElement('style');
@@ -768,6 +782,8 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
       // Enhanced loading container
       const loadingContainer = document.createElement('div');
       loadingContainer.id = 'ai-summary-extension-loading-container';
+      const loadingLang = getCurrentLanguage();
+      const loadingIsRTL = isRTLLanguage(loadingLang);
       loadingContainer.style.cssText = `
       display: none; /* Hidden by default */
       padding: 15px !important;
@@ -777,6 +793,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
       font-weight: ${fontStyle === 'bold' ? 'bold' : 'normal'} !important;
       font-style: ${fontStyle === 'italic' ? 'italic' : 'normal'} !important;
       color: ${themeColors.textColor} !important;
+      direction: ${loadingIsRTL ? 'rtl' : 'ltr'} !important;
     `;
 
       // Loading spinner
@@ -801,7 +818,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
       font-weight: bold !important;
       margin-bottom: 5px !important;
     `;
-      progressText.textContent = 'Initializing...';
+      progressText.textContent = getMessage('initializing');
       loadingContainer.appendChild(progressText);
 
       // Model and time info
@@ -923,7 +940,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
             } else {
               opt.disabled = true;
               opt.style.opacity = '0.5';
-              opt.title = 'API key required - configure in settings';
+              opt.title = getMessage('apiKeyRequired');
             }
 
             modelSelect.appendChild(opt);
@@ -975,10 +992,10 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
               if (summaryContent) {
                 summaryContent.innerHTML = `
                   <div style="color: #ff6b6b; text-align: center; padding: 20px;">
-                    <h3>AI Summarization Unavailable</h3>
-                    <p>Chrome Built-in AI requires Chrome 138+ and API support.</p>
-                    <p>No alternative models are configured. Please configure API keys in settings.</p>
-                    <button onclick="chrome.runtime.sendMessage({action: 'open_options_page'})" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Open Settings</button>
+                    <h3>${getMessage('aiUnavailable')}</h3>
+                    <p>${getMessage('chromeAiRequirementsShort')}</p>
+                    <p>${getMessage('noAlternativeModels')}</p>
+                    <button onclick="chrome.runtime.sendMessage({action: 'open_options_page'})" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">${getMessage('openSettings')}</button>
                   </div>
                 `;
                 summaryContent.style.display = 'block';
@@ -987,9 +1004,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
               return;
             } else {
               // Show requirements info
-              alert(
-                'Chrome Built-in AI requires:\n• Chrome version 138 or higher\n• Summarizer API support\n\nSince this is not available, consider using alternative models like GPT-3.5 Turbo or Gemini.'
-              );
+              alert(getMessage('chromeAiRequirements'));
               // Don't proceed with regeneration, let user choose alternative
               return;
             }
@@ -1016,7 +1031,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
           summaryContent.style.display = 'none';
         }
         if (statusText) {
-          statusText.textContent = 'Regenerating...';
+          statusText.textContent = getMessage('regenerating');
         }
         if (loadingContainer) {
           loadingContainer.style.display = 'block';
@@ -1035,7 +1050,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
         } else {
           // Handle case where no content is available
           if (statusText) {
-            statusText.textContent = 'No content available to summarize';
+            statusText.textContent = getMessage('noContentAvailable');
           }
           if (loadingContainer) {
             loadingContainer.style.display = 'none';
@@ -1059,23 +1074,28 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
     `;
       if (language) {
         languageIndicator.textContent = language.toUpperCase();
-        languageIndicator.title = `Summary language: ${language}`;
+        languageIndicator.title = getMessage('summaryLanguage', {
+          parameters: { language },
+        });
       } else {
         languageIndicator.textContent = 'EN';
-        languageIndicator.title = 'Summary language: English (default)';
+        languageIndicator.title = getMessage('summaryLanguageDefault');
       }
 
       // Status text container
       const statusText = document.createElement('div');
       statusText.id = 'ai-summary-status-text';
+      const statusLang = getCurrentLanguage();
+      const statusIsRTL = isRTLLanguage(statusLang);
       statusText.style.cssText = `
       flex-grow: 1 !important;
-      text-align: right !important;
-      padding-right: 8px !important;
+      text-align: ${statusIsRTL ? 'left' : 'right'} !important;
+      padding-${statusIsRTL ? 'left' : 'right'}: 8px !important;
       overflow: hidden !important;
       text-overflow: ellipsis !important;
       white-space: nowrap !important;
       font-family: Arial, sans-serif !important;
+      direction: ${statusIsRTL ? 'rtl' : 'ltr'} !important;
     `;
 
       footerDiv.appendChild(languageIndicator);
@@ -1266,18 +1286,20 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
 
       // Update details
       const modelName = getModelDisplayName(progress.currentModel);
-      let detailsText = `Using ${modelName}`;
+      let detailsText = getMessage('usingModel', {
+        parameters: { model: modelName },
+      });
       if (progress.estimatedTimeRemaining > 0) {
         const timeText =
           progress.estimatedTimeRemaining < 1
-            ? '< 1s'
+            ? getMessage('lessThan1Second')
             : `${Math.ceil(progress.estimatedTimeRemaining)}s`;
-        detailsText += ` • ~${timeText} remaining`;
+        detailsText += ` • ${getMessage('estimatedTimeRemaining', { parameters: { time: timeText } })}`;
       }
       if (progress.success === false) {
-        detailsText += ' (failed, trying alternatives)';
+        detailsText += ` ${getMessage('failed')}`;
       } else if (progress.success === true) {
-        detailsText += ' (success)';
+        detailsText += ` ${getMessage('success')}`;
       }
       progressDetails.textContent = detailsText;
     }
@@ -1384,6 +1406,9 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
   // Initialize observer when content script loads
   setupContentObserver();
 
+  // Initialize i18n system with language detection and UI updates
+  initializeI18n();
+
   // Listener for messages from background.js
   chrome.runtime.onMessage.addListener(function (request: any) {
     if (!request || !request.action) return;
@@ -1472,7 +1497,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
                 ['theme', 'fontFamily', 'fontSize', 'fontStyle', 'language'],
                 function (result) {
                   createOrUpdateSummaryDiv(
-                    '<div style="color: #ff6b6b; text-align: center; padding: 20px;"><h3>AI Summarization Unavailable</h3><p>Chrome Built-in AI requires Chrome 138+ and API support.</p><p>No alternative models are configured. Please configure API keys in settings.</p><button onclick="chrome.runtime.sendMessage({action: \'open_options_page\'})" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Open Settings</button></div>',
+                    `<div style="color: #ff6b6b; text-align: center; padding: 20px;"><h3>${getMessage('aiUnavailable')}</h3><p>${getMessage('chromeAiRequirementsShort')}</p><p>${getMessage('noAlternativeModels')}</p><button onclick="chrome.runtime.sendMessage({action: 'open_options_page'})" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">${getMessage('openSettings')}</button></div>`,
                     result.theme || 'nord',
                     result.fontFamily || 'Arial',
                     result.fontSize || 14,

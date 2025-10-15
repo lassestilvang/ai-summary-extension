@@ -1,0 +1,924 @@
+{
+  "appName": {
+    "message": "AI Summary",
+    "description": "Extension name"
+  },
+  "appDescription": {
+    "message": "🚀 One-click AI summary of any web page! Supports GPT-4, Gemini, Claude, and free Chrome AI. Instant, secure, and customizable",
+    "description": "Extension description"
+  },
+  "summarizeCurrentPage": {
+    "message": "Summarize current page",
+    "description": "Keyboard shortcut description"
+  },
+  "aiSummary": {
+    "message": "AI Summary",
+    "description": "Action title"
+  },
+  "chromeBuiltinAi": {
+    "message": "Chrome Built-in AI",
+    "description": "Model name"
+  },
+  "chromeBuiltinAiDescription": {
+    "message": "Free Chrome AI with no API key required",
+    "description": "Model description"
+  },
+  "gpt35Turbo": {
+    "message": "GPT-3.5 Turbo",
+    "description": "Model name"
+  },
+  "gpt35TurboDescription": {
+    "message": "Fast and cost-effective OpenAI model",
+    "description": "Model description"
+  },
+  "gpt4": {
+    "message": "GPT-4",
+    "description": "Model name"
+  },
+  "gpt4Description": {
+    "message": "Advanced OpenAI model with high accuracy",
+    "description": "Model description"
+  },
+  "gpt4Turbo": {
+    "message": "GPT-4 Turbo",
+    "description": "Model name"
+  },
+  "gpt4TurboDescription": {
+    "message": "Faster GPT-4 with improved performance",
+    "description": "Model description"
+  },
+  "gpt4o": {
+    "message": "GPT-4o",
+    "description": "Model name"
+  },
+  "gpt4oDescription": {
+    "message": "Optimized GPT-4 for speed and efficiency",
+    "description": "Model description"
+  },
+  "gpt5": {
+    "message": "GPT-5",
+    "description": "Model name"
+  },
+  "gpt5Description": {
+    "message": "Latest OpenAI model with advanced capabilities",
+    "description": "Model description"
+  },
+  "gpt5Mini": {
+    "message": "GPT-5 Mini",
+    "description": "Model name"
+  },
+  "gpt5MiniDescription": {
+    "message": "Compact version of GPT-5",
+    "description": "Model description"
+  },
+  "gpt5Nano": {
+    "message": "GPT-5 Nano",
+    "description": "Model name"
+  },
+  "gpt5NanoDescription": {
+    "message": "Lightweight GPT-5 for basic tasks",
+    "description": "Model description"
+  },
+  "gemini25Pro": {
+    "message": "Gemini 2.5 Pro",
+    "description": "Model name"
+  },
+  "gemini25ProDescription": {
+    "message": "Google's advanced Gemini model",
+    "description": "Model description"
+  },
+  "gemini25Flash": {
+    "message": "Gemini 2.5 Flash",
+    "description": "Model name"
+  },
+  "gemini25FlashDescription": {
+    "message": "Fast Gemini model for quick responses",
+    "description": "Model description"
+  },
+  "gemini20FlashExp": {
+    "message": "Gemini 2.0 Flash (Exp)",
+    "description": "Model name"
+  },
+  "gemini20FlashExpDescription": {
+    "message": "Experimental Gemini Flash model",
+    "description": "Model description"
+  },
+  "claude3Haiku": {
+    "message": "Claude 3 Haiku",
+    "description": "Model name"
+  },
+  "claude3HaikuDescription": {
+    "message": "Fast and efficient Anthropic model",
+    "description": "Model description"
+  },
+  "claude3Sonnet": {
+    "message": "Claude 3 Sonnet",
+    "description": "Model name"
+  },
+  "claude3SonnetDescription": {
+    "message": "Balanced Anthropic model",
+    "description": "Model description"
+  },
+  "claude3Opus": {
+    "message": "Claude 3 Opus",
+    "description": "Model name"
+  },
+  "claude3OpusDescription": {
+    "message": "Most capable Anthropic model",
+    "description": "Model description"
+  },
+  "claude35Sonnet": {
+    "message": "Claude 3.5 Sonnet",
+    "description": "Model name"
+  },
+  "claude35SonnetDescription": {
+    "message": "Improved Claude 3 Sonnet",
+    "description": "Model description"
+  },
+  "claudeSonnet45": {
+    "message": "Claude Sonnet 4.5",
+    "description": "Model name"
+  },
+  "claudeSonnet45Description": {
+    "message": "Latest Claude Sonnet model",
+    "description": "Model description"
+  },
+  "claudeHaiku45": {
+    "message": "Claude Haiku 4.5",
+    "description": "Model name"
+  },
+  "claudeHaiku45Description": {
+    "message": "Latest Claude Haiku model",
+    "description": "Model description"
+  },
+  "modelSettings": {
+    "message": "Model Settings",
+    "description": "Page title"
+  },
+  "theme": {
+    "message": "Theme",
+    "description": "Page title"
+  },
+  "performance": {
+    "message": "Performance",
+    "description": "Page title"
+  },
+  "history": {
+    "message": "History",
+    "description": "Page title"
+  },
+  "feedback": {
+    "message": "Feedback",
+    "description": "Page title"
+  },
+  "keyboardShortcuts": {
+    "message": "Keyboard Shortcuts",
+    "description": "Page title"
+  },
+  "aiModel": {
+    "message": "AI Model:",
+    "description": "Form label"
+  },
+  "language": {
+    "message": "Language:",
+    "description": "Form label"
+  },
+  "temperature": {
+    "message": "Temperature:",
+    "description": "Form label"
+  },
+  "maxTokens": {
+    "message": "Max Tokens:",
+    "description": "Form label"
+  },
+  "summaryLength": {
+    "message": "Summary Length:",
+    "description": "Form label"
+  },
+  "short": {
+    "message": "Short",
+    "description": "Summary length option"
+  },
+  "medium": {
+    "message": "Medium",
+    "description": "Summary length option"
+  },
+  "long": {
+    "message": "Long",
+    "description": "Summary length option"
+  },
+  "enableFallback": {
+    "message": "Enable automatic fallback to other models if primary fails",
+    "description": "Checkbox label"
+  },
+  "openaiApiKey": {
+    "message": "OpenAI API Key:",
+    "description": "Form label"
+  },
+  "openaiApiKeyHelp": {
+    "message": "Optional - only needed for OpenAI models",
+    "description": "Help text"
+  },
+  "geminiApiKey": {
+    "message": "Google Gemini API Key:",
+    "description": "Form label"
+  },
+  "geminiApiKeyHelp": {
+    "message": "Optional - only needed for Gemini models",
+    "description": "Help text"
+  },
+  "getFreeApiKey": {
+    "message": "Get a free API Key",
+    "description": "Link text"
+  },
+  "anthropicApiKey": {
+    "message": "Anthropic API Key:",
+    "description": "Form label"
+  },
+  "anthropicApiKeyHelp": {
+    "message": "Optional - only needed for Claude models",
+    "description": "Help text"
+  },
+  "saveSettings": {
+    "message": "Save Settings",
+    "description": "Button text"
+  },
+  "settingsSaved": {
+    "message": "Settings saved successfully!",
+    "description": "Success message"
+  },
+  "apiKeysSecure": {
+    "message": "Your API keys are secure",
+    "description": "Security notice title"
+  },
+  "apiKeysSecureDescription": {
+    "message": "All keys are stored encrypted locally on your device only and are never sent to any external servers, third parties, or cloud services. This ensures complete privacy and protection against data breaches.",
+    "description": "Security notice description"
+  },
+  "modelConfigInfo": {
+    "message": "Model Configuration Info",
+    "description": "Info box title"
+  },
+  "chromeBuiltinInfo": {
+    "message": "Chrome Built-in AI: Requires Chrome 138+ and Summarizer API support. Free but limited availability.",
+    "description": "Info text"
+  },
+  "apiModelsInfo": {
+    "message": "API-based Models: Require valid API keys from respective providers. Check the provider's website for pricing and limits.",
+    "description": "Info text"
+  },
+  "fallbackInfo": {
+    "message": "Fallback: When enabled, the extension will automatically try alternative models if the primary one fails.",
+    "description": "Info text"
+  },
+  "themeSettings": {
+    "message": "Theme:",
+    "description": "Form label"
+  },
+  "fontFamily": {
+    "message": "Font Family:",
+    "description": "Form label"
+  },
+  "fontSize": {
+    "message": "Font Size (8-24px):",
+    "description": "Form label"
+  },
+  "fontStyle": {
+    "message": "Font Style:",
+    "description": "Form label"
+  },
+  "normal": {
+    "message": "Normal",
+    "description": "Font style option"
+  },
+  "italic": {
+    "message": "Italic",
+    "description": "Font style option"
+  },
+  "bold": {
+    "message": "Bold",
+    "description": "Font style option"
+  },
+  "saveThemeSettings": {
+    "message": "Save Theme Settings",
+    "description": "Button text"
+  },
+  "themeSaved": {
+    "message": "Theme settings saved successfully!",
+    "description": "Success message"
+  },
+  "preview": {
+    "message": "Preview",
+    "description": "Section title"
+  },
+  "previewText": {
+    "message": "This is a sample summary text to demonstrate how the theme and font settings will appear in the actual summary popup. The text will update in real-time as you change the theme, font family, size, and style options above.",
+    "description": "Preview text"
+  },
+  "refreshMetrics": {
+    "message": "Refresh Model Metrics",
+    "description": "Button text"
+  },
+  "noMetrics": {
+    "message": "No performance data available yet. Use the extension to generate summaries and metrics will appear here.",
+    "description": "Empty state message"
+  },
+  "totalRequests": {
+    "message": "Total Requests",
+    "description": "Metric label"
+  },
+  "successRate": {
+    "message": "Success Rate",
+    "description": "Metric label"
+  },
+  "avgResponseTime": {
+    "message": "Avg Response Time",
+    "description": "Metric label"
+  },
+  "lastUsed": {
+    "message": "Last Used",
+    "description": "Metric label"
+  },
+  "searchSummaries": {
+    "message": "Search summaries...",
+    "description": "Search placeholder"
+  },
+  "allModels": {
+    "message": "All Models",
+    "description": "Filter option"
+  },
+  "exportFormat": {
+    "message": "Export Format",
+    "description": "Select label"
+  },
+  "export": {
+    "message": "Export",
+    "description": "Button text"
+  },
+  "refreshHistory": {
+    "message": "Refresh History",
+    "description": "Button text"
+  },
+  "clearHistory": {
+    "message": "Clear History",
+    "description": "Button text"
+  },
+  "loadingHistory": {
+    "message": "Loading history...",
+    "description": "Loading message"
+  },
+  "noHistory": {
+    "message": "No summary history available yet.",
+    "description": "Empty state message"
+  },
+  "noMatchingHistory": {
+    "message": "No matching history items found.",
+    "description": "Empty state message"
+  },
+  "copy": {
+    "message": "Copy",
+    "description": "Button text"
+  },
+  "share": {
+    "message": "Share",
+    "description": "Button text"
+  },
+  "summaryCopied": {
+    "message": "Summary copied to clipboard!",
+    "description": "Success message"
+  },
+  "exportedSuccessfully": {
+    "message": "History exported successfully as $FORMAT$.",
+    "description": "Success message",
+    "placeholders": {
+      "format": {
+        "content": "$1",
+        "example": "CSV"
+      }
+    }
+  },
+  "noHistoryToExport": {
+    "message": "No history to export.",
+    "description": "Error message"
+  },
+  "noMatchingHistoryToExport": {
+    "message": "No matching history items to export.",
+    "description": "Error message"
+  },
+  "exportFailed": {
+    "message": "Export failed. Please try again.",
+    "description": "Error message"
+  },
+  "historyCleared": {
+    "message": "History cleared successfully!",
+    "description": "Success message"
+  },
+  "confirmClearHistory": {
+    "message": "Are you sure you want to clear all summary history? This action cannot be undone.",
+    "description": "Confirmation message"
+  },
+  "feedbackTitle": {
+    "message": "Feedback",
+    "description": "Page title"
+  },
+  "feedbackDescription": {
+    "message": "We value your feedback! Help us improve the AI Summary extension by sharing your thoughts, suggestions, or reporting issues.",
+    "description": "Feedback description"
+  },
+  "feedbackTypeform": {
+    "message": "Your feedback is submitted through a secure Typeform. Click the button below to access the feedback form.",
+    "description": "Typeform description"
+  },
+  "submitFeedback": {
+    "message": "Submit Feedback via Typeform",
+    "description": "Button text"
+  },
+  "feedbackPrivacy": {
+    "message": "Privacy note: Your feedback is collected anonymously and used only to improve our extension.",
+    "description": "Privacy note"
+  },
+  "shortcutsDescription": {
+    "message": "Keyboard shortcuts for this extension are managed by Chrome. To set or change shortcuts:",
+    "description": "Shortcuts description"
+  },
+  "shortcutsStep1": {
+    "message": "Click the button below to open Chrome's extension shortcuts page",
+    "description": "Step 1"
+  },
+  "shortcutsStep2": {
+    "message": "Find \"AI Summary\" in the list",
+    "description": "Step 2"
+  },
+  "shortcutsStep3": {
+    "message": "Click in the shortcut field and press your desired key combination",
+    "description": "Step 3"
+  },
+  "shortcutsStep4": {
+    "message": "The shortcut will be saved automatically",
+    "description": "Step 4"
+  },
+  "shortcutsNote": {
+    "message": "Note: Chrome only allows certain key combinations to prevent conflicts with browser shortcuts.",
+    "description": "Note"
+  },
+  "openChromeShortcuts": {
+    "message": "Open Chrome Shortcuts",
+    "description": "Button text"
+  },
+  "currentShortcut": {
+    "message": "Current Shortcut:",
+    "description": "Label"
+  },
+  "loadingShortcut": {
+    "message": "Loading...",
+    "description": "Loading text"
+  },
+  "noShortcutSet": {
+    "message": "No keyboard shortcut is currently set for this extension.",
+    "description": "Status message"
+  },
+  "unableToLoadShortcut": {
+    "message": "Unable to load current shortcut.",
+    "description": "Error message"
+  },
+  "close": {
+    "message": "Close",
+    "description": "Button title"
+  },
+  "minimize": {
+    "message": "Minimize",
+    "description": "Button title"
+  },
+  "maximize": {
+    "message": "Maximize",
+    "description": "Button title"
+  },
+  "copySummary": {
+    "message": "Copy summary to clipboard",
+    "description": "Button title"
+  },
+  "shareSummary": {
+    "message": "Share summary",
+    "description": "Button title"
+  },
+  "openSettings": {
+    "message": "Open settings",
+    "description": "Button title"
+  },
+  "summaryLanguage": {
+    "message": "Summary language: $LANGUAGE$",
+    "description": "Language indicator title",
+    "placeholders": {
+      "language": {
+        "content": "$1",
+        "example": "English"
+      }
+    }
+  },
+  "summaryLanguageDefault": {
+    "message": "Summary language: English (default)",
+    "description": "Default language indicator title"
+  },
+  "initializing": {
+    "message": "Initializing...",
+    "description": "Progress step"
+  },
+  "extractingContent": {
+    "message": "Extracting content",
+    "description": "Progress step"
+  },
+  "processingResponse": {
+    "message": "Processing response",
+    "description": "Progress step"
+  },
+  "tryingFallbackModels": {
+    "message": "Trying fallback models",
+    "description": "Progress step"
+  },
+  "tryingModel": {
+    "message": "Trying $MODEL$",
+    "description": "Progress step",
+    "placeholders": {
+      "model": {
+        "content": "$1",
+        "example": "GPT-3.5 Turbo"
+      }
+    }
+  },
+  "finalizingSummary": {
+    "message": "Finalizing summary",
+    "description": "Progress step"
+  },
+  "complete": {
+    "message": "Complete",
+    "description": "Progress step"
+  },
+  "usingModel": {
+    "message": "Using $MODEL$",
+    "description": "Progress details",
+    "placeholders": {
+      "model": {
+        "content": "$1",
+        "example": "Chrome Built-in AI"
+      }
+    }
+  },
+  "estimatedTimeRemaining": {
+    "message": "~$TIME$ remaining",
+    "description": "Time estimate",
+    "placeholders": {
+      "time": {
+        "content": "$1",
+        "example": "5s"
+      }
+    }
+  },
+  "lessThan1Second": {
+    "message": "< 1s",
+    "description": "Time estimate"
+  },
+  "success": {
+    "message": "(success)",
+    "description": "Status indicator"
+  },
+  "failed": {
+    "message": "(failed, trying alternatives)",
+    "description": "Status indicator"
+  },
+  "checkingTranslationModel": {
+    "message": "Checking translation model availability",
+    "description": "Progress step"
+  },
+  "translatingSummary": {
+    "message": "Translating summary",
+    "description": "Progress step"
+  },
+  "downloadingLanguageModel": {
+    "message": "Downloading language model",
+    "description": "Progress step"
+  },
+  "downloadingLanguageModelProgress": {
+    "message": "Downloading language model ($PERCENTAGE%)",
+    "description": "Progress step with percentage",
+    "placeholders": {
+      "percentage": {
+        "content": "$1",
+        "example": "50"
+      }
+    }
+  },
+  "unableToSummarize": {
+    "message": "Unable to summarize content. Please check your settings and try again.",
+    "description": "Error message"
+  },
+  "errorSummarizing": {
+    "message": "Error summarizing content. Please try again.",
+    "description": "Error message"
+  },
+  "noContentAvailable": {
+    "message": "No content available to summarize",
+    "description": "Error message"
+  },
+  "noApiKeyConfigured": {
+    "message": "No $PROVIDER$ API key configured",
+    "description": "Error message",
+    "placeholders": {
+      "provider": {
+        "content": "$1",
+        "example": "OpenAI"
+      }
+    }
+  },
+  "permissionDenied": {
+    "message": "Permission denied for $PROVIDER$ API access. Please save your settings again in the extension options to grant permissions.",
+    "description": "Error message",
+    "placeholders": {
+      "provider": {
+        "content": "$1",
+        "example": "OpenAI"
+      }
+    }
+  },
+  "apiRequestFailed": {
+    "message": "$PROVIDER$ API request failed: $STATUS$",
+    "description": "Error message",
+    "placeholders": {
+      "provider": {
+        "content": "$1",
+        "example": "OpenAI"
+      },
+      "status": {
+        "content": "$2",
+        "example": "429"
+      }
+    }
+  },
+  "invalidApiKey": {
+    "message": "Invalid API key",
+    "description": "Error message"
+  },
+  "networkError": {
+    "message": "Network error during validation",
+    "description": "Error message"
+  },
+  "unknownModel": {
+    "message": "Unknown model",
+    "description": "Error message"
+  },
+  "unknownProvider": {
+    "message": "Unknown provider",
+    "description": "Error message"
+  },
+  "chromeAiNotSupported": {
+    "message": "Chrome built-in AI not supported on this browser version",
+    "description": "Error message"
+  },
+  "chromeAiNotAvailable": {
+    "message": "Chrome built-in AI not available",
+    "description": "Error message"
+  },
+  "invalidResponseFormat": {
+    "message": "Invalid response format from $PROVIDER$ API",
+    "description": "Error message",
+    "placeholders": {
+      "provider": {
+        "content": "$1",
+        "example": "Gemini"
+      }
+    }
+  },
+  "languageNotSupported": {
+    "message": "Language '$LANGUAGE$' not supported by $PROVIDER$, falling back to English",
+    "description": "Warning message",
+    "placeholders": {
+      "language": {
+        "content": "$1",
+        "example": "Spanish"
+      },
+      "provider": {
+        "content": "$2",
+        "example": "Chrome"
+      }
+    }
+  },
+  "apiKeyRequired": {
+    "message": "API key required - configure in settings",
+    "description": "Tooltip text"
+  },
+  "cannotSaveModelUnavailable": {
+    "message": "Cannot save: Selected model requires a valid API key. Please configure the appropriate API key or choose a different model.",
+    "description": "Error message"
+  },
+  "permissionDeniedSave": {
+    "message": "Permission denied for one or more API providers. Please grant permissions to save settings.",
+    "description": "Error message"
+  },
+  "chromeAiRequirements": {
+    "message": "Chrome Built-in AI requires:\n• Chrome version 138 or higher\n• Summarizer API support\n\nSince this is not available, consider using alternative models like GPT-3.5 Turbo or Gemini.",
+    "description": "Alert message"
+  },
+  "aiUnavailable": {
+    "message": "AI Summarization Unavailable",
+    "description": "Error title"
+  },
+  "chromeAiRequirementsShort": {
+    "message": "Chrome Built-in AI requires Chrome 138+ and API support.",
+    "description": "Error message"
+  },
+  "noAlternativeModels": {
+    "message": "No alternative models are configured. Please configure API keys in settings.",
+    "description": "Error message"
+  },
+  "openSettings": {
+    "message": "Open Settings",
+    "description": "Button text"
+  },
+  "regenerating": {
+    "message": "Regenerating...",
+    "description": "Status message"
+  },
+  "english": {
+    "message": "English",
+    "description": "Language name"
+  },
+  "spanish": {
+    "message": "Spanish",
+    "description": "Language name"
+  },
+  "french": {
+    "message": "French",
+    "description": "Language name"
+  },
+  "german": {
+    "message": "German",
+    "description": "Language name"
+  },
+  "italian": {
+    "message": "Italian",
+    "description": "Language name"
+  },
+  "portuguese": {
+    "message": "Portuguese",
+    "description": "Language name"
+  },
+  "chinese": {
+    "message": "Chinese",
+    "description": "Language name"
+  },
+  "japanese": {
+    "message": "Japanese",
+    "description": "Language name"
+  },
+  "korean": {
+    "message": "Korean",
+    "description": "Language name"
+  },
+  "russian": {
+    "message": "Russian",
+    "description": "Language name"
+  },
+  "arabic": {
+    "message": "Arabic",
+    "description": "Language name"
+  },
+  "hindi": {
+    "message": "Hindi",
+    "description": "Language name"
+  },
+  "danish": {
+    "message": "Danish",
+    "description": "Language name"
+  },
+  "norwegian": {
+    "message": "Norwegian",
+    "description": "Language name"
+  },
+  "swedish": {
+    "message": "Swedish",
+    "description": "Language name"
+  },
+  "finnish": {
+    "message": "Finnish",
+    "description": "Language name"
+  },
+  "polish": {
+    "message": "Polish",
+    "description": "Language name"
+  },
+  "ukrainian": {
+    "message": "Ukrainian",
+    "description": "Language name"
+  },
+  "dutch": {
+    "message": "Dutch",
+    "description": "Language name"
+  },
+  "freeModels": {
+    "message": "Free Models",
+    "description": "Optgroup label"
+  },
+  "openaiModels": {
+    "message": "OpenAI Models",
+    "description": "Optgroup label"
+  },
+  "googleGeminiModels": {
+    "message": "Google Gemini Models",
+    "description": "Optgroup label"
+  },
+  "anthropicClaudeModels": {
+    "message": "Anthropic Claude Models",
+    "description": "Optgroup label"
+  },
+  "chromeAiFree": {
+    "message": "Chrome AI (Free)",
+    "description": "Model option"
+  },
+  "never": {
+    "message": "Never",
+    "description": "Last used value"
+  },
+  "seconds": {
+    "message": "s",
+    "description": "Time unit"
+  },
+  "attempts": {
+    "message": "attempts",
+    "description": "Attempts label"
+  },
+  "validating": {
+    "message": "Validating...",
+    "description": "Validation status"
+  },
+  "validApiKey": {
+    "message": "Valid API key",
+    "description": "Validation status"
+  },
+  "apiKeyRequiredError": {
+    "message": "API key is required",
+    "description": "Validation error"
+  },
+  "validationFailed": {
+    "message": "Validation failed",
+    "description": "Validation error"
+  },
+  "toggleSidebar": {
+    "message": "Toggle sidebar",
+    "description": "Button aria-label"
+  },
+  "toggleDarkMode": {
+    "message": "Toggle dark mode",
+    "description": "Button aria-label"
+  },
+  "modelSettingsAria": {
+    "message": "Model Settings",
+    "description": "Aria label"
+  },
+  "themeCustomizationAria": {
+    "message": "Theme Customization",
+    "description": "Aria label"
+  },
+  "performanceAnalyticsAria": {
+    "message": "Model Performance Analytics",
+    "description": "Aria label"
+  },
+  "summaryHistoryAria": {
+    "message": "Summary History",
+    "description": "Aria label"
+  },
+  "feedbackAria": {
+    "message": "Feedback",
+    "description": "Aria label"
+  },
+  "keyboardShortcutsAria": {
+    "message": "Keyboard Shortcuts",
+    "description": "Aria label"
+  },
+  "currentShortcutAria": {
+    "message": "Current keyboard shortcut",
+    "description": "Aria label"
+  },
+  "exportFormatAria": {
+    "message": "Export format",
+    "description": "Aria label"
+  },
+  "exportAria": {
+    "message": "Export history",
+    "description": "Aria label"
+  },
+  "refreshHistoryAria": {
+    "message": "Refresh history",
+    "description": "Aria label"
+  },
+  "clearHistoryAria": {
+    "message": "Clear history",
+    "description": "Aria label"
+  },
+  "openChromeShortcutsAria": {
+    "message": "Open Chrome shortcuts page",
+    "description": "Aria label"
+  },
+  "themeNote": {
+    "message": "Note: Customize the appearance of the summary popup. Changes are applied in real-time to the preview below.",
+    "description": "Theme page note"
+  }
+}

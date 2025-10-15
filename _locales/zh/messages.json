@@ -1,0 +1,924 @@
+{
+  "appName": {
+    "message": "AI 摘要",
+    "description": "Extension name"
+  },
+  "appDescription": {
+    "message": "🚀 一键 AI 网页摘要！支持 GPT-4、Gemini、Claude 和免费 Chrome AI。即刻、安全且可定制",
+    "description": "Extension description"
+  },
+  "summarizeCurrentPage": {
+    "message": "总结当前页面",
+    "description": "Keyboard shortcut description"
+  },
+  "aiSummary": {
+    "message": "AI 摘要",
+    "description": "Action title"
+  },
+  "chromeBuiltinAi": {
+    "message": "Chrome 内置 AI",
+    "description": "Model name"
+  },
+  "chromeBuiltinAiDescription": {
+    "message": "免费 Chrome AI，无需 API 密钥",
+    "description": "Model description"
+  },
+  "gpt35Turbo": {
+    "message": "GPT-3.5 Turbo",
+    "description": "Model name"
+  },
+  "gpt35TurboDescription": {
+    "message": "快速且经济实惠的 OpenAI 模型",
+    "description": "Model description"
+  },
+  "gpt4": {
+    "message": "GPT-4",
+    "description": "Model name"
+  },
+  "gpt4Description": {
+    "message": "具有高精度的先进 OpenAI 模型",
+    "description": "Model description"
+  },
+  "gpt4Turbo": {
+    "message": "GPT-4 Turbo",
+    "description": "Model name"
+  },
+  "gpt4TurboDescription": {
+    "message": "性能更佳的更快 GPT-4",
+    "description": "Model description"
+  },
+  "gpt4o": {
+    "message": "GPT-4o",
+    "description": "Model name"
+  },
+  "gpt4oDescription": {
+    "message": "针对速度和效率优化的 GPT-4",
+    "description": "Model description"
+  },
+  "gpt5": {
+    "message": "GPT-5",
+    "description": "Model name"
+  },
+  "gpt5Description": {
+    "message": "具有先进能力的最新 OpenAI 模型",
+    "description": "Model description"
+  },
+  "gpt5Mini": {
+    "message": "GPT-5 Mini",
+    "description": "Model name"
+  },
+  "gpt5MiniDescription": {
+    "message": "GPT-5 的紧凑版本",
+    "description": "Model description"
+  },
+  "gpt5Nano": {
+    "message": "GPT-5 Nano",
+    "description": "Model name"
+  },
+  "gpt5NanoDescription": {
+    "message": "适用于基本任务的轻量 GPT-5",
+    "description": "Model description"
+  },
+  "gemini25Pro": {
+    "message": "Gemini 2.5 Pro",
+    "description": "Model name"
+  },
+  "gemini25ProDescription": {
+    "message": "Google 的先进 Gemini 模型",
+    "description": "Model description"
+  },
+  "gemini25Flash": {
+    "message": "Gemini 2.5 Flash",
+    "description": "Model name"
+  },
+  "gemini25FlashDescription": {
+    "message": "快速响应的快速 Gemini 模型",
+    "description": "Model description"
+  },
+  "gemini20FlashExp": {
+    "message": "Gemini 2.0 Flash (实验)",
+    "description": "Model name"
+  },
+  "gemini20FlashExpDescription": {
+    "message": "实验性 Gemini Flash 模型",
+    "description": "Model description"
+  },
+  "claude3Haiku": {
+    "message": "Claude 3 Haiku",
+    "description": "Model name"
+  },
+  "claude3HaikuDescription": {
+    "message": "快速高效的 Anthropic 模型",
+    "description": "Model description"
+  },
+  "claude3Sonnet": {
+    "message": "Claude 3 Sonnet",
+    "description": "Model name"
+  },
+  "claude3SonnetDescription": {
+    "message": "平衡的 Anthropic 模型",
+    "description": "Model description"
+  },
+  "claude3Opus": {
+    "message": "Claude 3 Opus",
+    "description": "Model name"
+  },
+  "claude3OpusDescription": {
+    "message": "最强大的 Anthropic 模型",
+    "description": "Model description"
+  },
+  "claude35Sonnet": {
+    "message": "Claude 3.5 Sonnet",
+    "description": "Model name"
+  },
+  "claude35SonnetDescription": {
+    "message": "改进的 Claude 3 Sonnet",
+    "description": "Model description"
+  },
+  "claudeSonnet45": {
+    "message": "Claude Sonnet 4.5",
+    "description": "Model name"
+  },
+  "claudeSonnet45Description": {
+    "message": "最新的 Claude Sonnet 模型",
+    "description": "Model description"
+  },
+  "claudeHaiku45": {
+    "message": "Claude Haiku 4.5",
+    "description": "Model name"
+  },
+  "claudeHaiku45Description": {
+    "message": "最新的 Claude Haiku 模型",
+    "description": "Model description"
+  },
+  "modelSettings": {
+    "message": "模型设置",
+    "description": "Page title"
+  },
+  "theme": {
+    "message": "主题",
+    "description": "Page title"
+  },
+  "performance": {
+    "message": "性能",
+    "description": "Page title"
+  },
+  "history": {
+    "message": "历史记录",
+    "description": "Page title"
+  },
+  "feedback": {
+    "message": "反馈",
+    "description": "Page title"
+  },
+  "keyboardShortcuts": {
+    "message": "键盘快捷键",
+    "description": "Page title"
+  },
+  "aiModel": {
+    "message": "AI 模型：",
+    "description": "Form label"
+  },
+  "language": {
+    "message": "语言：",
+    "description": "Form label"
+  },
+  "temperature": {
+    "message": "温度：",
+    "description": "Form label"
+  },
+  "maxTokens": {
+    "message": "最大 Token 数：",
+    "description": "Form label"
+  },
+  "summaryLength": {
+    "message": "摘要长度：",
+    "description": "Form label"
+  },
+  "short": {
+    "message": "短",
+    "description": "Summary length option"
+  },
+  "medium": {
+    "message": "中",
+    "description": "Summary length option"
+  },
+  "long": {
+    "message": "长",
+    "description": "Summary length option"
+  },
+  "enableFallback": {
+    "message": "启用自动回退到其他模型（如果主要模型失败）",
+    "description": "Checkbox label"
+  },
+  "openaiApiKey": {
+    "message": "OpenAI API 密钥：",
+    "description": "Form label"
+  },
+  "openaiApiKeyHelp": {
+    "message": "可选 - 仅 OpenAI 模型需要",
+    "description": "Help text"
+  },
+  "geminiApiKey": {
+    "message": "Google Gemini API 密钥：",
+    "description": "Form label"
+  },
+  "geminiApiKeyHelp": {
+    "message": "可选 - 仅 Gemini 模型需要",
+    "description": "Help text"
+  },
+  "getFreeApiKey": {
+    "message": "获取免费 API 密钥",
+    "description": "Link text"
+  },
+  "anthropicApiKey": {
+    "message": "Anthropic API 密钥：",
+    "description": "Form label"
+  },
+  "anthropicApiKeyHelp": {
+    "message": "可选 - 仅 Claude 模型需要",
+    "description": "Help text"
+  },
+  "saveSettings": {
+    "message": "保存设置",
+    "description": "Button text"
+  },
+  "settingsSaved": {
+    "message": "设置保存成功！",
+    "description": "Success message"
+  },
+  "apiKeysSecure": {
+    "message": "您的 API 密钥是安全的",
+    "description": "Security notice title"
+  },
+  "apiKeysSecureDescription": {
+    "message": "所有密钥仅在您的设备上本地加密存储，绝不会发送到外部服务器、第三方或云服务。这确保了完全的隐私和防止数据泄露的保护。",
+    "description": "Security notice description"
+  },
+  "modelConfigInfo": {
+    "message": "模型配置信息",
+    "description": "Info box title"
+  },
+  "chromeBuiltinInfo": {
+    "message": "Chrome 内置 AI：需要 Chrome 138+ 和摘要 API 支持。免费但可用性有限。",
+    "description": "Info text"
+  },
+  "apiModelsInfo": {
+    "message": "基于 API 的模型：需要相应提供商的有效 API 密钥。请查看提供商网站了解价格和限制。",
+    "description": "Info text"
+  },
+  "fallbackInfo": {
+    "message": "回退：启用后，如果主要模型失败，扩展将自动尝试替代模型。",
+    "description": "Info text"
+  },
+  "themeSettings": {
+    "message": "主题：",
+    "description": "Form label"
+  },
+  "fontFamily": {
+    "message": "字体系列：",
+    "description": "Form label"
+  },
+  "fontSize": {
+    "message": "字体大小 (8-24px)：",
+    "description": "Form label"
+  },
+  "fontStyle": {
+    "message": "字体样式：",
+    "description": "Form label"
+  },
+  "normal": {
+    "message": "正常",
+    "description": "Font style option"
+  },
+  "italic": {
+    "message": "斜体",
+    "description": "Font style option"
+  },
+  "bold": {
+    "message": "粗体",
+    "description": "Font style option"
+  },
+  "saveThemeSettings": {
+    "message": "保存主题设置",
+    "description": "Button text"
+  },
+  "themeSaved": {
+    "message": "主题设置保存成功！",
+    "description": "Success message"
+  },
+  "preview": {
+    "message": "预览",
+    "description": "Section title"
+  },
+  "previewText": {
+    "message": "这是一个示例摘要文本，用于演示主题和字体设置在实际摘要弹出窗口中的显示方式。当您更改上面的主题、字体系列、大小和样式选项时，文本将实时更新。",
+    "description": "Preview text"
+  },
+  "refreshMetrics": {
+    "message": "刷新模型指标",
+    "description": "Button text"
+  },
+  "noMetrics": {
+    "message": "目前还没有性能数据可用。使用扩展生成摘要，指标将显示在此处。",
+    "description": "Empty state message"
+  },
+  "totalRequests": {
+    "message": "总请求数",
+    "description": "Metric label"
+  },
+  "successRate": {
+    "message": "成功率",
+    "description": "Metric label"
+  },
+  "avgResponseTime": {
+    "message": "平均响应时间",
+    "description": "Metric label"
+  },
+  "lastUsed": {
+    "message": "最后使用",
+    "description": "Metric label"
+  },
+  "searchSummaries": {
+    "message": "搜索摘要...",
+    "description": "Search placeholder"
+  },
+  "allModels": {
+    "message": "所有模型",
+    "description": "Filter option"
+  },
+  "exportFormat": {
+    "message": "导出格式",
+    "description": "Select label"
+  },
+  "export": {
+    "message": "导出",
+    "description": "Button text"
+  },
+  "refreshHistory": {
+    "message": "刷新历史记录",
+    "description": "Button text"
+  },
+  "clearHistory": {
+    "message": "清除历史记录",
+    "description": "Button text"
+  },
+  "loadingHistory": {
+    "message": "正在加载历史记录...",
+    "description": "Loading message"
+  },
+  "noHistory": {
+    "message": "目前还没有摘要历史记录可用。",
+    "description": "Empty state message"
+  },
+  "noMatchingHistory": {
+    "message": "未找到匹配的历史记录项目。",
+    "description": "Empty state message"
+  },
+  "copy": {
+    "message": "复制",
+    "description": "Button text"
+  },
+  "share": {
+    "message": "分享",
+    "description": "Button text"
+  },
+  "summaryCopied": {
+    "message": "摘要已复制到剪贴板！",
+    "description": "Success message"
+  },
+  "exportedSuccessfully": {
+    "message": "历史记录已成功导出为 $FORMAT$。",
+    "description": "Success message",
+    "placeholders": {
+      "format": {
+        "content": "$1",
+        "example": "CSV"
+      }
+    }
+  },
+  "noHistoryToExport": {
+    "message": "没有历史记录可导出。",
+    "description": "Error message"
+  },
+  "noMatchingHistoryToExport": {
+    "message": "没有匹配的历史记录项目可导出。",
+    "description": "Error message"
+  },
+  "exportFailed": {
+    "message": "导出失败。请重试。",
+    "description": "Error message"
+  },
+  "historyCleared": {
+    "message": "历史记录清除成功！",
+    "description": "Success message"
+  },
+  "confirmClearHistory": {
+    "message": "您确定要清除所有摘要历史记录吗？此操作无法撤销。",
+    "description": "Confirmation message"
+  },
+  "feedbackTitle": {
+    "message": "反馈",
+    "description": "Page title"
+  },
+  "feedbackDescription": {
+    "message": "我们重视您的反馈！通过分享您的想法、建议或报告问题，帮助我们改进 AI 摘要扩展。",
+    "description": "Feedback description"
+  },
+  "feedbackTypeform": {
+    "message": "您的反馈通过安全的 Typeform 提交。点击下面的按钮访问反馈表单。",
+    "description": "Typeform description"
+  },
+  "submitFeedback": {
+    "message": "通过 Typeform 提交反馈",
+    "description": "Button text"
+  },
+  "feedbackPrivacy": {
+    "message": "隐私声明：您的反馈以匿名方式收集，仅用于改进我们的扩展。",
+    "description": "Privacy note"
+  },
+  "shortcutsDescription": {
+    "message": "此扩展的键盘快捷键由 Chrome 管理。要设置或更改快捷键：",
+    "description": "Shortcuts description"
+  },
+  "shortcutsStep1": {
+    "message": "点击下面的按钮打开 Chrome 扩展快捷键页面",
+    "description": "Step 1"
+  },
+  "shortcutsStep2": {
+    "message": "在列表中查找 \"AI 摘要\"",
+    "description": "Step 2"
+  },
+  "shortcutsStep3": {
+    "message": "点击快捷键字段并按下所需的按键组合",
+    "description": "Step 3"
+  },
+  "shortcutsStep4": {
+    "message": "快捷键将自动保存",
+    "description": "Step 4"
+  },
+  "shortcutsNote": {
+    "message": "注意：Chrome 只允许某些按键组合，以避免与浏览器快捷键冲突。",
+    "description": "Note"
+  },
+  "openChromeShortcuts": {
+    "message": "打开 Chrome 快捷键",
+    "description": "Button text"
+  },
+  "currentShortcut": {
+    "message": "当前快捷键：",
+    "description": "Label"
+  },
+  "loadingShortcut": {
+    "message": "正在加载...",
+    "description": "Loading text"
+  },
+  "noShortcutSet": {
+    "message": "此扩展当前未设置键盘快捷键。",
+    "description": "Status message"
+  },
+  "unableToLoadShortcut": {
+    "message": "无法加载当前快捷键。",
+    "description": "Error message"
+  },
+  "close": {
+    "message": "关闭",
+    "description": "Button title"
+  },
+  "minimize": {
+    "message": "最小化",
+    "description": "Button title"
+  },
+  "maximize": {
+    "message": "最大化",
+    "description": "Button title"
+  },
+  "copySummary": {
+    "message": "将摘要复制到剪贴板",
+    "description": "Button title"
+  },
+  "shareSummary": {
+    "message": "分享摘要",
+    "description": "Button title"
+  },
+  "openSettings": {
+    "message": "打开设置",
+    "description": "Button title"
+  },
+  "summaryLanguage": {
+    "message": "摘要语言：$LANGUAGE$",
+    "description": "Language indicator title",
+    "placeholders": {
+      "language": {
+        "content": "$1",
+        "example": "中文"
+      }
+    }
+  },
+  "summaryLanguageDefault": {
+    "message": "摘要语言：英语（默认）",
+    "description": "Default language indicator title"
+  },
+  "initializing": {
+    "message": "正在初始化...",
+    "description": "Progress step"
+  },
+  "extractingContent": {
+    "message": "正在提取内容",
+    "description": "Progress step"
+  },
+  "processingResponse": {
+    "message": "正在处理响应",
+    "description": "Progress step"
+  },
+  "tryingFallbackModels": {
+    "message": "正在尝试回退模型",
+    "description": "Progress step"
+  },
+  "tryingModel": {
+    "message": "正在尝试 $MODEL$",
+    "description": "Progress step",
+    "placeholders": {
+      "model": {
+        "content": "$1",
+        "example": "GPT-3.5 Turbo"
+      }
+    }
+  },
+  "finalizingSummary": {
+    "message": "正在完成摘要",
+    "description": "Progress step"
+  },
+  "complete": {
+    "message": "完成",
+    "description": "Progress step"
+  },
+  "usingModel": {
+    "message": "正在使用 $MODEL$",
+    "description": "Progress details",
+    "placeholders": {
+      "model": {
+        "content": "$1",
+        "example": "Chrome 内置 AI"
+      }
+    }
+  },
+  "estimatedTimeRemaining": {
+    "message": "剩余约 $TIME$",
+    "description": "Time estimate",
+    "placeholders": {
+      "time": {
+        "content": "$1",
+        "example": "5s"
+      }
+    }
+  },
+  "lessThan1Second": {
+    "message": "< 1s",
+    "description": "Time estimate"
+  },
+  "success": {
+    "message": "（成功）",
+    "description": "Status indicator"
+  },
+  "failed": {
+    "message": "（失败，正在尝试替代方案）",
+    "description": "Status indicator"
+  },
+  "checkingTranslationModel": {
+    "message": "正在检查翻译模型可用性",
+    "description": "Progress step"
+  },
+  "translatingSummary": {
+    "message": "正在翻译摘要",
+    "description": "Progress step"
+  },
+  "downloadingLanguageModel": {
+    "message": "正在下载语言模型",
+    "description": "Progress step"
+  },
+  "downloadingLanguageModelProgress": {
+    "message": "正在下载语言模型 ($PERCENTAGE%)",
+    "description": "Progress step with percentage",
+    "placeholders": {
+      "percentage": {
+        "content": "$1",
+        "example": "50"
+      }
+    }
+  },
+  "unableToSummarize": {
+    "message": "无法总结内容。请检查您的设置并重试。",
+    "description": "Error message"
+  },
+  "errorSummarizing": {
+    "message": "总结内容时出错。请重试。",
+    "description": "Error message"
+  },
+  "noContentAvailable": {
+    "message": "没有可总结的内容",
+    "description": "Error message"
+  },
+  "noApiKeyConfigured": {
+    "message": "未配置 $PROVIDER$ API 密钥",
+    "description": "Error message",
+    "placeholders": {
+      "provider": {
+        "content": "$1",
+        "example": "OpenAI"
+      }
+    }
+  },
+  "permissionDenied": {
+    "message": "拒绝访问 $PROVIDER$ API。请在扩展选项中重新保存您的设置以授予权限。",
+    "description": "Error message",
+    "placeholders": {
+      "provider": {
+        "content": "$1",
+        "example": "OpenAI"
+      }
+    }
+  },
+  "apiRequestFailed": {
+    "message": "$PROVIDER$ API 请求失败：$STATUS$",
+    "description": "Error message",
+    "placeholders": {
+      "provider": {
+        "content": "$1",
+        "example": "OpenAI"
+      },
+      "status": {
+        "content": "$2",
+        "example": "429"
+      }
+    }
+  },
+  "invalidApiKey": {
+    "message": "无效的 API 密钥",
+    "description": "Error message"
+  },
+  "networkError": {
+    "message": "验证时的网络错误",
+    "description": "Error message"
+  },
+  "unknownModel": {
+    "message": "未知模型",
+    "description": "Error message"
+  },
+  "unknownProvider": {
+    "message": "未知提供商",
+    "description": "Error message"
+  },
+  "chromeAiNotSupported": {
+    "message": "此浏览器版本不支持 Chrome 内置 AI",
+    "description": "Error message"
+  },
+  "chromeAiNotAvailable": {
+    "message": "Chrome 内置 AI 不可用",
+    "description": "Error message"
+  },
+  "invalidResponseFormat": {
+    "message": "$PROVIDER$ API 的无效响应格式",
+    "description": "Error message",
+    "placeholders": {
+      "provider": {
+        "content": "$1",
+        "example": "Gemini"
+      }
+    }
+  },
+  "languageNotSupported": {
+    "message": "$PROVIDER$ 不支持语言 '$LANGUAGE$'，回退到英语",
+    "description": "Warning message",
+    "placeholders": {
+      "language": {
+        "content": "$1",
+        "example": "中文"
+      },
+      "provider": {
+        "content": "$2",
+        "example": "Chrome"
+      }
+    }
+  },
+  "apiKeyRequired": {
+    "message": "需要 API 密钥 - 在设置中配置",
+    "description": "Tooltip text"
+  },
+  "cannotSaveModelUnavailable": {
+    "message": "无法保存：所选模型需要有效的 API 密钥。请配置相应的 API 密钥或选择其他模型。",
+    "description": "Error message"
+  },
+  "permissionDeniedSave": {
+    "message": "拒绝访问一个或多个 API 提供商。请授予权限以保存设置。",
+    "description": "Error message"
+  },
+  "chromeAiRequirements": {
+    "message": "Chrome 内置 AI 需要：\n• Chrome 版本 138 或更高\n• 摘要 API 支持\n\n由于此功能不可用，请考虑使用替代模型，如 GPT-3.5 Turbo 或 Gemini。",
+    "description": "Alert message"
+  },
+  "aiUnavailable": {
+    "message": "AI 摘要不可用",
+    "description": "Error title"
+  },
+  "chromeAiRequirementsShort": {
+    "message": "Chrome 内置 AI 需要 Chrome 138+ 和 API 支持。",
+    "description": "Error message"
+  },
+  "noAlternativeModels": {
+    "message": "未配置替代模型。请在设置中配置 API 密钥。",
+    "description": "Error message"
+  },
+  "openSettings": {
+    "message": "打开设置",
+    "description": "Button text"
+  },
+  "regenerating": {
+    "message": "正在重新生成...",
+    "description": "Status message"
+  },
+  "english": {
+    "message": "英语",
+    "description": "Language name"
+  },
+  "spanish": {
+    "message": "西班牙语",
+    "description": "Language name"
+  },
+  "french": {
+    "message": "法语",
+    "description": "Language name"
+  },
+  "german": {
+    "message": "德语",
+    "description": "Language name"
+  },
+  "italian": {
+    "message": "意大利语",
+    "description": "Language name"
+  },
+  "portuguese": {
+    "message": "葡萄牙语",
+    "description": "Language name"
+  },
+  "chinese": {
+    "message": "中文",
+    "description": "Language name"
+  },
+  "japanese": {
+    "message": "日语",
+    "description": "Language name"
+  },
+  "korean": {
+    "message": "韩语",
+    "description": "Language name"
+  },
+  "russian": {
+    "message": "俄语",
+    "description": "Language name"
+  },
+  "arabic": {
+    "message": "阿拉伯语",
+    "description": "Language name"
+  },
+  "hindi": {
+    "message": "印地语",
+    "description": "Language name"
+  },
+  "danish": {
+    "message": "丹麦语",
+    "description": "Language name"
+  },
+  "norwegian": {
+    "message": "挪威语",
+    "description": "Language name"
+  },
+  "swedish": {
+    "message": "瑞典语",
+    "description": "Language name"
+  },
+  "finnish": {
+    "message": "芬兰语",
+    "description": "Language name"
+  },
+  "polish": {
+    "message": "波兰语",
+    "description": "Language name"
+  },
+  "ukrainian": {
+    "message": "乌克兰语",
+    "description": "Language name"
+  },
+  "dutch": {
+    "message": "荷兰语",
+    "description": "Language name"
+  },
+  "freeModels": {
+    "message": "免费模型",
+    "description": "Optgroup label"
+  },
+  "openaiModels": {
+    "message": "OpenAI 模型",
+    "description": "Optgroup label"
+  },
+  "googleGeminiModels": {
+    "message": "Google Gemini 模型",
+    "description": "Optgroup label"
+  },
+  "anthropicClaudeModels": {
+    "message": "Anthropic Claude 模型",
+    "description": "Optgroup label"
+  },
+  "chromeAiFree": {
+    "message": "Chrome AI（免费）",
+    "description": "Model option"
+  },
+  "never": {
+    "message": "从未",
+    "description": "Last used value"
+  },
+  "seconds": {
+    "message": "秒",
+    "description": "Time unit"
+  },
+  "attempts": {
+    "message": "尝试",
+    "description": "Attempts label"
+  },
+  "validating": {
+    "message": "正在验证...",
+    "description": "Validation status"
+  },
+  "validApiKey": {
+    "message": "有效的 API 密钥",
+    "description": "Validation status"
+  },
+  "apiKeyRequiredError": {
+    "message": "需要 API 密钥",
+    "description": "Validation error"
+  },
+  "validationFailed": {
+    "message": "验证失败",
+    "description": "Validation error"
+  },
+  "toggleSidebar": {
+    "message": "切换侧边栏",
+    "description": "Button aria-label"
+  },
+  "toggleDarkMode": {
+    "message": "切换暗模式",
+    "description": "Button aria-label"
+  },
+  "modelSettingsAria": {
+    "message": "模型设置",
+    "description": "Aria label"
+  },
+  "themeCustomizationAria": {
+    "message": "主题自定义",
+    "description": "Aria label"
+  },
+  "performanceAnalyticsAria": {
+    "message": "模型性能分析",
+    "description": "Aria label"
+  },
+  "summaryHistoryAria": {
+    "message": "摘要历史记录",
+    "description": "Aria label"
+  },
+  "feedbackAria": {
+    "message": "反馈",
+    "description": "Aria label"
+  },
+  "keyboardShortcutsAria": {
+    "message": "键盘快捷键",
+    "description": "Aria label"
+  },
+  "currentShortcutAria": {
+    "message": "当前键盘快捷键",
+    "description": "Aria label"
+  },
+  "exportFormatAria": {
+    "message": "导出格式",
+    "description": "Aria label"
+  },
+  "exportAria": {
+    "message": "导出历史记录",
+    "description": "Aria label"
+  },
+  "refreshHistoryAria": {
+    "message": "刷新历史记录",
+    "description": "Aria label"
+  },
+  "clearHistoryAria": {
+    "message": "清除历史记录",
+    "description": "Aria label"
+  },
+  "openChromeShortcutsAria": {
+    "message": "打开 Chrome 快捷键页面",
+    "description": "Aria label"
+  },
+  "themeNote": {
+    "message": "注意：自定义摘要弹出窗口的外观。更改将实时应用到下面的预览。",
+    "description": "Theme page note"
+  }
+}

@@ -37,7 +37,12 @@ interface ValidationStatus {
 }
 
 // Browser compatibility functions imported from utils
-import { checkChromeBuiltinSupport } from './utils.js';
+import {
+  checkChromeBuiltinSupport,
+  getUserLanguage,
+  initializeI18n,
+  setUserLanguage,
+} from './utils.js';
 
 // Inline utility functions to avoid ES6 import issues
 async function validateApiKey(
@@ -363,6 +368,9 @@ function optionsGetModelConfig(model: string): ModelConfig | undefined {
   return models[model];
 }
 
+// Initialize i18n on page load with language detection and UI updates
+initializeI18n();
+
 document.addEventListener('DOMContentLoaded', function () {
   // Theme toggle functionality
   const themeToggle = document.getElementById(
@@ -411,11 +419,11 @@ document.addEventListener('DOMContentLoaded', function () {
   ) as HTMLButtonElement;
 
   // Settings elements
-  const selectedModelSelect = document.getElementById(
-    'selectedModel'
-  ) as HTMLSelectElement;
   const languageSelect = document.getElementById(
     'language'
+  ) as HTMLSelectElement;
+  const selectedModelSelect = document.getElementById(
+    'selectedModel'
   ) as HTMLSelectElement;
   const temperatureInput = document.getElementById(
     'temperature'
@@ -621,14 +629,18 @@ document.addEventListener('DOMContentLoaded', function () {
       'geminiApiKey',
       'anthropicApiKey',
     ],
-    function (result) {
+    async function (result) {
       if (result.selectedModel) {
         selectedModelSelect.value = result.selectedModel;
       } else {
         // Set default to chrome-builtin if no model selected
         selectedModelSelect.value = 'chrome-builtin';
       }
-      if (result.language) {
+      // Load saved language preference
+      const savedLanguage = await getUserLanguage();
+      if (savedLanguage) {
+        languageSelect.value = savedLanguage;
+      } else if (result.language) {
         languageSelect.value = result.language;
       } else {
         languageSelect.value = 'en';
@@ -759,6 +771,10 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
+    // Save language preference using the utility function
+    setUserLanguage(languageSelect.value).catch((error) => {
+      console.error('Failed to save language preference:', error);
+    });
     chrome.storage.sync.set(
       {
         selectedModel: selectedModel,

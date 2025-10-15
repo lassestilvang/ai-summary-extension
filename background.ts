@@ -7,6 +7,8 @@ import {
   AnthropicResponse,
   checkChromeBuiltinSupport,
   validateLanguageSupport,
+  getMessage,
+  initializeLanguagePreference,
 } from './utils';
 
 interface SummaryState {
@@ -74,11 +76,15 @@ if (
   chrome.runtime.onInstalled.addListener(async () => {
     // Perform initial compatibility check
     await checkChromeBuiltinSupport();
+    // Initialize language preference detection and storage
+    await initializeLanguagePreference();
   });
 
   chrome.runtime.onStartup.addListener(async () => {
     // Perform initial compatibility check
     await checkChromeBuiltinSupport();
+    // Initialize language preference detection and storage
+    await initializeLanguagePreference();
   });
 }
 
@@ -216,7 +222,7 @@ export async function summarizeWithAI(
   // Step 1: Content extraction (10%)
   if (progressCallback) {
     progressCallback({
-      step: 'Extracting content',
+      step: getMessage('extractingContent'),
       percentage: 10,
       estimatedTimeRemaining: estimatedTotalTime * 0.9,
       currentModel: preferredModel,
@@ -247,7 +253,9 @@ export async function summarizeWithAI(
   // Step 2: Primary model attempt (20-70%)
   if (progressCallback) {
     progressCallback({
-      step: result.success ? 'Processing response' : 'Trying fallback models',
+      step: result.success
+        ? getMessage('processingResponse')
+        : getMessage('tryingFallbackModels'),
       percentage: result.success ? 70 : 20,
       estimatedTimeRemaining: result.success
         ? estimatedTotalTime * 0.3
@@ -268,7 +276,9 @@ export async function summarizeWithAI(
 
       if (progressCallback) {
         progressCallback({
-          step: `Trying ${getModelConfig(model)!.name}`,
+          step: getMessage('tryingModel', {
+            parameters: { model: getModelConfig(model)!.name },
+          }),
           percentage: fallbackProgress + i * 15,
           estimatedTimeRemaining: estimatedTotalTime * (0.8 - i * 0.1),
           currentModel: model,
@@ -298,7 +308,7 @@ export async function summarizeWithAI(
         usedModel = model;
         if (progressCallback) {
           progressCallback({
-            step: 'Processing response',
+            step: getMessage('processingResponse'),
             percentage: 90,
             estimatedTimeRemaining: estimatedTotalTime * 0.1,
             currentModel: model,
@@ -315,7 +325,7 @@ export async function summarizeWithAI(
   // Step 3: Final processing (90-100%)
   if (progressCallback) {
     progressCallback({
-      step: 'Finalizing summary',
+      step: getMessage('finalizingSummary'),
       percentage: 95,
       estimatedTimeRemaining: 0.5,
       currentModel: usedModel,
@@ -332,7 +342,7 @@ export async function summarizeWithAI(
 
   if (progressCallback) {
     progressCallback({
-      step: 'Complete',
+      step: getMessage('complete'),
       percentage: 100,
       estimatedTimeRemaining: 0,
       currentModel: usedModel,
@@ -349,8 +359,7 @@ export async function summarizeWithAI(
     };
   } else {
     return {
-      summary:
-        'Unable to summarize content. Please check your settings and try again.',
+      summary: getMessage('unableToSummarize'),
       model: 'N/A',
       time: timeTaken,
       metrics,
@@ -382,7 +391,12 @@ export async function tryModel(
   // If fallback occurred, notify the user
   if (needsFallback) {
     console.log(
-      `Language '${language}' not supported by ${modelConfig.provider}, falling back to English`
+      getMessage('languageNotSupported', {
+        parameters: {
+          language: language,
+          provider: modelConfig.provider,
+        },
+      })
     );
   }
 
@@ -394,7 +408,7 @@ export async function tryModel(
       if (!isSupported) {
         return {
           success: false,
-          error: 'Chrome built-in AI not supported on this browser version',
+          error: getMessage('chromeAiNotSupported'),
         };
       }
       result = await tryChromeBuiltinAI(content, length, progressCallback);
@@ -436,7 +450,7 @@ export async function tryModel(
         length
       );
     default:
-      return { success: false, error: 'Unknown provider' };
+      return { success: false, error: getMessage('unknownProvider') };
   }
 }
 
@@ -561,7 +575,7 @@ async function translateSummary(
     if ('Translator' in globalThis) {
       if (progressCallback) {
         progressCallback({
-          step: 'Checking translation model availability',
+          step: getMessage('checkingTranslationModel'),
           percentage: 60,
           estimatedTimeRemaining: 1,
           currentModel: 'chrome-builtin',
@@ -578,7 +592,7 @@ async function translateSummary(
       if (translatorAvailability === 'available') {
         if (progressCallback) {
           progressCallback({
-            step: 'Translating summary',
+            step: getMessage('translatingSummary'),
             percentage: 80,
             estimatedTimeRemaining: 0.5,
             currentModel: 'chrome-builtin',
@@ -596,7 +610,7 @@ async function translateSummary(
         // Language model needs to be downloaded
         if (progressCallback) {
           progressCallback({
-            step: 'Downloading language model',
+            step: getMessage('downloadingLanguageModel'),
             percentage: 60,
             estimatedTimeRemaining: 5,
             currentModel: 'chrome-builtin',
@@ -611,7 +625,11 @@ async function translateSummary(
               if (progressCallback && e.loaded && e.total) {
                 const downloadProgress = (e.loaded / e.total) * 100;
                 progressCallback({
-                  step: `Downloading language model (${Math.round(downloadProgress)}%)`,
+                  step: getMessage('downloadingLanguageModelProgress', {
+                    parameters: {
+                      percentage: Math.round(downloadProgress).toString(),
+                    },
+                  }),
                   percentage: 60 + downloadProgress * 0.3,
                   estimatedTimeRemaining:
                     (e.total - e.loaded) /
@@ -626,7 +644,7 @@ async function translateSummary(
 
         if (progressCallback) {
           progressCallback({
-            step: 'Translating summary',
+            step: getMessage('translatingSummary'),
             percentage: 90,
             estimatedTimeRemaining: 0.5,
             currentModel: 'chrome-builtin',
@@ -658,7 +676,7 @@ async function tryChromeBuiltinAI(
       // Generate summary in English first
       if (progressCallback) {
         progressCallback({
-          step: 'Creating summarizer',
+          step: getMessage('initializing'),
           percentage: 20,
           estimatedTimeRemaining: 2,
           currentModel: 'chrome-builtin',
@@ -673,7 +691,7 @@ async function tryChromeBuiltinAI(
 
       if (progressCallback) {
         progressCallback({
-          step: 'Summarizing content',
+          step: getMessage('extractingContent'),
           percentage: 50,
           estimatedTimeRemaining: 1.5,
           currentModel: 'chrome-builtin',
@@ -687,7 +705,7 @@ async function tryChromeBuiltinAI(
 
       return { success: true, summary: htmlSummary };
     } else {
-      return { success: false, error: 'Chrome built-in AI not available' };
+      return { success: false, error: getMessage('chromeAiNotAvailable') };
     }
   } catch (error) {
     return { success: false, error: (error as Error).message };
@@ -703,7 +721,12 @@ async function tryOpenAI(
 ): Promise<TryModelResult> {
   try {
     if (!apiKey) {
-      return { success: false, error: 'No OpenAI API key configured' };
+      return {
+        success: false,
+        error: getMessage('noApiKeyConfigured', {
+          parameters: { provider: 'OpenAI' },
+        }),
+      };
     }
 
     const hasPermission = await chrome.permissions.contains({
@@ -712,8 +735,9 @@ async function tryOpenAI(
     if (!hasPermission) {
       return {
         success: false,
-        error:
-          'Permission denied for OpenAI API access. Please save your settings again in the extension options to grant permissions.',
+        error: getMessage('permissionDenied', {
+          parameters: { provider: 'OpenAI' },
+        }),
       };
     }
     const config =
@@ -754,7 +778,14 @@ ${content.substring(0, 12000)}`,
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API request failed: ${response.status}`);
+      throw new Error(
+        getMessage('apiRequestFailed', {
+          parameters: {
+            provider: 'OpenAI',
+            status: response.status.toString(),
+          },
+        })
+      );
     }
 
     const data: OpenAIResponse = await response.json();
@@ -774,7 +805,12 @@ async function tryGeminiAPI(
 ): Promise<TryModelResult> {
   try {
     if (!apiKey) {
-      return { success: false, error: 'No Gemini API key configured' };
+      return {
+        success: false,
+        error: getMessage('noApiKeyConfigured', {
+          parameters: { provider: 'Gemini' },
+        }),
+      };
     }
 
     const hasPermission = await chrome.permissions.contains({
@@ -783,8 +819,9 @@ async function tryGeminiAPI(
     if (!hasPermission) {
       return {
         success: false,
-        error:
-          'Permission denied for Gemini API access. Please save your settings again in the extension options to grant permissions.',
+        error: getMessage('permissionDenied', {
+          parameters: { provider: 'Gemini' },
+        }),
       };
     }
     const config =
@@ -832,7 +869,14 @@ ${content.substring(0, 12000)}`,
     );
 
     if (!response.ok) {
-      throw new Error(`Gemini API request failed: ${response.status}`);
+      throw new Error(
+        getMessage('apiRequestFailed', {
+          parameters: {
+            provider: 'Gemini',
+            status: response.status.toString(),
+          },
+        })
+      );
     }
 
     const data: GeminiResponse = await response.json();
@@ -842,7 +886,11 @@ ${content.substring(0, 12000)}`,
         summary: data.candidates[0].content.parts[0].text.trim(),
       };
     } else {
-      throw new Error('Invalid response format from Gemini API');
+      throw new Error(
+        getMessage('invalidResponseFormat', {
+          parameters: { provider: 'Gemini' },
+        })
+      );
     }
   } catch (error) {
     console.error('Gemini API error:', error);
@@ -859,7 +907,12 @@ async function tryAnthropicAPI(
 ): Promise<TryModelResult> {
   try {
     if (!apiKey) {
-      return { success: false, error: 'No Anthropic API key configured' };
+      return {
+        success: false,
+        error: getMessage('noApiKeyConfigured', {
+          parameters: { provider: 'Anthropic' },
+        }),
+      };
     }
 
     const hasPermission = await chrome.permissions.contains({
@@ -868,8 +921,9 @@ async function tryAnthropicAPI(
     if (!hasPermission) {
       return {
         success: false,
-        error:
-          'Permission denied for Anthropic API access. Please save your settings again in the extension options to grant permissions.',
+        error: getMessage('permissionDenied', {
+          parameters: { provider: 'Anthropic' },
+        }),
       };
     }
     const config =
@@ -910,14 +964,25 @@ ${content.substring(0, 12000)}`,
     });
 
     if (!response.ok) {
-      throw new Error(`Anthropic API request failed: ${response.status}`);
+      throw new Error(
+        getMessage('apiRequestFailed', {
+          parameters: {
+            provider: 'Anthropic',
+            status: response.status.toString(),
+          },
+        })
+      );
     }
 
     const data: AnthropicResponse = await response.json();
     if (data.content && data.content[0] && data.content[0].text) {
       return { success: true, summary: data.content[0].text.trim() };
     } else {
-      throw new Error('Invalid response format from Anthropic API');
+      throw new Error(
+        getMessage('invalidResponseFormat', {
+          parameters: { provider: 'Anthropic' },
+        })
+      );
     }
   } catch (error) {
     console.error('Anthropic API error:', error);
@@ -990,7 +1055,7 @@ chrome.runtime.onMessage.addListener(function (
       })
       .catch((error) => {
         console.error('Error summarizing:', error);
-        const errorMessage = 'Error summarizing content. Please try again.';
+        const errorMessage = getMessage('errorSummarizing');
         summaryState[tabId] = {
           summary: errorMessage,
           visible: true,
