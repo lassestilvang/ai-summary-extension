@@ -287,6 +287,24 @@ function optionsGetModelConfig(model: string): ModelConfig | undefined {
       name: 'GPT-4o',
       cost: 0.005,
     },
+    'gpt-5': {
+      provider: 'openai',
+      modelId: 'gpt-5',
+      name: 'GPT-5',
+      cost: 0.00125,
+    },
+    'gpt-5-mini': {
+      provider: 'openai',
+      modelId: 'gpt-5-mini',
+      name: 'GPT-5 Mini',
+      cost: 0.00025,
+    },
+    'gpt-5-nano': {
+      provider: 'openai',
+      modelId: 'gpt-5-nano',
+      name: 'GPT-5 Nano',
+      cost: 0.00005,
+    },
     'gemini-2.5-pro': {
       provider: 'gemini',
       modelId: 'gemini-2.5-pro',
@@ -328,6 +346,18 @@ function optionsGetModelConfig(model: string): ModelConfig | undefined {
       modelId: 'claude-3-5-sonnet-20240620',
       name: 'Claude 3.5 Sonnet',
       cost: 0.003,
+    },
+    'claude-4-5-sonnet': {
+      provider: 'anthropic',
+      modelId: 'claude-4-5-sonnet',
+      name: 'Sonnet 4.5',
+      cost: 0.003,
+    },
+    'claude-4-5-haiku': {
+      provider: 'anthropic',
+      modelId: 'claude-4-5-haiku',
+      name: 'Haiku 4.5',
+      cost: 0.001,
     },
   };
   return models[model];

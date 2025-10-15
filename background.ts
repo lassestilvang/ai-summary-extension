@@ -712,7 +712,7 @@ async function tryOpenAI(
           {
             role: 'user',
             content: `IMPORTANT: Provide ONLY a <ul> list with 5 <li> items and no introduction, titles, or extra text. Format like this:
- 
+
 <ul>
 <li>[First bullet content]</li>
 <li>[Second bullet content]</li>
@@ -720,9 +720,9 @@ async function tryOpenAI(
 <li>[Fourth bullet content]</li>
 <li>[Fifth bullet content]</li>
 </ul>
- 
+
 Provide the summary in the following language: ${language}
- 
+
 Content to summarize:
 ${content.substring(0, 12000)}`,
           },
@@ -778,9 +778,9 @@ async function tryGeminiAPI(
               parts: [
                 {
                   text: `Provide the summary in the following language: ${language}
- 
+
 IMPORTANT: Provide ONLY a <ul> list with 5 <li> items and no introduction, titles, or extra text. Format like this:
- 
+
 <ul>
 <li>[First bullet content]</li>
 <li>[Second bullet content]</li>
@@ -788,7 +788,7 @@ IMPORTANT: Provide ONLY a <ul> list with 5 <li> items and no introduction, title
 <li>[Fourth bullet content]</li>
 <li>[Fifth bullet content]</li>
 </ul>
- 
+
 Content to summarize:
 ${content.substring(0, 12000)}`,
                 },
@@ -859,7 +859,7 @@ async function tryAnthropicAPI(
           {
             role: 'user',
             content: `IMPORTANT: Provide ONLY a <ul> list with 5 <li> items and no introduction, titles, or extra text. Format like this:
- 
+
 <ul>
 <li>[First bullet content]</li>
 <li>[Second bullet content]</li>
@@ -867,7 +867,7 @@ async function tryAnthropicAPI(
 <li>[Fourth bullet content]</li>
 <li>[Fifth bullet content]</li>
 </ul>
- 
+
 Content to summarize:
 ${content.substring(0, 12000)}`,
           },

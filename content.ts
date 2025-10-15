@@ -113,6 +113,9 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
       'gpt-4',
       'gpt-4-turbo',
       'gpt-4o',
+      'gpt-5',
+      'gpt-5-mini',
+      'gpt-5-nano',
       'gemini-2.5-pro',
       'gemini-2.5-flash',
       'gemini-2.0-flash-exp',
@@ -120,6 +123,8 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
       'claude-3-sonnet',
       'claude-3-opus',
       'claude-3.5-sonnet',
+      'claude-sonnet-4.5',
+      'claude-haiku-4.5',
     ];
 
     for (const model of alternativeModels) {
@@ -298,6 +303,24 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
         name: 'GPT-4o',
         cost: 0.005,
       },
+      'gpt-5': {
+        provider: 'openai',
+        modelId: 'gpt-5',
+        name: 'GPT-5',
+        cost: 0.00125,
+      },
+      'gpt-5-mini': {
+        provider: 'openai',
+        modelId: 'gpt-5-mini',
+        name: 'GPT-5 Mini',
+        cost: 0.00025,
+      },
+      'gpt-5-nano': {
+        provider: 'openai',
+        modelId: 'gpt-5-nano',
+        name: 'GPT-5 Nano',
+        cost: 0.00005,
+      },
       'gemini-2.5-pro': {
         provider: 'gemini',
         modelId: 'gemini-2.5-pro',
@@ -339,6 +362,18 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
         modelId: 'claude-3-5-sonnet-20240620',
         name: 'Claude 3.5 Sonnet',
         cost: 0.003,
+      },
+      'claude-sonnet-4.5': {
+        provider: 'anthropic',
+        modelId: 'claude-sonnet-4.5',
+        name: 'Claude Sonnet 4.5',
+        cost: 0.003,
+      },
+      'claude-haiku-4.5': {
+        provider: 'anthropic',
+        modelId: 'claude-haiku-4.5',
+        name: 'Claude Haiku 4.5',
+        cost: 0.001,
       },
     };
     return models[model];
@@ -847,6 +882,9 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
         { value: 'gpt-4', label: 'GPT-4' },
         { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
         { value: 'gpt-4o', label: 'GPT-4o' },
+        { value: 'gpt-5', label: 'GPT-5' },
+        { value: 'gpt-5-mini', label: 'GPT-5 Mini' },
+        { value: 'gpt-5-nano', label: 'GPT-5 Nano' },
         { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
         { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
         { value: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash' },
@@ -854,6 +892,8 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
         { value: 'claude-3-sonnet', label: 'Claude 3 Sonnet' },
         { value: 'claude-3-opus', label: 'Claude 3 Opus' },
         { value: 'claude-3.5-sonnet', label: 'Claude 3.5 Sonnet' },
+        { value: 'claude-sonnet-4.5', label: 'Claude Sonnet 4.5' },
+        { value: 'claude-haiku-4.5', label: 'Claude Haiku 4.5' },
       ];
 
       // Get API keys to check availability
