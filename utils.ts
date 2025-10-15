@@ -1098,9 +1098,7 @@ export async function initializeI18n(): Promise<void> {
     if (storedLanguage) {
       // Apply stored language preference
       updateUILanguage(document, storedLanguage || undefined);
-      console.log(
-        `i18n initialized with stored language: ${storedLanguage}`
-      );
+      console.log(`i18n initialized with stored language: ${storedLanguage}`);
     } else {
       // No stored preference, initialize and use detected language
       await initializeLanguagePreference();

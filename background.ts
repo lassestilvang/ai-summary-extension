@@ -1,15 +1,742 @@
-import {
-  getModelConfig,
-  Metrics,
-  ProgressUpdate,
-  OpenAIResponse,
-  GeminiResponse,
-  AnthropicResponse,
-  checkChromeBuiltinSupport,
-  validateLanguageSupport,
-  getMessage,
-  initializeLanguagePreference,
-} from './utils';
+// ===== INLINE UTILITY FUNCTIONS =====
+
+// Interfaces
+interface ModelConfig {
+  provider: 'chrome' | 'openai' | 'gemini' | 'anthropic';
+  modelId: string | null;
+  name: string;
+  cost: number;
+}
+
+interface OpenAIResponse {
+  choices: Array<{
+    message: {
+      content: string;
+    };
+  }>;
+}
+
+interface GeminiResponse {
+  candidates: Array<{
+    content: {
+      parts: Array<{
+        text: string;
+      }>;
+    };
+  }>;
+}
+
+interface AnthropicResponse {
+  content: Array<{
+    text: string;
+  }>;
+}
+
+interface ProgressUpdate {
+  step: string;
+  percentage: number;
+  estimatedTimeRemaining: number;
+  currentModel: string;
+  success?: boolean;
+}
+
+interface AttemptMetrics {
+  model: string;
+  success: boolean;
+  time: number;
+  error?: string;
+}
+
+interface Metrics {
+  attempts: AttemptMetrics[];
+  totalTime: number;
+}
+
+interface MessageParameters {
+  [key: string]: string | number;
+}
+
+interface I18nOptions {
+  fallback?: string;
+  parameters?: string | (string | number)[] | MessageParameters;
+}
+
+// RTL language codes
+const RTL_LANGUAGES = new Set([
+  'ar', // Arabic
+  'he', // Hebrew
+  'fa', // Persian/Farsi
+  'ur', // Urdu
+  'yi', // Yiddish
+  'az', // Azerbaijani (when written in Arabic script)
+  'dv', // Divehi
+  'ku', // Kurdish (when written in Arabic script)
+  'ps', // Pashto
+  'sd', // Sindhi
+  'ug', // Uyghur
+]);
+
+// Language detection fallback chain
+const LANGUAGE_FALLBACK_CHAIN = [
+  'en', // English as ultimate fallback
+  'es', // Spanish
+  'fr', // French
+  'de', // German
+  'zh', // Chinese
+  'ja', // Japanese
+  'ko', // Korean
+  'ru', // Russian
+  'pt', // Portuguese
+  'it', // Italian
+  'ar', // Arabic
+  'hi', // Hindi
+];
+
+// Language support definitions for each provider
+const LANGUAGE_SUPPORT: Record<string, string[]> = {
+  chrome: [
+    'en',
+    'es',
+    'fr',
+    'de',
+    'it',
+    'pt',
+    'ru',
+    'ja',
+    'ko',
+    'zh',
+    'ar',
+    'hi',
+    'nl',
+    'sv',
+    'da',
+    'no',
+    'fi',
+    'pl',
+    'tr',
+    'he',
+    'th',
+    'vi',
+    'id',
+    'ms',
+    'tl',
+    'cs',
+    'sk',
+    'hu',
+    'ro',
+    'bg',
+    'hr',
+    'sl',
+    'et',
+    'lv',
+    'lt',
+    'mt',
+    'el',
+    'uk',
+    'be',
+    'sr',
+    'mk',
+    'bs',
+    'sq',
+    'is',
+    'ga',
+    'cy',
+    'gd',
+    'kw',
+    'br',
+    'co',
+    'gl',
+    'eu',
+    'ca',
+    'oc',
+    'an',
+    'ast',
+    'ext',
+    'lad',
+    'lld',
+    'lij',
+    'lmo',
+    'nap',
+    'pms',
+    'sc',
+    'scn',
+    'vec',
+    'wa',
+    'fur',
+    'rm',
+    'sw',
+    'af',
+    'zu',
+    'xh',
+    'st',
+    'tn',
+    'ts',
+    'ss',
+    've',
+    'nr',
+    'nso',
+  ], // Chrome Summarizer supports all languages through Translator API
+  openai: [
+    'en',
+    'es',
+    'fr',
+    'de',
+    'it',
+    'pt',
+    'ru',
+    'ja',
+    'ko',
+    'zh',
+    'ar',
+    'hi',
+    'nl',
+    'sv',
+    'da',
+    'no',
+    'fi',
+    'pl',
+    'tr',
+    'he',
+    'th',
+    'vi',
+    'id',
+    'ms',
+    'tl',
+    'cs',
+    'sk',
+    'hu',
+    'ro',
+    'bg',
+    'hr',
+    'sl',
+    'et',
+    'lv',
+    'lt',
+    'mt',
+    'el',
+    'uk',
+    'be',
+    'sr',
+    'mk',
+    'bs',
+    'sq',
+    'is',
+    'ga',
+    'cy',
+    'gd',
+    'kw',
+    'br',
+    'co',
+    'gl',
+    'eu',
+    'ca',
+    'oc',
+    'an',
+    'ast',
+    'ext',
+    'lad',
+    'lld',
+    'lij',
+    'lmo',
+    'nap',
+    'pms',
+    'sc',
+    'scn',
+    'vec',
+    'wa',
+    'fur',
+    'rm',
+    'sw',
+    'af',
+    'zu',
+    'xh',
+    'st',
+    'tn',
+    'ts',
+    'ss',
+    've',
+    'nr',
+    'nso',
+  ], // OpenAI supports many languages
+  gemini: [
+    'en',
+    'es',
+    'fr',
+    'de',
+    'it',
+    'pt',
+    'ru',
+    'ja',
+    'ko',
+    'zh',
+    'ar',
+    'hi',
+    'nl',
+    'sv',
+    'da',
+    'no',
+    'fi',
+    'pl',
+    'tr',
+    'he',
+    'th',
+    'vi',
+    'id',
+    'ms',
+    'tl',
+    'cs',
+    'sk',
+    'hu',
+    'ro',
+    'bg',
+    'hr',
+    'sl',
+    'et',
+    'lv',
+    'lt',
+    'mt',
+    'el',
+    'uk',
+    'be',
+    'sr',
+    'mk',
+    'bs',
+    'sq',
+    'is',
+    'ga',
+    'cy',
+    'gd',
+    'kw',
+    'br',
+    'co',
+    'gl',
+    'eu',
+    'ca',
+    'oc',
+    'an',
+    'ast',
+    'ext',
+    'lad',
+    'lld',
+    'lij',
+    'lmo',
+    'nap',
+    'pms',
+    'sc',
+    'scn',
+    'vec',
+    'wa',
+    'fur',
+    'rm',
+    'sw',
+    'af',
+    'zu',
+    'xh',
+    'st',
+    'tn',
+    'ts',
+    'ss',
+    've',
+    'nr',
+    'nso',
+  ], // Gemini supports many languages
+  anthropic: [
+    'en',
+    'es',
+    'fr',
+    'de',
+    'it',
+    'pt',
+    'ru',
+    'ja',
+    'ko',
+    'zh',
+    'ar',
+    'hi',
+    'nl',
+    'sv',
+    'da',
+    'no',
+    'fi',
+    'pl',
+    'tr',
+    'he',
+    'th',
+    'vi',
+    'id',
+    'ms',
+    'tl',
+    'cs',
+    'sk',
+    'hu',
+    'ro',
+    'bg',
+    'hr',
+    'sl',
+    'et',
+    'lv',
+    'lt',
+    'mt',
+    'el',
+    'uk',
+    'be',
+    'sr',
+    'mk',
+    'bs',
+    'sq',
+    'is',
+    'ga',
+    'cy',
+    'gd',
+    'kw',
+    'br',
+    'co',
+    'gl',
+    'eu',
+    'ca',
+    'oc',
+    'an',
+    'ast',
+    'ext',
+    'lad',
+    'lld',
+    'lij',
+    'lmo',
+    'nap',
+    'pms',
+    'sc',
+    'scn',
+    'vec',
+    'wa',
+    'fur',
+    'rm',
+    'sw',
+    'af',
+    'zu',
+    'xh',
+    'st',
+    'tn',
+    'ts',
+    'ss',
+    've',
+    'nr',
+    'nso',
+  ], // Anthropic supports many languages
+};
+
+function getModelConfig(model: string): ModelConfig | undefined {
+  const models: Record<string, ModelConfig> = {
+    'chrome-builtin': {
+      provider: 'chrome',
+      modelId: null,
+      name: 'Chrome Built-in AI',
+      cost: 0,
+    },
+    'gpt-3.5-turbo': {
+      provider: 'openai',
+      modelId: 'gpt-3.5-turbo',
+      name: 'GPT-3.5 Turbo',
+      cost: 0.002,
+    },
+    'gpt-4': {
+      provider: 'openai',
+      modelId: 'gpt-4',
+      name: 'GPT-4',
+      cost: 0.03,
+    },
+    'gpt-4-turbo': {
+      provider: 'openai',
+      modelId: 'gpt-4-turbo',
+      name: 'GPT-4 Turbo',
+      cost: 0.01,
+    },
+    'gpt-4o': {
+      provider: 'openai',
+      modelId: 'gpt-4o',
+      name: 'GPT-4o',
+      cost: 0.005,
+    },
+    'gpt-5': {
+      provider: 'openai',
+      modelId: 'gpt-5',
+      name: 'GPT-5',
+      cost: 0.00125,
+    },
+    'gpt-5-mini': {
+      provider: 'openai',
+      modelId: 'gpt-5-mini',
+      name: 'GPT-5 Mini',
+      cost: 0.00025,
+    },
+    'gpt-5-nano': {
+      provider: 'openai',
+      modelId: 'gpt-5-nano',
+      name: 'GPT-5 Nano',
+      cost: 0.00005,
+    },
+    'gemini-2.5-pro': {
+      provider: 'gemini',
+      modelId: 'gemini-2.5-pro',
+      name: 'Gemini 2.5 Pro',
+      cost: 0.00125,
+    },
+    'gemini-2.5-flash': {
+      provider: 'gemini',
+      modelId: 'gemini-2.5-flash',
+      name: 'Gemini 2.5 Flash',
+      cost: 0.00003,
+    },
+    'gemini-2.0-flash-exp': {
+      provider: 'gemini',
+      modelId: 'gemini-2.0-flash-exp',
+      name: 'Gemini 2.0 Flash (Exp)',
+      cost: 0,
+    },
+    'claude-3-haiku': {
+      provider: 'anthropic',
+      modelId: 'claude-3-haiku-20240307',
+      name: 'Claude 3 Haiku',
+      cost: 0.00025,
+    },
+    'claude-3-sonnet': {
+      provider: 'anthropic',
+      modelId: 'claude-3-sonnet-20240229',
+      name: 'Claude 3 Sonnet',
+      cost: 0.003,
+    },
+    'claude-3-opus': {
+      provider: 'anthropic',
+      modelId: 'claude-3-opus-20240229',
+      name: 'Claude 3 Opus',
+      cost: 0.015,
+    },
+    'claude-3.5-sonnet': {
+      provider: 'anthropic',
+      modelId: 'claude-3-5-sonnet-20240620',
+      name: 'Claude 3.5 Sonnet',
+      cost: 0.003,
+    },
+    'claude-sonnet-4.5': {
+      provider: 'anthropic',
+      modelId: 'claude-sonnet-4.5',
+      name: 'Claude Sonnet 4.5',
+      cost: 0.003,
+    },
+    'claude-haiku-4.5': {
+      provider: 'anthropic',
+      modelId: 'claude-haiku-4.5',
+      name: 'Claude Haiku 4.5',
+      cost: 0.001,
+    },
+  };
+  return models[model];
+}
+
+function getChromeVersion(): number {
+  const userAgent = navigator?.userAgent;
+  if (!userAgent) return 0;
+  const chromeMatch = userAgent.match(/Chrome\/(\d+)/);
+  return chromeMatch ? parseInt(chromeMatch[1]) : 0;
+}
+
+async function isSummarizerAvailable(): Promise<boolean> {
+  if (!globalThis || !('Summarizer' in globalThis)) {
+    return false;
+  }
+  try {
+    const availability = await (globalThis as any).Summarizer.availability();
+    return availability === 'available';
+  } catch {
+    return false;
+  }
+}
+
+async function checkChromeBuiltinSupport(): Promise<boolean> {
+  const version = getChromeVersion();
+  const apiAvailable = await isSummarizerAvailable();
+  return version >= 138 && apiAvailable;
+}
+
+function getSupportedLanguages(provider: string): string[] {
+  return LANGUAGE_SUPPORT[provider] || [];
+}
+
+function isLanguageSupported(provider: string, language: string): boolean {
+  const supportedLanguages = LANGUAGE_SUPPORT[provider];
+  return supportedLanguages ? supportedLanguages.includes(language) : false;
+}
+
+function validateLanguageSupport(
+  provider: string,
+  language: string
+): {
+  supported: boolean;
+  fallbackLanguage: string;
+  needsFallback: boolean;
+} {
+  const supported = isLanguageSupported(provider, language);
+  return {
+    supported,
+    fallbackLanguage: supported ? language : 'en',
+    needsFallback: !supported && language !== 'en',
+  };
+}
+
+/**
+ * Wrapper for chrome.i18n.getMessage with enhanced fallback logic
+ * @param messageName - The message key to retrieve
+ * @param options - Options for fallback and parameters
+ * @returns The localized message or fallback
+ */
+function getMessage(messageName: string, options: I18nOptions = {}): string {
+  try {
+    // Convert MessageParameters to array if needed
+    let substitutions: string | (string | number)[] | undefined;
+    if (options.parameters) {
+      if (
+        typeof options.parameters === 'string' ||
+        Array.isArray(options.parameters)
+      ) {
+        substitutions = options.parameters;
+      } else {
+        // Convert MessageParameters object to array
+        substitutions = Object.values(options.parameters);
+      }
+    }
+
+    // Try to get the message from Chrome i18n
+    const message = chrome.i18n.getMessage(messageName, substitutions);
+
+    // If message exists and is not empty, return it
+    if (message && message.trim() !== '') {
+      return message;
+    }
+
+    // If no message found and fallback provided, return fallback
+    if (options.fallback) {
+      return options.fallback;
+    }
+
+    // Ultimate fallback: return the message name itself
+    return messageName;
+  } catch (error) {
+    console.warn(`Failed to get message for key "${messageName}":`, error);
+
+    // Return fallback or message name
+    return options.fallback || messageName;
+  }
+}
+
+/**
+ * Get the current UI language
+ * @returns The current UI language code (e.g., 'en', 'es')
+ */
+function getCurrentLanguage(): string {
+  try {
+    return chrome.i18n.getUILanguage();
+  } catch (error) {
+    console.warn('Failed to get current UI language:', error);
+    return 'en'; // Default fallback
+  }
+}
+
+/**
+ * Detect user's preferred language with fallback chain
+ * @returns The detected language code
+ */
+function detectUserLanguage(): string {
+  try {
+    // Get browser languages
+    const languages = navigator.languages || [navigator.language];
+
+    // Find first supported language in the chain
+    for (const lang of languages) {
+      const baseLang = lang.split('-')[0]; // Remove region (e.g., 'en-US' -> 'en')
+
+      // Check if language is in our supported list
+      if (LANGUAGE_SUPPORT.chrome.includes(baseLang)) {
+        return baseLang;
+      }
+    }
+
+    // Fallback to our predefined chain
+    for (const fallbackLang of LANGUAGE_FALLBACK_CHAIN) {
+      if (LANGUAGE_SUPPORT.chrome.includes(fallbackLang)) {
+        return fallbackLang;
+      }
+    }
+
+    // Ultimate fallback
+    return 'en';
+  } catch (error) {
+    console.warn('Failed to detect user language:', error);
+    return 'en';
+  }
+}
+
+/**
+ * Check if a language requires right-to-left (RTL) layout
+ * @param languageCode - The language code to check
+ * @returns True if the language is RTL
+ */
+function isRTLLanguage(languageCode: string): boolean {
+  const baseLang = languageCode.split('-')[0]; // Remove region
+  return RTL_LANGUAGES.has(baseLang);
+}
+
+/**
+ * Store user's language preference
+ * @param languageCode - The language code to store
+ * @returns Promise that resolves when storage is complete
+ */
+async function setUserLanguage(languageCode: string): Promise<void> {
+  try {
+    await chrome.storage.sync.set({
+      userLanguage: languageCode,
+      languageSetAt: Date.now(),
+    });
+  } catch (error) {
+    console.error('Failed to set user language:', error);
+    throw new Error('Failed to save language preference');
+  }
+}
+
+/**
+ * Retrieve stored user language preference
+ * @returns Promise that resolves to the stored language or null
+ */
+async function getUserLanguage(): Promise<string | null> {
+  try {
+    const result = await chrome.storage.sync.get(['userLanguage']);
+    return result.userLanguage || null;
+  } catch (error) {
+    console.warn('Failed to get user language:', error);
+    return null;
+  }
+}
+
+/**
+ * Initialize language preference detection and storage
+ * Should be called on extension startup (background script)
+ */
+async function initializeLanguagePreference(): Promise<void> {
+  try {
+    // Get stored user language or detect automatically
+    let userLanguage = await getUserLanguage();
+
+    if (!userLanguage) {
+      userLanguage = detectUserLanguage();
+      // Save detected language for future use
+      await setUserLanguage(userLanguage);
+      console.log(`Language preference detected and stored: ${userLanguage}`);
+    } else {
+      console.log(`Using stored language preference: ${userLanguage}`);
+    }
+  } catch (error) {
+    console.warn('Failed to initialize language preference:', error);
+  }
+}
+
 
 interface SummaryState {
   [tabId: number]: {

@@ -10,13 +10,624 @@ declare const showdown: {
   };
 };
 
-// Import i18n utilities from utils.ts
-import {
-  getMessage,
-  getCurrentLanguage,
-  isRTLLanguage,
-  initializeI18n,
-} from './utils';
+// ===== INLINE I18N UTILITIES =====
+
+// I18n Interfaces
+interface MessageParameters {
+  [key: string]: string | number;
+}
+
+interface I18nOptions {
+  fallback?: string;
+  parameters?: string | (string | number)[] | MessageParameters;
+}
+
+// RTL language codes
+const RTL_LANGUAGES = new Set([
+  'ar', // Arabic
+  'he', // Hebrew
+  'fa', // Persian/Farsi
+  'ur', // Urdu
+  'yi', // Yiddish
+  'az', // Azerbaijani (when written in Arabic script)
+  'dv', // Divehi
+  'ku', // Kurdish (when written in Arabic script)
+  'ps', // Pashto
+  'sd', // Sindhi
+  'ug', // Uyghur
+]);
+
+// Language detection fallback chain
+const LANGUAGE_FALLBACK_CHAIN = [
+  'en', // English as ultimate fallback
+  'es', // Spanish
+  'fr', // French
+  'de', // German
+  'zh', // Chinese
+  'ja', // Japanese
+  'ko', // Korean
+  'ru', // Russian
+  'pt', // Portuguese
+  'it', // Italian
+  'ar', // Arabic
+  'hi', // Hindi
+];
+
+// Language support definitions for each provider
+const LANGUAGE_SUPPORT: Record<string, string[]> = {
+  chrome: [
+    'en',
+    'es',
+    'fr',
+    'de',
+    'it',
+    'pt',
+    'ru',
+    'ja',
+    'ko',
+    'zh',
+    'ar',
+    'hi',
+    'nl',
+    'sv',
+    'da',
+    'no',
+    'fi',
+    'pl',
+    'tr',
+    'he',
+    'th',
+    'vi',
+    'id',
+    'ms',
+    'tl',
+    'cs',
+    'sk',
+    'hu',
+    'ro',
+    'bg',
+    'hr',
+    'sl',
+    'et',
+    'lv',
+    'lt',
+    'mt',
+    'el',
+    'uk',
+    'be',
+    'sr',
+    'mk',
+    'bs',
+    'sq',
+    'is',
+    'ga',
+    'cy',
+    'gd',
+    'kw',
+    'br',
+    'co',
+    'gl',
+    'eu',
+    'ca',
+    'oc',
+    'an',
+    'ast',
+    'ext',
+    'lad',
+    'lld',
+    'lij',
+    'lmo',
+    'nap',
+    'pms',
+    'sc',
+    'scn',
+    'vec',
+    'wa',
+    'fur',
+    'rm',
+    'sw',
+    'af',
+    'zu',
+    'xh',
+    'st',
+    'tn',
+    'ts',
+    'ss',
+    've',
+    'nr',
+    'nso',
+  ], // Chrome Summarizer supports all languages through Translator API
+  openai: [
+    'en',
+    'es',
+    'fr',
+    'de',
+    'it',
+    'pt',
+    'ru',
+    'ja',
+    'ko',
+    'zh',
+    'ar',
+    'hi',
+    'nl',
+    'sv',
+    'da',
+    'no',
+    'fi',
+    'pl',
+    'tr',
+    'he',
+    'th',
+    'vi',
+    'id',
+    'ms',
+    'tl',
+    'cs',
+    'sk',
+    'hu',
+    'ro',
+    'bg',
+    'hr',
+    'sl',
+    'et',
+    'lv',
+    'lt',
+    'mt',
+    'el',
+    'uk',
+    'be',
+    'sr',
+    'mk',
+    'bs',
+    'sq',
+    'is',
+    'ga',
+    'cy',
+    'gd',
+    'kw',
+    'br',
+    'co',
+    'gl',
+    'eu',
+    'ca',
+    'oc',
+    'an',
+    'ast',
+    'ext',
+    'lad',
+    'lld',
+    'lij',
+    'lmo',
+    'nap',
+    'pms',
+    'sc',
+    'scn',
+    'vec',
+    'wa',
+    'fur',
+    'rm',
+    'sw',
+    'af',
+    'zu',
+    'xh',
+    'st',
+    'tn',
+    'ts',
+    'ss',
+    've',
+    'nr',
+    'nso',
+  ], // OpenAI supports many languages
+  gemini: [
+    'en',
+    'es',
+    'fr',
+    'de',
+    'it',
+    'pt',
+    'ru',
+    'ja',
+    'ko',
+    'zh',
+    'ar',
+    'hi',
+    'nl',
+    'sv',
+    'da',
+    'no',
+    'fi',
+    'pl',
+    'tr',
+    'he',
+    'th',
+    'vi',
+    'id',
+    'ms',
+    'tl',
+    'cs',
+    'sk',
+    'hu',
+    'ro',
+    'bg',
+    'hr',
+    'sl',
+    'et',
+    'lv',
+    'lt',
+    'mt',
+    'el',
+    'uk',
+    'be',
+    'sr',
+    'mk',
+    'bs',
+    'sq',
+    'is',
+    'ga',
+    'cy',
+    'gd',
+    'kw',
+    'br',
+    'co',
+    'gl',
+    'eu',
+    'ca',
+    'oc',
+    'an',
+    'ast',
+    'ext',
+    'lad',
+    'lld',
+    'lij',
+    'lmo',
+    'nap',
+    'pms',
+    'sc',
+    'scn',
+    'vec',
+    'wa',
+    'fur',
+    'rm',
+    'sw',
+    'af',
+    'zu',
+    'xh',
+    'st',
+    'tn',
+    'ts',
+    'ss',
+    've',
+    'nr',
+    'nso',
+  ], // Gemini supports many languages
+  anthropic: [
+    'en',
+    'es',
+    'fr',
+    'de',
+    'it',
+    'pt',
+    'ru',
+    'ja',
+    'ko',
+    'zh',
+    'ar',
+    'hi',
+    'nl',
+    'sv',
+    'da',
+    'no',
+    'fi',
+    'pl',
+    'tr',
+    'he',
+    'th',
+    'vi',
+    'id',
+    'ms',
+    'tl',
+    'cs',
+    'sk',
+    'hu',
+    'ro',
+    'bg',
+    'hr',
+    'sl',
+    'et',
+    'lv',
+    'lt',
+    'mt',
+    'el',
+    'uk',
+    'be',
+    'sr',
+    'mk',
+    'bs',
+    'sq',
+    'is',
+    'ga',
+    'cy',
+    'gd',
+    'kw',
+    'br',
+    'co',
+    'gl',
+    'eu',
+    'ca',
+    'oc',
+    'an',
+    'ast',
+    'ext',
+    'lad',
+    'lld',
+    'lij',
+    'lmo',
+    'nap',
+    'pms',
+    'sc',
+    'scn',
+    'vec',
+    'wa',
+    'fur',
+    'rm',
+    'sw',
+    'af',
+    'zu',
+    'xh',
+    'st',
+    'tn',
+    'ts',
+    'ss',
+    've',
+    'nr',
+    'nso',
+  ], // Anthropic supports many languages
+};
+
+/**
+ * Wrapper for chrome.i18n.getMessage with enhanced fallback logic
+ * @param messageName - The message key to retrieve
+ * @param options - Options for fallback and parameters
+ * @returns The localized message or fallback
+ */
+function getMessage(messageName: string, options: I18nOptions = {}): string {
+  try {
+    // Convert MessageParameters to array if needed
+    let substitutions: string | (string | number)[] | undefined;
+    if (options.parameters) {
+      if (
+        typeof options.parameters === 'string' ||
+        Array.isArray(options.parameters)
+      ) {
+        substitutions = options.parameters;
+      } else {
+        // Convert MessageParameters object to array
+        substitutions = Object.values(options.parameters);
+      }
+    }
+
+    // Try to get the message from Chrome i18n
+    const message = chrome.i18n.getMessage(messageName, substitutions);
+
+    // If message exists and is not empty, return it
+    if (message && message.trim() !== '') {
+      return message;
+    }
+
+    // If no message found and fallback provided, return fallback
+    if (options.fallback) {
+      return options.fallback;
+    }
+
+    // Ultimate fallback: return the message name itself
+    return messageName;
+  } catch (error) {
+    console.warn(`Failed to get message for key "${messageName}":`, error);
+
+    // Return fallback or message name
+    return options.fallback || messageName;
+  }
+}
+
+/**
+ * Get the current UI language
+ * @returns The current UI language code (e.g., 'en', 'es')
+ */
+function getCurrentLanguage(): string {
+  try {
+    return chrome.i18n.getUILanguage();
+  } catch (error) {
+    console.warn('Failed to get current UI language:', error);
+    return 'en'; // Default fallback
+  }
+}
+
+/**
+ * Detect user's preferred language with fallback chain
+ * @returns The detected language code
+ */
+function detectUserLanguage(): string {
+  try {
+    // Get browser languages
+    const languages = navigator.languages || [navigator.language];
+
+    // Find first supported language in the chain
+    for (const lang of languages) {
+      const baseLang = lang.split('-')[0]; // Remove region (e.g., 'en-US' -> 'en')
+
+      // Check if language is in our supported list
+      if (LANGUAGE_SUPPORT.chrome.includes(baseLang)) {
+        return baseLang;
+      }
+    }
+
+    // Fallback to our predefined chain
+    for (const fallbackLang of LANGUAGE_FALLBACK_CHAIN) {
+      if (LANGUAGE_SUPPORT.chrome.includes(fallbackLang)) {
+        return fallbackLang;
+      }
+    }
+
+    // Ultimate fallback
+    return 'en';
+  } catch (error) {
+    console.warn('Failed to detect user language:', error);
+    return 'en';
+  }
+}
+
+/**
+ * Check if a language requires right-to-left (RTL) layout
+ * @param languageCode - The language code to check
+ * @returns True if the language is RTL
+ */
+function isRTLLanguage(languageCode: string): boolean {
+  const baseLang = languageCode.split('-')[0]; // Remove region
+  return RTL_LANGUAGES.has(baseLang);
+}
+
+/**
+ * Store user's language preference
+ * @param languageCode - The language code to store
+ * @returns Promise that resolves when storage is complete
+ */
+async function setUserLanguage(languageCode: string): Promise<void> {
+  try {
+    await chrome.storage.sync.set({
+      userLanguage: languageCode,
+      languageSetAt: Date.now(),
+    });
+  } catch (error) {
+    console.error('Failed to set user language:', error);
+    throw new Error('Failed to save language preference');
+  }
+}
+
+/**
+ * Retrieve stored user language preference
+ * @returns Promise that resolves to the stored language or null
+ */
+async function getUserLanguage(): Promise<string | null> {
+  try {
+    const result = await chrome.storage.sync.get(['userLanguage']);
+    return result.userLanguage || null;
+  } catch (error) {
+    console.warn('Failed to get user language:', error);
+    return null;
+  }
+}
+
+/**
+ * Apply language changes to UI elements
+ * Updates elements with data-i18n attributes
+ * @param rootElement - Root element to search for i18n elements (default: document)
+ * @param languageOverride - Optional language code to use instead of current language
+ */
+function updateUILanguage(
+  rootElement: Document | Element = document,
+  languageOverride?: string
+): void {
+  try {
+    // Update elements with data-i18n attribute
+    const i18nElements = rootElement.querySelectorAll('[data-i18n]');
+
+    i18nElements.forEach((element) => {
+      const messageKey = element.getAttribute('data-i18n');
+      if (messageKey) {
+        const message = getMessage(messageKey);
+        if (message !== messageKey) {
+          // Only update if translation found
+          element.textContent = message;
+        }
+      }
+    });
+
+    // Update elements with data-i18n-placeholder attribute
+    const placeholderElements = rootElement.querySelectorAll(
+      '[data-i18n-placeholder]'
+    );
+
+    placeholderElements.forEach((element) => {
+      const messageKey = element.getAttribute('data-i18n-placeholder');
+      if (messageKey) {
+        const message = getMessage(messageKey);
+        if (message !== messageKey && element instanceof HTMLInputElement) {
+          element.placeholder = message;
+        }
+      }
+    });
+
+    // Update elements with data-i18n-title attribute
+    const titleElements = rootElement.querySelectorAll('[data-i18n-title]');
+
+    titleElements.forEach((element) => {
+      const messageKey = element.getAttribute('data-i18n-title');
+      if (messageKey) {
+        const message = getMessage(messageKey);
+        if (message !== messageKey) {
+          element.setAttribute('title', message);
+        }
+      }
+    });
+
+    // Update document direction for RTL languages
+    const currentLang = languageOverride || getCurrentLanguage();
+    const isRTL = isRTLLanguage(currentLang);
+    document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+    document.documentElement.setAttribute('lang', currentLang);
+  } catch (error) {
+    console.warn('Failed to update UI language:', error);
+  }
+}
+
+/**
+ * Initialize language preference detection and storage
+ * Should be called on extension startup (background script)
+ */
+async function initializeLanguagePreference(): Promise<void> {
+  try {
+    // Get stored user language or detect automatically
+    let userLanguage = await getUserLanguage();
+
+    if (!userLanguage) {
+      userLanguage = detectUserLanguage();
+      // Save detected language for future use
+      await setUserLanguage(userLanguage);
+      console.log(`Language preference detected and stored: ${userLanguage}`);
+    } else {
+      console.log(`Using stored language preference: ${userLanguage}`);
+    }
+  } catch (error) {
+    console.warn('Failed to initialize language preference:', error);
+  }
+}
+
+/**
+ * Initialize i18n system with UI updates
+ * Should be called when UI contexts load (content script, options page)
+ */
+async function initializeI18n(): Promise<void> {
+  try {
+    // Get stored user language preference
+    const storedLanguage = await getUserLanguage();
+
+    if (storedLanguage) {
+      // Apply stored language preference
+      updateUILanguage(document, storedLanguage || undefined);
+      console.log(`i18n initialized with stored language: ${storedLanguage}`);
+    } else {
+      // No stored preference, initialize and use detected language
+      await initializeLanguagePreference();
+      updateUILanguage();
+      console.log(
+        `i18n initialized with detected language: ${getCurrentLanguage()}`
+      );
+    }
+  } catch (error) {
+    console.warn('Failed to initialize i18n:', error);
+  }
+}
 
 // Browser compatibility functions
 function getChromeVersion(): number {
