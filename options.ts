@@ -1653,10 +1653,10 @@ document.addEventListener('DOMContentLoaded', function () {
     'Lato',
     'Montserrat',
     'Open Sans',
-    'OpenDyslexic'
+    'OpenDyslexic',
   ];
   fontFamilySelect.innerHTML = '';
-  fontOptions.forEach(font => {
+  fontOptions.forEach((font) => {
     const option = document.createElement('option');
     option.value = font;
     option.textContent = font;
