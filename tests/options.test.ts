@@ -87,7 +87,11 @@ describe('Options Script Comprehensive Tests', () => {
         appendChild: jest.fn(),
         addEventListener: jest.fn(),
       },
-      fontFamily: { value: 'Arial', addEventListener: jest.fn(), appendChild: jest.fn() },
+      fontFamily: {
+        value: 'Arial',
+        addEventListener: jest.fn(),
+        appendChild: jest.fn(),
+      },
       fontSize: { value: '14', addEventListener: jest.fn() },
       fontStyle: { value: 'normal', addEventListener: jest.fn() },
       saveTheme: { addEventListener: jest.fn() },
@@ -330,7 +334,7 @@ describe('Options Script Comprehensive Tests', () => {
     // Mock window.matchMedia
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
-      value: jest.fn().mockImplementation(query => ({
+      value: jest.fn().mockImplementation((query) => ({
         matches: false,
         media: query,
         addListener: jest.fn(),
