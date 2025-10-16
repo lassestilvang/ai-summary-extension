@@ -370,11 +370,21 @@ document.addEventListener('DOMContentLoaded', function () {
   ) as HTMLButtonElement;
   const body = document.body;
 
-  // Initialize theme from storage or default to light
+  // Initialize theme from user preference, storage, or default to light
   function initializeTheme() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    body.setAttribute('data-theme', savedTheme);
-    updateThemeIcon(savedTheme);
+    // First check for saved theme in localStorage
+    let theme = localStorage.getItem('theme');
+
+    // If no saved theme, check system preference
+    if (!theme) {
+      const prefersDark = window.matchMedia(
+        '(prefers-color-scheme: dark)'
+      ).matches;
+      theme = prefersDark ? 'dark' : 'light';
+    }
+
+    body.setAttribute('data-theme', theme);
+    updateThemeIcon(theme);
   }
 
   function updateThemeIcon(theme: string) {
