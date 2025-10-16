@@ -61,21 +61,6 @@ interface I18nOptions {
   parameters?: string | (string | number)[] | MessageParameters;
 }
 
-// RTL language codes
-const RTL_LANGUAGES = new Set([
-  'ar', // Arabic
-  'he', // Hebrew
-  'fa', // Persian/Farsi
-  'ur', // Urdu
-  'yi', // Yiddish
-  'az', // Azerbaijani (when written in Arabic script)
-  'dv', // Divehi
-  'ku', // Kurdish (when written in Arabic script)
-  'ps', // Pashto
-  'sd', // Sindhi
-  'ug', // Uyghur
-]);
-
 // Language detection fallback chain
 const LANGUAGE_FALLBACK_CHAIN = [
   'en', // English as ultimate fallback
@@ -557,10 +542,6 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
   return version >= 138 && apiAvailable;
 }
 
-function getSupportedLanguages(provider: string): string[] {
-  return LANGUAGE_SUPPORT[provider] || [];
-}
-
 function isLanguageSupported(provider: string, language: string): boolean {
   const supportedLanguages = LANGUAGE_SUPPORT[provider];
   return supportedLanguages ? supportedLanguages.includes(language) : false;
@@ -631,14 +612,6 @@ function getMessage(messageName: string, options: I18nOptions = {}): string {
  * Get the current UI language
  * @returns The current UI language code (e.g., 'en', 'es')
  */
-function getCurrentLanguage(): string {
-  try {
-    return chrome.i18n.getUILanguage();
-  } catch (error) {
-    console.warn('Failed to get current UI language:', error);
-    return 'en'; // Default fallback
-  }
-}
 
 /**
  * Detect user's preferred language with fallback chain
@@ -679,10 +652,6 @@ function detectUserLanguage(): string {
  * @param languageCode - The language code to check
  * @returns True if the language is RTL
  */
-function isRTLLanguage(languageCode: string): boolean {
-  const baseLang = languageCode.split('-')[0]; // Remove region
-  return RTL_LANGUAGES.has(baseLang);
-}
 
 /**
  * Store user's language preference

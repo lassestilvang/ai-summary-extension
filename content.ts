@@ -1542,6 +1542,12 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
             anthropicApiKey: result.anthropicApiKey || '',
           };
 
+          console.log('DEBUG: Starting to populate model dropdown options');
+          console.log(
+            'DEBUG: modelSelect before adding options:',
+            modelSelect.children.length,
+            'children'
+          );
           const availableModels: string[] = [];
 
           for (const option of modelOptions) {
@@ -1560,10 +1566,22 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
               opt.disabled = true;
               opt.style.opacity = '0.5';
               opt.title = getMessage('apiKeyRequired');
+              console.log(
+                `DEBUG: Added option ${option.value}, total children now: ${modelSelect.children.length}`
+              );
             }
 
             modelSelect.appendChild(opt);
           }
+          console.log(
+            'DEBUG: Finished adding options, total children:',
+            modelSelect.children.length
+          );
+          console.log(
+            'DEBUG: HTMLOptionsCollection length:',
+            modelSelect.options.length
+          );
+          console.log('DEBUG: Available models:', availableModels);
 
           // Load current selected model
           chrome.storage.sync.get('selectedModel', (result) => {
@@ -1770,6 +1788,22 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
         let statusContent = `${modelName} • ${time}s`;
         if (metrics && metrics.attempts && metrics.attempts.length > 1) {
           statusContent += ` • ${metrics.attempts.length} attempts`;
+        }
+        // Apply language updates to the summary div after creation
+        if (summaryDiv) {
+          console.log('DEBUG: About to call updateUILanguage on summaryDiv');
+          updateUILanguage(summaryDiv, language);
+          const modelSelect = document.getElementById(
+            'ai-summary-model-selector'
+          ) as HTMLSelectElement;
+          console.log(
+            'DEBUG: After updateUILanguage, modelSelect children:',
+            modelSelect.children.length
+          );
+          console.log(
+            'DEBUG: After updateUILanguage, HTMLOptionsCollection length:',
+            modelSelect.options.length
+          );
         }
         statusText.textContent = statusContent;
         // Clear any i18n attribute since this is dynamic content

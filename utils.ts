@@ -992,8 +992,10 @@ export function updateUILanguage(
       if (messageKey) {
         const message = getMessage(messageKey);
         if (message !== messageKey) {
-          // Only update if translation found
-          element.textContent = message;
+          // Only update if translation found and skip option and optgroup elements to prevent clearing dynamically added options
+          if (element.tagName !== 'OPTION' && element.tagName !== 'OPTGROUP') {
+            element.textContent = message;
+          }
         }
       }
     });
@@ -1049,7 +1051,7 @@ export function updateUILanguage(
       if (messageKey) {
         const message = getMessage(messageKey);
         if (message !== messageKey) {
-          element.label = message;
+          (element as HTMLOptGroupElement).label = message;
         }
       }
     });
@@ -1122,23 +1124,16 @@ export async function initializeLanguagePreference(): Promise<void> {
  * Should be called when UI contexts load (content script, options page)
  */
 export async function initializeI18n(): Promise<void> {
+  console.log('Initializing i18n system...');
   try {
-    // Get stored user language preference
-    const storedLanguage = await getUserLanguage();
+    // Initialize language preference if not already done
+    await initializeLanguagePreference();
 
-    if (storedLanguage) {
-      // Apply stored language preference
-      updateUILanguage(document, storedLanguage || undefined);
-      console.log(`i18n initialized with stored language: ${storedLanguage}`);
-    } else {
-      // No stored preference, initialize and use detected language
-      await initializeLanguagePreference();
-      updateUILanguage();
-      console.log(
-        `i18n initialized with detected language: ${getCurrentLanguage()}`
-      );
-    }
+    // Update UI with current language
+    updateUILanguage();
+
+    console.log('i18n system initialized successfully');
   } catch (error) {
-    console.warn('Failed to initialize i18n:', error);
+    console.warn('Failed to initialize i18n system:', error);
   }
 }
