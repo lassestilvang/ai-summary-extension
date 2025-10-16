@@ -1639,6 +1639,30 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  // Populate font family selector
+  const fontOptions = [
+    'Arial',
+    'Times New Roman',
+    'Courier New',
+    'Georgia',
+    'Verdana',
+    'Helvetica',
+    'Trebuchet MS',
+    'Comic Sans MS',
+    'Roboto',
+    'Lato',
+    'Montserrat',
+    'Open Sans',
+    'OpenDyslexic'
+  ];
+  fontFamilySelect.innerHTML = '';
+  fontOptions.forEach(font => {
+    const option = document.createElement('option');
+    option.value = font;
+    option.textContent = font;
+    fontFamilySelect.appendChild(option);
+  });
+
   // Load saved theme and font settings
   chrome.storage.sync.get(
     ['theme', 'fontFamily', 'fontSize', 'fontStyle'],
