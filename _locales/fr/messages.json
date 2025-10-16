@@ -502,8 +502,8 @@
     "description": "Button title"
   },
   "openSettings": {
-    "message": "Ouvrir les paramètres",
-    "description": "Button title"
+    "message": "Ouvrir les Paramètres",
+    "description": "Button text"
   },
   "summaryLanguage": {
     "message": "Langue du résumé : $LANGUAGE$",
@@ -729,10 +729,6 @@
     "message": "Aucun modèle alternatif configuré. Veuillez configurer les clés API dans les paramètres.",
     "description": "Error message"
   },
-  "openSettings": {
-    "message": "Ouvrir les Paramètres",
-    "description": "Button text"
-  },
   "regenerating": {
     "message": "Régénération...",
     "description": "Status message"
@@ -920,5 +916,21 @@
   "themeNote": {
     "message": "Note : Personnalisez l'apparence de la fenêtre contextuelle de résumé. Les changements sont appliqués en temps réel à l'aperçu ci-dessous.",
     "description": "Theme page note"
+  },
+  "placeholder_openai_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "placeholder_gemini_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "placeholder_anthropic_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "toggle_sidebar": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
   }
 }

@@ -503,7 +503,7 @@
   },
   "openSettings": {
     "message": "Einstellungen öffnen",
-    "description": "Button title"
+    "description": "Button text"
   },
   "summaryLanguage": {
     "message": "Zusammenfassungssprache: $LANGUAGE$",
@@ -729,10 +729,6 @@
     "message": "Keine alternativen Modelle konfiguriert. Bitte konfigurieren Sie API-Schlüssel in den Einstellungen.",
     "description": "Error message"
   },
-  "openSettings": {
-    "message": "Einstellungen öffnen",
-    "description": "Button text"
-  },
   "regenerating": {
     "message": "Wird neu generiert...",
     "description": "Status message"
@@ -920,5 +916,21 @@
   "themeNote": {
     "message": "Hinweis: Passen Sie das Erscheinungsbild des Zusammenfassungs-Popups an. Änderungen werden in Echtzeit auf die Vorschau unten angewendet.",
     "description": "Theme page note"
+  },
+  "placeholder_openai_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "placeholder_gemini_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "placeholder_anthropic_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "toggle_sidebar": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
   }
 }

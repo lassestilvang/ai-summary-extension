@@ -502,8 +502,8 @@
     "description": "Button title"
   },
   "openSettings": {
-    "message": "Abrir configuración",
-    "description": "Button title"
+    "message": "Abrir Ajustes",
+    "description": "Button text"
   },
   "summaryLanguage": {
     "message": "Idioma del resumen: $LANGUAGE$",
@@ -729,10 +729,6 @@
     "message": "No hay modelos alternativos configurados. Por favor configura claves API en ajustes.",
     "description": "Error message"
   },
-  "openSettings": {
-    "message": "Abrir Ajustes",
-    "description": "Button text"
-  },
   "regenerating": {
     "message": "Regenerando...",
     "description": "Status message"
@@ -920,5 +916,21 @@
   "themeNote": {
     "message": "Nota: Personaliza la apariencia de la ventana emergente de resumen. Los cambios se aplican en tiempo real a la vista previa de abajo.",
     "description": "Theme page note"
+  },
+  "placeholder_openai_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "placeholder_gemini_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "placeholder_anthropic_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "toggle_sidebar": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
   }
 }

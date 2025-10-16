@@ -503,7 +503,7 @@
   },
   "openSettings": {
     "message": "打开设置",
-    "description": "Button title"
+    "description": "Button text"
   },
   "summaryLanguage": {
     "message": "摘要语言：$LANGUAGE$",
@@ -729,10 +729,6 @@
     "message": "未配置替代模型。请在设置中配置 API 密钥。",
     "description": "Error message"
   },
-  "openSettings": {
-    "message": "打开设置",
-    "description": "Button text"
-  },
   "regenerating": {
     "message": "正在重新生成...",
     "description": "Status message"
@@ -920,5 +916,21 @@
   "themeNote": {
     "message": "注意：自定义摘要弹出窗口的外观。更改将实时应用到下面的预览。",
     "description": "Theme page note"
+  },
+  "placeholder_openai_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "placeholder_gemini_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "placeholder_anthropic_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "toggle_sidebar": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
   }
 }

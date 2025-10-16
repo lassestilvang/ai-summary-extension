@@ -503,7 +503,7 @@
   },
   "openSettings": {
     "message": "設定を開く",
-    "description": "Button title"
+    "description": "Button text"
   },
   "summaryLanguage": {
     "message": "要約言語：$LANGUAGE$",
@@ -729,10 +729,6 @@
     "message": "代替モデルが設定されていません。設定で API キーを構成してください。",
     "description": "Error message"
   },
-  "openSettings": {
-    "message": "設定を開く",
-    "description": "Button text"
-  },
   "regenerating": {
     "message": "再生成中...",
     "description": "Status message"
@@ -920,5 +916,21 @@
   "themeNote": {
     "message": "注意：要約ポップアップの外観をカスタマイズします。変更は下のプレビューにリアルタイムで適用されます。",
     "description": "Theme page note"
+  },
+  "placeholder_openai_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "placeholder_gemini_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "placeholder_anthropic_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "toggle_sidebar": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
   }
 }

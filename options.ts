@@ -427,8 +427,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     'selectedModel'
   ) as HTMLSelectElement;
   // Add real-time language change listener
-  languageSelect.addEventListener('change', () => {
-    updateUILanguage(document, languageSelect.value);
+  languageSelect.addEventListener('change', async () => {
+    const selectedLanguage = languageSelect.value;
+    await setUserLanguage(selectedLanguage);
+    updateUILanguage(document, selectedLanguage);
   });
   const temperatureInput = document.getElementById(
     'temperature'

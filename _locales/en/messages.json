@@ -920,5 +920,21 @@
   "themeNote": {
     "message": "Note: Customize the appearance of the summary popup. Changes are applied in real-time to the preview below.",
     "description": "Theme page note"
+  },
+  "placeholder_openai_key": {
+    "message": "sk-...",
+    "description": "OpenAI API key placeholder"
+  },
+  "placeholder_gemini_key": {
+    "message": "AIza...",
+    "description": "Gemini API key placeholder"
+  },
+  "placeholder_anthropic_key": {
+    "message": "sk-ant-...",
+    "description": "Anthropic API key placeholder"
+  },
+  "toggle_sidebar": {
+    "message": "Toggle sidebar",
+    "description": "Button title"
   }
 }

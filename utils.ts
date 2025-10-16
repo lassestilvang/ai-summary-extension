@@ -1026,6 +1026,34 @@ export function updateUILanguage(
       }
     });
 
+    // Update select options with data-i18n attributes
+    const optionElements = rootElement.querySelectorAll('option[data-i18n]');
+
+    optionElements.forEach((element) => {
+      const messageKey = element.getAttribute('data-i18n');
+      if (messageKey) {
+        const message = getMessage(messageKey);
+        if (message !== messageKey) {
+          element.textContent = message;
+        }
+      }
+    });
+
+    // Update optgroup labels with data-i18n attributes
+    const optgroupElements = rootElement.querySelectorAll(
+      'optgroup[data-i18n]'
+    );
+
+    optgroupElements.forEach((element) => {
+      const messageKey = element.getAttribute('data-i18n');
+      if (messageKey) {
+        const message = getMessage(messageKey);
+        if (message !== messageKey) {
+          element.label = message;
+        }
+      }
+    });
+
     // Update document direction for RTL languages
     const currentLang = languageOverride || getCurrentLanguage();
     const isRTL = isRTLLanguage(currentLang);

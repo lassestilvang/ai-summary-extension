@@ -503,7 +503,7 @@
   },
   "openSettings": {
     "message": "فتح الإعدادات",
-    "description": "Button title"
+    "description": "Button text"
   },
   "summaryLanguage": {
     "message": "لغة الملخص: $LANGUAGE$",
@@ -729,10 +729,6 @@
     "message": "لم يتم تكوين نماذج بديلة. يرجى تكوين مفاتيح API في الإعدادات.",
     "description": "Error message"
   },
-  "openSettings": {
-    "message": "فتح الإعدادات",
-    "description": "Button text"
-  },
   "regenerating": {
     "message": "جاري إعادة التوليد...",
     "description": "Status message"
@@ -920,5 +916,21 @@
   "themeNote": {
     "message": "ملاحظة: تخصيص مظهر نافذة التلخيص المنبثقة. يتم تطبيق التغييرات في الوقت الفعلي على المعاينة أدناه.",
     "description": "Theme page note"
+  },
+  "placeholder_openai_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "placeholder_gemini_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "placeholder_anthropic_key": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
+  },
+  "toggle_sidebar": {
+    "message": "PLACEHOLDER",
+    "description": "PLACEHOLDER"
   }
 }
