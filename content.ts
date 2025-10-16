@@ -49,6 +49,20 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
   showdownScript.src = chrome.runtime.getURL('showdown.js');
   document.head.appendChild(showdownScript);
 
+  // Load additional fonts for summary overlay
+  const fontLink = document.createElement('link');
+  fontLink.rel = 'stylesheet';
+  fontLink.href =
+    'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Lato:wght@400;700&family=Montserrat:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Open+Dyslexic:wght@400&display=swap';
+  document.head.appendChild(fontLink);
+
+  // Load OpenDyslexic from CDN as fallback
+  const openDyslexicLink = document.createElement('link');
+  openDyslexicLink.rel = 'stylesheet';
+  openDyslexicLink.href =
+    'https://cdn.jsdelivr.net/npm/opendyslexic@1.0.3/opendyslexic-regular.min.css';
+  document.head.appendChild(openDyslexicLink);
+
   // Function to extract page content using multiple strategies
   function extractPageContent(): string {
     // Strategy 1: Try readability.js for article parsing
