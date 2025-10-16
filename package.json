@@ -9,7 +9,7 @@
     "format": "prettier --write .",
     "prebuild": "rimraf dist",
     "build": "npm run copy-readability && vite build && npm run copy-assets",
-    "copy-assets": "cpy manifest.json options.html icon.png icon-1024.png showdown.js readability.js rtl.css dist/ --flat && cpy _locales dist/",
+    "copy-assets": "cpy manifest.json options.html icon.png icon-1024.png showdown.js readability.js dist/ --flat",
     "copy-readability": "cp node_modules/@mozilla/readability/Readability.js ./readability.js",
     "dev": "vite dev",
     "test": "jest",

@@ -37,13 +37,7 @@ interface ValidationStatus {
 }
 
 // Browser compatibility functions imported from utils
-import {
-  checkChromeBuiltinSupport,
-  getUserLanguage,
-  initializeI18n,
-  setUserLanguage,
-  updateUILanguage,
-} from './utils.js';
+import { checkChromeBuiltinSupport } from './utils.js';
 
 // Inline utility functions to avoid ES6 import issues
 async function validateApiKey(
@@ -369,124 +363,7 @@ function optionsGetModelConfig(model: string): ModelConfig | undefined {
   return models[model];
 }
 
-// Populate AI Model dropdown dynamically
-function populateModelDropdown() {
-  console.log('populateModelDropdown called');
-  const selectedModelSelect = document.getElementById(
-    'selectedModel'
-  ) as HTMLSelectElement;
-  console.log('selectedModelSelect element:', selectedModelSelect);
-  console.log(
-    'selectedModelSelect options:',
-    selectedModelSelect ? selectedModelSelect.options : 'No element found'
-  );
-  console.log(
-    'selectedModelSelect children:',
-    selectedModelSelect ? selectedModelSelect.children : 'No element found'
-  );
-  console.log(
-    'selectedModelSelect innerHTML:',
-    selectedModelSelect ? selectedModelSelect.innerHTML : 'No element found'
-  );
-  if (!selectedModelSelect) {
-    console.log('selectedModelSelect not found');
-    return;
-  }
-
-  // Clear existing options
-  selectedModelSelect.innerHTML = '';
-  console.log('Cleared existing options');
-
-  // Define model groups with their configurations
-  const modelGroups = [
-    {
-      labelKey: 'freeModels',
-      models: [
-        { value: 'chrome-builtin', i18nKey: 'chromeAiFree' },
-        { value: 'gemini-2.0-flash-exp', i18nKey: 'gemini20FlashExp' },
-      ],
-    },
-    {
-      labelKey: 'openaiModels',
-      models: [
-        { value: 'gpt-3.5-turbo', i18nKey: 'gpt35Turbo' },
-        { value: 'gpt-4', i18nKey: 'gpt4' },
-        { value: 'gpt-4-turbo', i18nKey: 'gpt4Turbo' },
-        { value: 'gpt-4o', i18nKey: 'gpt4o' },
-        { value: 'gpt-5', i18nKey: 'gpt5' },
-        { value: 'gpt-5-mini', i18nKey: 'gpt5Mini' },
-        { value: 'gpt-5-nano', i18nKey: 'gpt5Nano' },
-      ],
-    },
-    {
-      labelKey: 'googleGeminiModels',
-      models: [
-        { value: 'gemini-2.5-pro', i18nKey: 'gemini25Pro' },
-        { value: 'gemini-2.5-flash', i18nKey: 'gemini25Flash' },
-      ],
-    },
-    {
-      labelKey: 'anthropicClaudeModels',
-      models: [
-        { value: 'claude-3-haiku', i18nKey: 'claude3Haiku' },
-        { value: 'claude-3-sonnet', i18nKey: 'claude3Sonnet' },
-        { value: 'claude-3-opus', i18nKey: 'claude3Opus' },
-        { value: 'claude-3.5-sonnet', i18nKey: 'claude35Sonnet' },
-        { value: 'claude-4.5-sonnet', i18nKey: 'claudeSonnet45' },
-        { value: 'claude-4.5-haiku', i18nKey: 'claudeHaiku45' },
-      ],
-    },
-  ];
-
-  console.log('modelGroups defined:', modelGroups);
-
-  // Create optgroups and options
-  modelGroups.forEach((group, groupIndex) => {
-    console.log(`Processing group ${groupIndex}:`, group);
-    const optgroup = document.createElement('optgroup');
-    optgroup.setAttribute('data-i18n', group.labelKey);
-    optgroup.label = group.labelKey; // Fallback label
-    console.log(`Created optgroup with label: ${group.labelKey}`);
-
-    group.models.forEach((model, modelIndex) => {
-      console.log(
-        `Processing model ${modelIndex} in group ${groupIndex}:`,
-        model
-      );
-      const option = document.createElement('option');
-      option.value = model.value;
-      option.setAttribute('data-i18n', model.i18nKey);
-      option.textContent = model.i18nKey; // Fallback text
-      console.log(
-        `Created option with value: ${model.value}, text: ${model.i18nKey}`
-      );
-      optgroup.appendChild(option);
-    });
-
-    console.log(
-      `Appending optgroup to select, optgroup children count: ${optgroup.children.length}`
-    );
-    selectedModelSelect.appendChild(optgroup);
-  });
-
-  console.log(
-    'Final selectedModelSelect children count:',
-    selectedModelSelect.children.length
-  );
-  console.log(
-    'Final selectedModelSelect innerHTML:',
-    selectedModelSelect.innerHTML
-  );
-}
-
-// Initialize i18n inside DOMContentLoaded to ensure DOM elements exist
-document.addEventListener('DOMContentLoaded', async function () {
-  // Initialize i18n after DOM is ready
-  await initializeI18n();
-  // Populate model dropdown after i18n is ready
-  populateModelDropdown();
-  // Update UI language to translate dynamically added elements
-  updateUILanguage();
+document.addEventListener('DOMContentLoaded', function () {
   // Theme toggle functionality
   const themeToggle = document.getElementById(
     'themeToggle'
@@ -534,33 +411,12 @@ document.addEventListener('DOMContentLoaded', async function () {
   ) as HTMLButtonElement;
 
   // Settings elements
-  const languageSelect = document.getElementById(
-    'language'
-  ) as HTMLSelectElement;
   const selectedModelSelect = document.getElementById(
     'selectedModel'
   ) as HTMLSelectElement;
-  console.log('selectedModelSelect element:', selectedModelSelect);
-  console.log(
-    'selectedModelSelect options:',
-    selectedModelSelect ? selectedModelSelect.options : 'No element found'
-  );
-  console.log(
-    'selectedModelSelect children:',
-    selectedModelSelect ? selectedModelSelect.children : 'No element found'
-  );
-  console.log(
-    'selectedModelSelect innerHTML:',
-    selectedModelSelect ? selectedModelSelect.innerHTML : 'No element found'
-  );
-  // Add real-time language change listener
-  languageSelect.addEventListener('change', async () => {
-    const selectedLanguage = languageSelect.value;
-    await setUserLanguage(selectedLanguage);
-    updateUILanguage(document, selectedLanguage);
-    // Repopulate model dropdown with new language translations
-    populateModelDropdown();
-  });
+  const languageSelect = document.getElementById(
+    'language'
+  ) as HTMLSelectElement;
   const temperatureInput = document.getElementById(
     'temperature'
   ) as HTMLInputElement;
@@ -765,18 +621,14 @@ document.addEventListener('DOMContentLoaded', async function () {
       'geminiApiKey',
       'anthropicApiKey',
     ],
-    async function (result) {
+    function (result) {
       if (result.selectedModel) {
         selectedModelSelect.value = result.selectedModel;
       } else {
         // Set default to chrome-builtin if no model selected
         selectedModelSelect.value = 'chrome-builtin';
       }
-      // Load saved language preference
-      const savedLanguage = await getUserLanguage();
-      if (savedLanguage) {
-        languageSelect.value = savedLanguage;
-      } else if (result.language) {
+      if (result.language) {
         languageSelect.value = result.language;
       } else {
         languageSelect.value = 'en';
@@ -907,10 +759,6 @@ document.addEventListener('DOMContentLoaded', async function () {
       return;
     }
 
-    // Save language preference using the utility function
-    setUserLanguage(languageSelect.value).catch((error) => {
-      console.error('Failed to save language preference:', error);
-    });
     chrome.storage.sync.set(
       {
         selectedModel: selectedModel,
@@ -1634,8 +1482,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         // Clear status after 3 seconds
         setTimeout(() => {
           themeStatusDiv.textContent = '';
-          // Call populateModelDropdown after i18n is initialized
-          populateModelDropdown();
           themeStatusDiv.className = '';
         }, 3000);
       }

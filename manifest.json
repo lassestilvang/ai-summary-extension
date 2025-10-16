@@ -1,9 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "__MSG_appName__",
+  "name": "AI Summary",
   "version": "1.0.0",
-  "description": "__MSG_appDescription__",
-  "default_locale": "en",
+  "description": "🚀 One-click AI summary of any web page! Supports GPT-4, Gemini, Claude, and free Chrome AI. Instant, secure, and customizable",
   "icons": {
     "128": "icon.png",
     "1024": "icon-1024.png"
@@ -20,14 +19,15 @@
         "default": "Ctrl+Shift+S",
         "mac": "Command+Shift+S"
       },
-      "description": "__MSG_summarizeCurrentPage__"
+      "description": "Summarize current page"
     }
   },
   "action": {
-    "default_title": "__MSG_aiSummary__"
+    "default_title": "AI Summary"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "content_scripts": [
     {
