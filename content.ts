@@ -60,7 +60,7 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
   const openDyslexicLink = document.createElement('link');
   openDyslexicLink.rel = 'stylesheet';
   openDyslexicLink.href =
-    'https://cdn.jsdelivr.net/npm/opendyslexic@1.0.3/opendyslexic-regular.min.css';
+    'https://cdn.jsdelivr.net/npm/@fontsource/opendyslexic@5.2.5/index.min.css';
   document.head.appendChild(openDyslexicLink);
 
   // Function to extract page content using multiple strategies
