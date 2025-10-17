@@ -692,6 +692,25 @@ document.addEventListener('DOMContentLoaded', function () {
     'dateTimeFormat'
   ) as HTMLSelectElement;
 
+  // Save enableRightClickContextMenu setting immediately when toggled
+  enableRightClickContextMenuCheckbox?.addEventListener('change', function () {
+    chrome.storage.sync.set(
+      {
+        enableRightClickContextMenu:
+          enableRightClickContextMenuCheckbox.checked,
+      },
+      function () {
+        // Optional: Show a brief success message or handle errors
+        if (chrome.runtime.lastError) {
+          console.error(
+            'Error saving right-click context menu setting:',
+            chrome.runtime.lastError
+          );
+        }
+      }
+    );
+  });
+
   // History elements
   const searchInput = document.getElementById(
     'searchInput'
