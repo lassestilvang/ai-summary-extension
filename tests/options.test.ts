@@ -467,6 +467,7 @@ describe('Options Script Comprehensive Tests', () => {
           geminiApiKey: 'new-gemini-key',
           anthropicApiKey: 'new-anthropic-key',
           dateTimeFormat: 'dd/mm/yyyy-24h',
+          enableRightClickContextMenu: true,
         },
         expect.any(Function)
       );
