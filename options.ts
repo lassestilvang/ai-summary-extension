@@ -37,7 +37,11 @@ interface ValidationStatus {
 }
 
 // Browser compatibility functions imported from utils
-import { checkChromeBuiltinSupport } from './utils.js';
+import {
+  checkChromeBuiltinSupport,
+  formatDateTime,
+  getDefaultDateTimeFormat,
+} from './utils.js';
 
 // Inline utility functions to avoid ES6 import issues
 async function validateApiKey(
@@ -680,6 +684,11 @@ document.addEventListener('DOMContentLoaded', function () {
     'metricsContainer'
   ) as HTMLDivElement;
 
+  // Extension settings elements
+  const dateTimeFormatSelect = document.getElementById(
+    'dateTimeFormat'
+  ) as HTMLSelectElement;
+
   // History elements
   const searchInput = document.getElementById(
     'searchInput'
@@ -834,49 +843,68 @@ document.addEventListener('DOMContentLoaded', function () {
       'openaiApiKey',
       'geminiApiKey',
       'anthropicApiKey',
+      'dateTimeFormat',
     ],
     function (result) {
-      if (result.selectedModel) {
-        selectedModelSelect.value = result.selectedModel;
-      } else {
-        // Set default to chrome-builtin if no model selected
+      try {
+        if (result.selectedModel) {
+          selectedModelSelect.value = result.selectedModel;
+        } else {
+          // Set default to chrome-builtin if no model selected
+          selectedModelSelect.value = 'chrome-builtin';
+        }
+        if (result.language) {
+          languageSelect.value = result.language;
+        } else {
+          languageSelect.value = 'en';
+        }
+        if (result.temperature !== undefined) {
+          temperatureInput.value = result.temperature.toString();
+          temperatureValue.textContent = result.temperature.toString();
+        } else {
+          temperatureInput.value = '0.7';
+          temperatureValue.textContent = '0.7';
+        }
+        if (result.maxTokens !== undefined) {
+          maxTokensInput.value = result.maxTokens.toString();
+        } else {
+          maxTokensInput.value = '1000';
+        }
+        if (result.summaryLength) {
+          summaryLengthSelect.value = result.summaryLength;
+        } else {
+          summaryLengthSelect.value = 'medium';
+        }
+        if (result.enableFallback !== undefined) {
+          enableFallbackCheckbox.checked = result.enableFallback;
+        } else {
+          enableFallbackCheckbox.checked = true; // Default to enabled
+        }
+        if (result.openaiApiKey) {
+          openaiApiKeyInput.value = result.openaiApiKey;
+        }
+        if (result.geminiApiKey) {
+          geminiApiKeyInput.value = result.geminiApiKey;
+        }
+        if (result.anthropicApiKey) {
+          anthropicApiKeyInput.value = result.anthropicApiKey;
+        }
+        if (result.dateTimeFormat) {
+          dateTimeFormatSelect.value = result.dateTimeFormat;
+        } else {
+          dateTimeFormatSelect.value = getDefaultDateTimeFormat();
+        }
+      } catch (error) {
+        console.error('Error loading settings:', error);
+        // Set defaults in case of error
         selectedModelSelect.value = 'chrome-builtin';
-      }
-      if (result.language) {
-        languageSelect.value = result.language;
-      } else {
         languageSelect.value = 'en';
-      }
-      if (result.temperature !== undefined) {
-        temperatureInput.value = result.temperature.toString();
-        temperatureValue.textContent = result.temperature.toString();
-      } else {
         temperatureInput.value = '0.7';
         temperatureValue.textContent = '0.7';
-      }
-      if (result.maxTokens !== undefined) {
-        maxTokensInput.value = result.maxTokens.toString();
-      } else {
         maxTokensInput.value = '1000';
-      }
-      if (result.summaryLength) {
-        summaryLengthSelect.value = result.summaryLength;
-      } else {
         summaryLengthSelect.value = 'medium';
-      }
-      if (result.enableFallback !== undefined) {
-        enableFallbackCheckbox.checked = result.enableFallback;
-      } else {
-        enableFallbackCheckbox.checked = true; // Default to enabled
-      }
-      if (result.openaiApiKey) {
-        openaiApiKeyInput.value = result.openaiApiKey;
-      }
-      if (result.geminiApiKey) {
-        geminiApiKeyInput.value = result.geminiApiKey;
-      }
-      if (result.anthropicApiKey) {
-        anthropicApiKeyInput.value = result.anthropicApiKey;
+        enableFallbackCheckbox.checked = true;
+        dateTimeFormatSelect.value = getDefaultDateTimeFormat();
       }
     }
   );
@@ -923,6 +951,7 @@ document.addEventListener('DOMContentLoaded', function () {
             openaiApiKey: openaiApiKey,
             geminiApiKey: geminiApiKey,
             anthropicApiKey: anthropicApiKey,
+            dateTimeFormat: dateTimeFormatSelect.value,
           },
           function () {
             setTimeout(() => {
@@ -984,10 +1013,17 @@ document.addEventListener('DOMContentLoaded', function () {
         openaiApiKey: openaiApiKey,
         geminiApiKey: geminiApiKey,
         anthropicApiKey: anthropicApiKey,
+        dateTimeFormat: dateTimeFormatSelect.value,
       },
       function () {
-        statusDiv.textContent = 'Settings saved successfully!';
-        statusDiv.className = 'status success';
+        if (chrome.runtime.lastError) {
+          console.error('Error saving settings:', chrome.runtime.lastError);
+          statusDiv.textContent = 'Error saving settings. Please try again.';
+          statusDiv.className = 'status error';
+        } else {
+          statusDiv.textContent = 'Settings saved successfully!';
+          statusDiv.className = 'status success';
+        }
 
         // Clear status after 3 seconds
         setTimeout(() => {
@@ -1003,7 +1039,7 @@ document.addEventListener('DOMContentLoaded', function () {
     chrome.runtime.sendMessage({ action: 'get_model_metrics' });
   }
 
-  function displayMetrics(
+  async function displayMetrics(
     metrics: Record<
       string,
       {
@@ -1022,6 +1058,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     let html = '';
+    const currentFormat = await getCurrentDateTimeFormat();
 
     Object.entries(metrics).forEach(([modelKey, stats]: [string, any]) => {
       const modelConfig = optionsGetModelConfig(modelKey);
@@ -1032,7 +1069,7 @@ document.addEventListener('DOMContentLoaded', function () {
           : 0;
       const avgTime = stats.avgTime || 0;
       const lastUsed = stats.lastUsed
-        ? new Date(stats.lastUsed).toLocaleDateString()
+        ? formatDateTime(new Date(stats.lastUsed), currentFormat)
         : 'Never';
 
       html += `
@@ -1064,9 +1101,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Handle metrics response
-  chrome.runtime.onMessage.addListener((request: any) => {
+  chrome.runtime.onMessage.addListener(async (request: any) => {
     if (request.action === 'model_metrics_response') {
-      displayMetrics(request.metrics);
+      await displayMetrics(request.metrics);
     }
   });
 
@@ -1129,7 +1166,7 @@ document.addEventListener('DOMContentLoaded', function () {
     exportHistoryButton.disabled = !hasHistory || !hasFormat;
   }
 
-  function filterAndDisplayHistory() {
+  async function filterAndDisplayHistory() {
     const searchTerm = searchInput.value.toLowerCase();
     const selectedModel = filterModelSelect.value;
 
@@ -1159,8 +1196,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     let html = '';
+    const currentFormat = await getCurrentDateTimeFormat();
     filteredHistory.forEach((item) => {
-      const date = new Date(item.timestamp).toLocaleString();
+      const date = formatDateTime(new Date(item.timestamp), currentFormat);
       const modelConfig = optionsGetModelConfig(item.model);
       const modelName = modelConfig ? modelConfig.name : item.model;
 
@@ -1210,7 +1248,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Export functions
-  function exportHistory(format: string) {
+  async function exportHistory(format: string) {
     if (allHistory.length === 0) {
       const historyStatusDiv = document.getElementById(
         'historyStatus'
@@ -1252,7 +1290,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       switch (format) {
         case 'csv':
-          content = exportToCSV(filteredHistory);
+          content = await exportToCSV(filteredHistory);
           mimeType = 'text/csv';
           filename = 'summary-history.csv';
           break;
@@ -1262,7 +1300,7 @@ document.addEventListener('DOMContentLoaded', function () {
           filename = 'summary-history.json';
           break;
         case 'html':
-          content = exportToHTML(filteredHistory);
+          content = await exportToHTML(filteredHistory);
           mimeType = 'text/html';
           filename = 'summary-history.html';
           break;
@@ -1323,7 +1361,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  function exportToCSV(history: any[]): string {
+  async function exportToCSV(history: any[]): Promise<string> {
     const headers = [
       'Date',
       'Title',
@@ -1333,8 +1371,9 @@ document.addEventListener('DOMContentLoaded', function () {
       'Time',
       'Total Time',
     ];
+    const currentFormat = await getCurrentDateTimeFormat();
     const rows = history.map((item) => [
-      new Date(item.timestamp).toLocaleString(),
+      formatDateTime(new Date(item.timestamp), currentFormat),
       item.title || 'Untitled',
       item.url,
       item.summary.replace(/"/g, '""'), // Escape quotes
@@ -1354,7 +1393,8 @@ document.addEventListener('DOMContentLoaded', function () {
     return JSON.stringify(history, null, 2);
   }
 
-  function exportToHTML(history: any[]): string {
+  async function exportToHTML(history: any[]): Promise<string> {
+    const currentFormat = await getCurrentDateTimeFormat();
     const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -1395,7 +1435,7 @@ document.addEventListener('DOMContentLoaded', function () {
                  .map(
                    (item) => `
                    <tr>
-                       <td class="date">${new Date(item.timestamp).toLocaleString()}</td>
+                       <td class="date">${formatDateTime(new Date(item.timestamp), currentFormat)}</td>
                        <td>${item.title || 'Untitled'}</td>
                        <td class="url"><a href="${item.url}" target="_blank">${item.url}</a></td>
                        <td class="summary">${item.summary}</td>
@@ -1415,8 +1455,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Add search and filter event listeners
-  searchInput.addEventListener('input', filterAndDisplayHistory);
-  filterModelSelect.addEventListener('change', filterAndDisplayHistory);
+  searchInput.addEventListener('input', () => filterAndDisplayHistory());
+  filterModelSelect.addEventListener('change', () => filterAndDisplayHistory());
 
   // Add export event listeners
   exportFormatSelect.addEventListener('change', updateExportButtonState);
@@ -1484,6 +1524,16 @@ document.addEventListener('DOMContentLoaded', function () {
   // Event listeners for history buttons
   refreshHistoryButton.addEventListener('click', loadHistory);
   clearHistoryButton.addEventListener('click', clearHistory);
+
+  // Add event listener for date/time format changes to refresh displays
+  dateTimeFormatSelect.addEventListener('change', () => {
+    // Save the new format setting
+    const newFormat = dateTimeFormatSelect.value;
+    chrome.storage.sync.set({ dateTimeFormat: newFormat }, () => {
+      // Refresh all date displays
+      refreshDateDisplays();
+    });
+  });
 
   // Load metrics on page load
   loadMetrics();
@@ -1725,6 +1775,49 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     );
   });
+  // Function to get current date/time format from storage
+  function getCurrentDateTimeFormat(): Promise<string> {
+    return new Promise((resolve) => {
+      chrome.storage.sync.get('dateTimeFormat', (result) => {
+        resolve(result.dateTimeFormat || getDefaultDateTimeFormat());
+      });
+    });
+  }
+
+  // Function to populate dateTimeFormat select with current previews
+  function populateDateTimeFormatOptions() {
+    const now = new Date();
+    const formats = [
+      { value: 'dd/mm/yyyy-24h', label: 'DD/MM/YYYY HH:MM (24-hour)' },
+      { value: 'mm/dd/yyyy-12h', label: 'MM/DD/YYYY HH:MM (12-hour)' },
+      { value: 'yyyy-mm-dd-24h', label: 'YYYY-MM-DD HH:MM (24-hour)' },
+      { value: 'dd.mm.yyyy-24h', label: 'DD.MM.YYYY HH:MM (24-hour)' },
+      { value: 'mm-dd-yyyy-12h', label: 'MM-DD-YYYY HH:MM (12-hour)' },
+    ];
+
+    dateTimeFormatSelect.innerHTML = '';
+    formats.forEach((format) => {
+      const option = document.createElement('option');
+      option.value = format.value;
+      option.textContent = `${format.label} - ${formatDateTime(now, format.value)}`;
+      dateTimeFormatSelect.appendChild(option);
+    });
+  }
+
+  // Function to refresh all date displays when format changes
+  async function refreshDateDisplays() {
+    // Refresh history display
+    if (allHistory.length > 0) {
+      await filterAndDisplayHistory();
+    }
+
+    // Refresh metrics display
+    loadMetrics();
+  }
+
+  // Populate options on page load
+  populateDateTimeFormatOptions();
+
   // Attach utility functions to window for testing
   (window as any).validateApiKey = validateApiKey;
   (window as any).validateOpenAIApiKey = validateOpenAIApiKey;
@@ -1732,6 +1825,7 @@ document.addEventListener('DOMContentLoaded', function () {
   (window as any).validateAnthropicApiKey = validateAnthropicApiKey;
   (window as any).isModelAvailable = isModelAvailable;
   (window as any).optionsGetModelConfig = optionsGetModelConfig;
+  (window as any).formatDateTime = formatDateTime;
   // ===== SHORTCUTS FUNCTIONALITY =====
 
   // Get shortcut-related elements

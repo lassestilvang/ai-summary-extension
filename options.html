@@ -1244,6 +1244,17 @@
               <a
                 href="#"
                 class="nav-link"
+                data-page="extension-settings"
+                aria-label="Extension Settings"
+              >
+                <i class="fas fa-sliders-h"></i>
+                <span class="nav-text">Extension Settings</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                href="#"
+                class="nav-link"
                 data-page="theme"
                 aria-label="Theme Customization"
               >
@@ -1530,6 +1541,22 @@
           </form>
 
           <div id="status"></div>
+        </div>
+
+        <!-- Extension Settings Page -->
+        <div id="extension-settings-page" class="page">
+          <h2 class="page-title">Extension Settings</h2>
+
+          <div class="form-group">
+            <label class="form-label" for="dateTimeFormat">Date and Time Format:</label>
+            <select class="form-select" id="dateTimeFormat">
+              <option value="dd/mm/yyyy-24h">DD/MM/YYYY HH:MM (24-hour) - 17/10/2024 20:21</option>
+              <option value="mm/dd/yyyy-12h">MM/DD/YYYY HH:MM (12-hour) - 10/17/2024 08:21 PM</option>
+              <option value="yyyy-mm-dd-24h">YYYY-MM-DD HH:MM (24-hour) - 2024-10-17 20:21</option>
+              <option value="dd.mm.yyyy-24h">DD.MM.YYYY HH:MM (24-hour) - 17.10.2024 20:21</option>
+              <option value="mm-dd-yyyy-12h">MM-DD-YYYY HH:MM (12-hour) - 10-17-2024 08:21 PM</option>
+            </select>
+          </div>
         </div>
 
         <!-- Theme Page -->

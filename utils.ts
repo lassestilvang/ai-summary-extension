@@ -757,5 +757,38 @@ export function validateLanguageSupport(
     needsFallback: !supported && language !== 'en',
   };
 }
+// Date/Time formatting utility
+export function formatDateTime(date: Date, format: string): string {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1; // getMonth() returns 0-11
+  const day = date.getDate();
+  const hours24 = date.getHours();
+  const hours12 = hours24 % 12 || 12;
+  const minutes = date.getMinutes();
+  const ampm = hours24 >= 12 ? 'PM' : 'AM';
+
+  const pad = (num: number) => num.toString().padStart(2, '0');
+
+  switch (format) {
+    case 'dd/mm/yyyy-24h':
+      return `${pad(day)}/${pad(month)}/${year} ${pad(hours24)}:${pad(minutes)}`;
+    case 'mm/dd/yyyy-12h':
+      return `${pad(month)}/${pad(day)}/${year} ${pad(hours12)}:${pad(minutes)} ${ampm}`;
+    case 'yyyy-mm-dd-24h':
+      return `${year}-${pad(month)}-${pad(day)} ${pad(hours24)}:${pad(minutes)}`;
+    case 'dd.mm.yyyy-24h':
+      return `${pad(day)}.${pad(month)}.${year} ${pad(hours24)}:${pad(minutes)}`;
+    case 'mm-dd-yyyy-12h':
+      return `${pad(month)}-${pad(day)}-${year} ${pad(hours12)}:${pad(minutes)} ${ampm}`;
+    default:
+      return `${pad(day)}/${pad(month)}/${year} ${pad(hours24)}:${pad(minutes)}`;
+  }
+}
+
+// Get default date/time format based on system locale
+export function getDefaultDateTimeFormat(): string {
+  // Default to dd/mm/yyyy-24h format
+  return 'dd/mm/yyyy-24h';
+}
 
 export { LANGUAGE_SUPPORT };

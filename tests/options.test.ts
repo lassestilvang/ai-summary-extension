@@ -81,6 +81,7 @@ describe('Options Script Comprehensive Tests', () => {
         value: 'test-anthropic-key',
         addEventListener: jest.fn(),
       },
+      dateTimeFormat: { value: 'dd/mm/yyyy-24h', appendChild: jest.fn() },
       save: { addEventListener: jest.fn() },
       theme: {
         value: 'light',
@@ -244,6 +245,7 @@ describe('Options Script Comprehensive Tests', () => {
           openaiApiKey: 'test-openai-key',
           geminiApiKey: 'test-gemini-key',
           anthropicApiKey: 'test-anthropic-key',
+          dateTimeFormat: 'dd/mm/yyyy-24h',
           theme: 'nord',
           fontFamily: 'Arial',
           fontSize: 14,
@@ -359,6 +361,7 @@ describe('Options Script Comprehensive Tests', () => {
       expect(document.getElementById).toHaveBeenCalledWith('openaiApiKey');
       expect(document.getElementById).toHaveBeenCalledWith('geminiApiKey');
       expect(document.getElementById).toHaveBeenCalledWith('anthropicApiKey');
+      expect(document.getElementById).toHaveBeenCalledWith('dateTimeFormat');
       expect(document.getElementById).toHaveBeenCalledWith('status');
       expect(document.getElementById).toHaveBeenCalledWith('theme');
       expect(document.getElementById).toHaveBeenCalledWith('fontFamily');
@@ -397,6 +400,7 @@ describe('Options Script Comprehensive Tests', () => {
           'openaiApiKey',
           'geminiApiKey',
           'anthropicApiKey',
+          'dateTimeFormat',
         ],
         expect.any(Function)
       );
