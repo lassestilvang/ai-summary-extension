@@ -1715,6 +1715,13 @@ async function checkChromeBuiltinSupport(): Promise<boolean> {
           }
         );
       }
+    } else if (request.action === 'summarize_selected_text') {
+      // Handle context menu selection summarization
+      isGeneratingSummary = true;
+      chrome.runtime.sendMessage({
+        action: 'process_content',
+        content: request.selectedText,
+      });
     } else if (request.action === 'model_switched') {
       const modelSelect = document.getElementById(
         'ai-summary-model-selector'
