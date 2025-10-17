@@ -85,7 +85,7 @@ describe('Options Script Comprehensive Tests', () => {
       maxTokens: { value: '1000' },
       summaryLength: { value: 'medium' },
       enableFallback: { checked: true },
-      enableRightClickContextMenu: { checked: true },
+      enableRightClickContextMenu: { checked: true, addEventListener: jest.fn() },
       openaiApiKey: { value: 'test-openai-key', addEventListener: jest.fn() },
       geminiApiKey: { value: 'test-gemini-key', addEventListener: jest.fn() },
       anthropicApiKey: {
