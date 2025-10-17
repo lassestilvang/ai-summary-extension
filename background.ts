@@ -9,6 +9,30 @@ import {
   validateLanguageSupport,
 } from './utils';
 
+// Context menu management
+async function updateContextMenu() {
+  if (!chrome.contextMenus) return;
+
+  const { enableRightClickContextMenu = true } = await chrome.storage.sync.get(
+    'enableRightClickContextMenu'
+  );
+
+  try {
+    if (enableRightClickContextMenu) {
+      chrome.contextMenus.create({
+        id: 'summarize-selected-text',
+        title: 'Summarize Selected Text',
+        contexts: ['selection'],
+      });
+    } else {
+      chrome.contextMenus.remove('summarize-selected-text');
+    }
+  } catch (error) {
+    // Context menu might already exist or not exist, ignore errors
+    console.log('Context menu update:', error);
+  }
+}
+
 interface SummaryState {
   [tabId: number]: {
     summary: string;
@@ -74,11 +98,15 @@ if (
   chrome.runtime.onInstalled.addListener(async () => {
     // Perform initial compatibility check
     await checkChromeBuiltinSupport();
+    // Initialize context menu
+    await updateContextMenu();
   });
 
   chrome.runtime.onStartup.addListener(async () => {
     // Perform initial compatibility check
     await checkChromeBuiltinSupport();
+    // Initialize context menu
+    await updateContextMenu();
   });
 }
 
@@ -1052,3 +1080,39 @@ chrome.tabs.onUpdated.addListener((tabId: number, changeInfo: any) => {
     delete summaryState[tabId];
   }
 });
+
+// Handle context menu clicks
+if (chrome.contextMenus && chrome.contextMenus.onClicked) {
+  chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+    if (
+      info.menuItemId === 'summarize-selected-text' &&
+      info.selectionText &&
+      tab?.id
+    ) {
+      // Inject library scripts dynamically
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['readability.js', 'showdown.js', 'content.js'],
+      });
+
+      // Send message to content script to summarize selected text
+      chrome.tabs
+        .sendMessage(tab.id, {
+          action: 'summarize_selected_text',
+          selectedText: info.selectionText,
+        })
+        .catch((error) => {
+          console.log('Content script message failed:', error);
+        });
+    }
+  });
+}
+
+// Listen for storage changes to update context menu
+if (chrome.storage && chrome.storage.onChanged) {
+  chrome.storage.onChanged.addListener(async (changes, namespace) => {
+    if (namespace === 'sync' && changes.enableRightClickContextMenu) {
+      await updateContextMenu();
+    }
+  });
+}
