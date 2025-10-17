@@ -685,6 +685,9 @@ document.addEventListener('DOMContentLoaded', function () {
   ) as HTMLDivElement;
 
   // Extension settings elements
+  const enableRightClickContextMenuCheckbox = document.getElementById(
+    'enableRightClickContextMenu'
+  ) as HTMLInputElement;
   const dateTimeFormatSelect = document.getElementById(
     'dateTimeFormat'
   ) as HTMLSelectElement;
@@ -844,6 +847,7 @@ document.addEventListener('DOMContentLoaded', function () {
       'geminiApiKey',
       'anthropicApiKey',
       'dateTimeFormat',
+      'enableRightClickContextMenu',
     ],
     function (result) {
       try {
@@ -893,6 +897,12 @@ document.addEventListener('DOMContentLoaded', function () {
           dateTimeFormatSelect.value = result.dateTimeFormat;
         } else {
           dateTimeFormatSelect.value = getDefaultDateTimeFormat();
+        }
+        if (result.enableRightClickContextMenu !== undefined) {
+          enableRightClickContextMenuCheckbox.checked =
+            result.enableRightClickContextMenu;
+        } else {
+          enableRightClickContextMenuCheckbox.checked = true; // Default to enabled
         }
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -1009,6 +1019,8 @@ document.addEventListener('DOMContentLoaded', function () {
         temperature: temperature,
         maxTokens: maxTokens,
         summaryLength: summaryLength,
+        enableRightClickContextMenu:
+          enableRightClickContextMenuCheckbox.checked,
         enableFallback: enableFallback,
         openaiApiKey: openaiApiKey,
         geminiApiKey: geminiApiKey,
