@@ -7,7 +7,7 @@
     "128": "icon.png",
     "1024": "icon-1024.png"
   },
-  "permissions": ["activeTab", "scripting", "storage", "commands"],
+  "permissions": ["activeTab", "scripting", "storage", "commands", "contextMenus"],
   "optional_host_permissions": [
     "https://api.openai.com/*",
     "https://generativelanguage.googleapis.com/*",
