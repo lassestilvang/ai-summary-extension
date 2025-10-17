@@ -423,6 +423,7 @@ describe('Options Script Comprehensive Tests', () => {
           'geminiApiKey',
           'anthropicApiKey',
           'dateTimeFormat',
+          'enableRightClickContextMenu',
         ],
         expect.any(Function)
       );
