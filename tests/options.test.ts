@@ -85,6 +85,7 @@ describe('Options Script Comprehensive Tests', () => {
       maxTokens: { value: '1000' },
       summaryLength: { value: 'medium' },
       enableFallback: { checked: true },
+      enableRightClickContextMenu: { checked: true },
       openaiApiKey: { value: 'test-openai-key', addEventListener: jest.fn() },
       geminiApiKey: { value: 'test-gemini-key', addEventListener: jest.fn() },
       anthropicApiKey: {
@@ -694,7 +695,6 @@ describe('Options Script Comprehensive Tests', () => {
     });
 
     describe('window.validateOpenAIApiKey', () => {
-       const enableRightClickContextMenu: { checked: boolean } = { checked: true };
       it('should return valid for successful response', async () => {
         fetchMock.mockResponseOnce('', { status: 200 });
         const result = await window.validateOpenAIApiKey('valid-key');
