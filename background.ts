@@ -523,9 +523,9 @@ export async function storeSummaryHistory(
     // Add to beginning of array (most recent first)
     (summaryHistory as SummaryHistoryEntry[]).unshift(historyEntry);
 
-    // Keep only the most recent 50 summaries
-    if ((summaryHistory as SummaryHistoryEntry[]).length > 50) {
-      (summaryHistory as SummaryHistoryEntry[]).splice(50);
+    // Keep only the most recent 500 summaries
+    if ((summaryHistory as SummaryHistoryEntry[]).length > 500) {
+      (summaryHistory as SummaryHistoryEntry[]).splice(500);
     }
 
     await chrome.storage.local.set({ summaryHistory });
