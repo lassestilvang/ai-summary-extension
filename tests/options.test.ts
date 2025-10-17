@@ -692,6 +692,7 @@ describe('Options Script Comprehensive Tests', () => {
     });
 
     describe('window.validateOpenAIApiKey', () => {
+       const enableRightClickContextMenu: { checked: boolean } = { checked: true };
       it('should return valid for successful response', async () => {
         fetchMock.mockResponseOnce('', { status: 200 });
         const result = await window.validateOpenAIApiKey('valid-key');
