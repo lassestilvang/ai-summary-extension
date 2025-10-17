@@ -899,10 +899,14 @@ document.addEventListener('DOMContentLoaded', function () {
           dateTimeFormatSelect.value = getDefaultDateTimeFormat();
         }
         if (result.enableRightClickContextMenu !== undefined) {
-          enableRightClickContextMenuCheckbox.checked =
-            result.enableRightClickContextMenu;
+          if (enableRightClickContextMenuCheckbox) {
+            enableRightClickContextMenuCheckbox.checked =
+              result.enableRightClickContextMenu;
+          }
         } else {
-          enableRightClickContextMenuCheckbox.checked = true; // Default to enabled
+          if (enableRightClickContextMenuCheckbox) {
+            enableRightClickContextMenuCheckbox.checked = true; // Default to enabled
+          }
         }
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -915,6 +919,9 @@ document.addEventListener('DOMContentLoaded', function () {
         summaryLengthSelect.value = 'medium';
         enableFallbackCheckbox.checked = true;
         dateTimeFormatSelect.value = getDefaultDateTimeFormat();
+        if (enableRightClickContextMenuCheckbox) {
+          enableRightClickContextMenuCheckbox.checked = true;
+        }
       }
     }
   );
@@ -1020,7 +1027,7 @@ document.addEventListener('DOMContentLoaded', function () {
         maxTokens: maxTokens,
         summaryLength: summaryLength,
         enableRightClickContextMenu:
-          enableRightClickContextMenuCheckbox.checked,
+          enableRightClickContextMenuCheckbox?.checked ?? true,
         enableFallback: enableFallback,
         openaiApiKey: openaiApiKey,
         geminiApiKey: geminiApiKey,
