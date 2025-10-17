@@ -7,6 +7,15 @@ import 'jest-fetch-mock';
 // Mock utils module
 jest.mock('../utils', () => ({
   checkChromeBuiltinSupport: jest.fn().mockResolvedValue(true),
+  formatDateTime: jest.fn((date, format) => {
+    // Mock different return values based on the date for testing
+    const dateStr = date.toISOString().split('T')[0];
+    if (dateStr === '2023-12-01') return '01/12/2023 10:00';
+    if (dateStr === '2023-12-02') return '02/12/2023 10:00';
+    return '17/10/2024 20:21';
+  }),
+  getDefaultDateTimeFormat: jest.fn().mockReturnValue('dd/mm/yyyy-24h'),
+  getCurrentDateTimeFormat: jest.fn().mockResolvedValue('dd/mm/yyyy-24h'),
 }));
 
 declare global {
@@ -81,7 +90,7 @@ describe('Options Script Comprehensive Tests', () => {
         value: 'test-anthropic-key',
         addEventListener: jest.fn(),
       },
-      dateTimeFormat: { value: 'dd/mm/yyyy-24h', appendChild: jest.fn() },
+      dateTimeFormat: { value: 'dd/mm/yyyy-24h', appendChild: jest.fn(), addEventListener: jest.fn() },
       save: { addEventListener: jest.fn() },
       theme: {
         value: 'light',
@@ -216,6 +225,14 @@ describe('Options Script Comprehensive Tests', () => {
         return {
           textContent: '',
           appendChild: jest.fn(),
+        };
+      }
+      if (tag === 'a') {
+        return {
+          href: '',
+          download: '',
+          click: jest.fn(),
+          style: {},
         };
       }
       return { appendChild: jest.fn() };
@@ -443,6 +460,7 @@ describe('Options Script Comprehensive Tests', () => {
           openaiApiKey: 'new-openai-key',
           geminiApiKey: 'new-gemini-key',
           anthropicApiKey: 'new-anthropic-key',
+          dateTimeFormat: 'dd/mm/yyyy-24h',
         },
         expect.any(Function)
       );
@@ -510,7 +528,7 @@ describe('Options Script Comprehensive Tests', () => {
       },
     };
 
-    it('should display metrics table when metrics exist', () => {
+    it('should display metrics table when metrics exist', async () => {
       // Mock the displayMetrics function call
       const mockMetricsResponse = {
         action: 'model_metrics_response',
@@ -525,13 +543,16 @@ describe('Options Script Comprehensive Tests', () => {
         }
       );
 
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
+
       expect(mockDOM.metricsContainer.innerHTML).toContain(
         'Chrome Built-in AI'
       );
       expect(mockDOM.metricsContainer.innerHTML).toContain('GPT-3.5 Turbo');
     });
 
-    it('should show message when no metrics exist', () => {
+    it('should show message when no metrics exist', async () => {
       const mockMetricsResponse = {
         action: 'model_metrics_response',
         metrics: {},
@@ -543,12 +564,15 @@ describe('Options Script Comprehensive Tests', () => {
         }
       );
 
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
+
       expect(mockDOM.metricsContainer.innerHTML).toContain(
         'No performance data available yet'
       );
     });
 
-    it('should calculate success rate correctly', () => {
+    it('should calculate success rate correctly', async () => {
       const mockMetricsResponse = {
         action: 'model_metrics_response',
         metrics: mockMetrics,
@@ -559,12 +583,15 @@ describe('Options Script Comprehensive Tests', () => {
           listener(mockMetricsResponse);
         }
       );
+
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       expect(mockDOM.metricsContainer.innerHTML).toContain('80.0%'); // 8/10
       expect(mockDOM.metricsContainer.innerHTML).toContain('2.55s'); // avg time
     });
 
-    it('should format last used date correctly', () => {
+    it('should format last used date correctly', async () => {
       const mockMetricsResponse = {
         action: 'model_metrics_response',
         metrics: mockMetrics,
@@ -576,10 +603,13 @@ describe('Options Script Comprehensive Tests', () => {
         }
       );
 
-      expect(mockDOM.metricsContainer.innerHTML).toContain('12/1/2023');
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(mockDOM.metricsContainer.innerHTML).toContain('01/12/2023 10:00');
     });
 
-    it('should handle missing model config gracefully', () => {
+    it('should handle missing model config gracefully', async () => {
       const mockMetricsResponse = {
         action: 'model_metrics_response',
         metrics: {
@@ -599,6 +629,9 @@ describe('Options Script Comprehensive Tests', () => {
           listener(mockMetricsResponse);
         }
       );
+
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       expect(mockDOM.metricsContainer.innerHTML).toContain('unknown-model');
     });
@@ -989,7 +1022,7 @@ describe('Options Script Comprehensive Tests', () => {
       },
     ];
 
-    it('should display history items correctly', () => {
+    it('should display history items correctly', async () => {
       // Mock chrome.storage.local.get for history
       (chrome.storage.local.get as any).mockImplementationOnce(
         (keys: any, callback?: (result: any) => void) => {
@@ -1002,6 +1035,9 @@ describe('Options Script Comprehensive Tests', () => {
       const refreshButton = mockDOM.refreshHistory;
       const clickHandler = refreshButton.addEventListener.mock.calls[0][1];
       clickHandler();
+
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       expect(mockDOM.historyContainer.innerHTML).toContain('Example Page');
       expect(mockDOM.historyContainer.innerHTML).toContain(
@@ -1027,7 +1063,7 @@ describe('Options Script Comprehensive Tests', () => {
       );
     });
 
-    it('should handle missing title gracefully', () => {
+    it('should handle missing title gracefully', async () => {
       const historyWithMissingTitle = [
         {
           ...mockHistory[1],
@@ -1046,10 +1082,13 @@ describe('Options Script Comprehensive Tests', () => {
       const clickHandler = refreshButton.addEventListener.mock.calls[0][1];
       clickHandler();
 
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
+
       expect(mockDOM.historyContainer.innerHTML).toContain('Untitled');
     });
 
-    it('should format timestamps correctly', () => {
+    it('should format timestamps correctly', async () => {
       (chrome.storage.local.get as any).mockImplementationOnce(
         (keys: any, callback?: (result: any) => void) => {
           if (callback) callback({ summaryHistory: mockHistory });
@@ -1061,11 +1100,14 @@ describe('Options Script Comprehensive Tests', () => {
       const clickHandler = refreshButton.addEventListener.mock.calls[0][1];
       clickHandler();
 
-      expect(mockDOM.historyContainer.innerHTML).toContain('12/1/2023');
-      expect(mockDOM.historyContainer.innerHTML).toContain('12/2/2023');
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(mockDOM.historyContainer.innerHTML).toContain('01/12/2023 10:00');
+      expect(mockDOM.historyContainer.innerHTML).toContain('02/12/2023 10:00');
     });
 
-    it('should show attempt count when multiple attempts were made', () => {
+    it('should show attempt count when multiple attempts were made', async () => {
       const historyWithAttempts = [
         {
           ...mockHistory[0],
@@ -1086,6 +1128,9 @@ describe('Options Script Comprehensive Tests', () => {
       const refreshButton = mockDOM.refreshHistory;
       const clickHandler = refreshButton.addEventListener.mock.calls[0][1];
       clickHandler();
+
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
     });
   });
 
@@ -1401,7 +1446,7 @@ describe('Options Script Comprehensive Tests', () => {
       );
     });
 
-    it('should display history items', () => {
+    it('should display history items', async () => {
       const mockHistory = [
         {
           id: '1',
@@ -1427,6 +1472,9 @@ describe('Options Script Comprehensive Tests', () => {
       const clickHandler = refreshButton.addEventListener.mock.calls[0][1];
       clickHandler();
 
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
+
       expect(mockDOM.historyContainer.innerHTML).toContain('Example Page');
     });
 
@@ -1451,7 +1499,7 @@ describe('Options Script Comprehensive Tests', () => {
       global.confirm = originalConfirm;
     });
 
-    it('should export history to CSV format', () => {
+    it('should export history to CSV format', async () => {
       const mockHistory = [
         {
           id: '1',
@@ -1478,12 +1526,18 @@ describe('Options Script Comprehensive Tests', () => {
       const refreshHandler = refreshButton.addEventListener.mock.calls[0][1];
       refreshHandler();
 
+      // Wait for initial load
+      await new Promise(resolve => setTimeout(resolve, 0));
+
       // Mock the export function calls
       const exportButton = mockDOM.exportHistory;
       const clickHandler = exportButton.addEventListener.mock.calls[0][1];
 
       mockDOM.exportFormat.value = 'csv';
       clickHandler();
+
+      // Wait for export operation
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       // Should have created a download link
       expect(document.createElement).toHaveBeenCalledWith('a');
@@ -1525,7 +1579,7 @@ describe('Options Script Comprehensive Tests', () => {
       expect(document.createElement).toHaveBeenCalledWith('a');
     });
 
-    it('should export history to HTML format', () => {
+    it('should export history to HTML format', async () => {
       const mockHistory = [
         {
           id: '1',
@@ -1552,16 +1606,22 @@ describe('Options Script Comprehensive Tests', () => {
       const refreshHandler = refreshButton.addEventListener.mock.calls[0][1];
       refreshHandler();
 
+      // Wait for initial load
+      await new Promise(resolve => setTimeout(resolve, 0));
+
       const exportButton = mockDOM.exportHistory;
       const clickHandler = exportButton.addEventListener.mock.calls[0][1];
 
       mockDOM.exportFormat.value = 'html';
       clickHandler();
 
+      // Wait for export operation
+      await new Promise(resolve => setTimeout(resolve, 0));
+
       expect(document.createElement).toHaveBeenCalledWith('a');
     });
 
-    it('should filter history based on search term', () => {
+    it('should filter history based on search term', async () => {
       const mockHistory = [
         {
           id: '1',
@@ -1596,6 +1656,9 @@ describe('Options Script Comprehensive Tests', () => {
       const refreshButton = mockDOM.refreshHistory;
       const refreshHandler = refreshButton.addEventListener.mock.calls[0][1];
       refreshHandler();
+
+      // Wait for initial load
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       // Now filter
       mockDOM.searchInput.value = 'Example';
@@ -1603,11 +1666,14 @@ describe('Options Script Comprehensive Tests', () => {
         mockDOM.searchInput.addEventListener.mock.calls[0][1];
       searchHandler();
 
+      // Wait for filter operation
+      await new Promise(resolve => setTimeout(resolve, 0));
+
       expect(mockDOM.historyContainer.innerHTML).toContain('Example Page');
       expect(mockDOM.historyContainer.innerHTML).not.toContain('Test Page');
     });
 
-    it('should filter history based on model selection', () => {
+    it('should filter history based on model selection', async () => {
       const mockHistory = [
         {
           id: '1',
@@ -1643,11 +1709,17 @@ describe('Options Script Comprehensive Tests', () => {
       const refreshHandler = refreshButton.addEventListener.mock.calls[0][1];
       refreshHandler();
 
+      // Wait for initial load
+      await new Promise(resolve => setTimeout(resolve, 0));
+
       // Now filter by model
       mockDOM.filterModel.value = 'chrome-builtin';
       const filterHandler =
         mockDOM.filterModel.addEventListener.mock.calls[0][1];
       filterHandler();
+
+      // Wait for filter operation
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       expect(mockDOM.historyContainer.innerHTML).toContain(
         'Chrome Built-in AI'
@@ -1663,7 +1735,7 @@ describe('Options Script Comprehensive Tests', () => {
       });
     });
 
-    it('should display metrics when received', () => {
+    it('should display metrics when received', async () => {
       const mockMetrics = {
         'chrome-builtin': {
           totalRequests: 10,
@@ -1684,6 +1756,9 @@ describe('Options Script Comprehensive Tests', () => {
           });
         }
       );
+
+      // Wait for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       expect(mockDOM.metricsContainer.innerHTML).toContain(
         'Chrome Built-in AI'
