@@ -1,7 +1,7 @@
 # AI Summary
 
 [![CI](https://github.com/lassestilvang/ai-summary-extension/workflows/CI/badge.svg)](https://github.com/lassestilvang/ai-summary-extension/actions)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/lassestilvang/ai-summary-extension)
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/lassestilvang/ai-summary-extension)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ![SCR-20250925-porj-2](https://github.com/user-attachments/assets/19f33ad3-419b-4ce1-9752-3fd0817c9402)
@@ -17,7 +17,6 @@
 - [Configuration Options](#configuration-options)
 - [Keyboard Shortcuts](#keyboard-shortcuts)
 - [Troubleshooting Tips](#troubleshooting-tips)
-- [Screenshots](#screenshots)
 - [Contribution Guidelines](#contribution-guidelines)
 - [License Information](#license-information)
 - [Acknowledgments](#acknowledgments)
@@ -195,12 +194,44 @@ The extension uses `chrome.storage.sync` for persistent settings:
 
 ## Configuration Options
 
+### Language Selection
+
+Choose the language for AI-generated summaries:
+
+- English (default)
+- Spanish
+- French
+- German
+- Italian
+- Portuguese
+- Chinese
+- Japanese
+- Korean
+- Russian
+- Arabic
+- Hindi
+- Danish
+- Norwegian
+- Swedish
+- Finnish
+- Polish
+- Ukrainian
+- Dutch
+
+### Summary Length
+
+Control the length of generated summaries:
+
+- **Short**: Brief, concise summaries
+- **Medium**: Balanced length summaries (default)
+- **Long**: Detailed, comprehensive summaries
+
 ### AI Model Selection
 
 Choose from various AI models with different capabilities and costs:
 
 - **Free Models**:
-  - Chrome Built-in AI (Free)
+  - Chrome Built-in AI (Free, requires Chrome 138+)
   - Gemini 2.0 Flash Experimental (Free)
 
 - **OpenAI Models**:
@@ -208,16 +239,38 @@ Choose from various AI models with different capabilities and costs:
   - GPT-4 ($0.03/1K tokens)
   - GPT-4 Turbo ($0.01/1K tokens)
   - GPT-4o ($0.005/1K tokens)
+  - GPT-5 ($0.00125/1K tokens)
+  - GPT-5 mini ($0.00025/1K tokens)
+  - GPT-5 nano ($0.00005/1K tokens)
 
 - **Google Gemini Models**:
-  - Gemini 1.5 Pro ($0.00125/1K tokens)
-  - Gemini 1.5 Flash ($0.000075/1K tokens)
+  - Gemini 2.5 Pro ($0.00125/1K tokens)
+  - Gemini 2.5 Flash ($0.00003/1K tokens)
 
 - **Anthropic Claude Models**:
   - Claude 3 Haiku ($0.00025/1K tokens)
   - Claude 3 Sonnet ($0.003/1K tokens)
   - Claude 3 Opus ($0.015/1K tokens)
   - Claude 3.5 Sonnet ($0.003/1K tokens)
+  - Claude 4.5 Sonnet ($0.003/1K tokens)
+  - Claude 4.5 Haiku ($0.001/1K tokens)
+
+### Temperature
+
+Adjust the creativity/randomness of AI responses:
+
+- Range: 0.0 to 2.0
+- Default: 0.7
+- Lower values (0.0-0.5): More focused and deterministic
+- Higher values (1.0-2.0): More creative and varied
+
+### Max Tokens
+
+Set the maximum length of AI responses:
+
+- Range: 100 to 4000 tokens
+- Default: 1000 tokens
+- Higher values allow longer summaries but may increase costs
 
 ### Fallback Settings
 
@@ -227,12 +280,34 @@ Choose from various AI models with different capabilities and costs:
 ### API Keys
 
 - Securely store API keys for paid AI services
-- Keys are encrypted and stored locally
+- Keys are encrypted and stored locally using Chrome's storage API
+- Real-time validation with visual indicators
+- Required for OpenAI, Google Gemini, and Anthropic models
 
-### Theme Selection
+### Theme Customization
 
-- Choose from available themes to customize the UI appearance
-- Themes are defined in `themes.js`
+- Choose from 20+ available themes to customize the UI appearance
+- Customize font family, size (8-24px), and style
+- Real-time preview of theme changes
+- Available themes include: Light, Dark, Solarized, Nord, Autumn, Synthwave, and many more
+
+### Extension Settings
+
+#### Right-Click Context Menu
+
+- Enable/disable right-click context menu for selected text
+- When enabled, right-clicking on selected text shows an option to summarize it
+- Default: Enabled
+
+#### Date and Time Format
+
+Choose how dates and times are displayed in the extension:
+
+- DD/MM/YYYY HH:MM (24-hour) - 17/10/2024 20:21
+- MM/DD/YYYY HH:MM (12-hour) - 10/17/2024 08:21 PM
+- YYYY-MM-DD HH:MM (24-hour) - 2024-10-17 20:21
+- DD.MM.YYYY HH:MM (24-hour) - 17.10.2024 20:21
+- MM-DD-YYYY HH:MM (12-hour) - 10-17-2024 08:21 PM
 
 ## Keyboard Shortcuts
 
@@ -342,26 +417,6 @@ To reset all settings:
 3. Click "Details"
 4. Scroll to "Site access" and click "Clear storage"
 
-## Screenshots
-
-### Main Interface
-
-![Extension Popup](screenshots/popup.png)
-
-_The main extension popup showing a page summary_
-
-### Settings Page
-
-![Options Page](screenshots/options.png)
-
-_Configuration options for AI models and API keys_
-
-### Performance Metrics
-
-![Metrics Dashboard](screenshots/metrics.png)
-
-_Model performance tracking and statistics_
-
 ## Contribution Guidelines
 
 We welcome contributions! Please follow these guidelines:
@@ -422,7 +477,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Project Homepage**: [https://github.com/lassestilvang/ai-summary-extension](https://github.com/lassestilvang/ai-summary-extension)
 - **Issues**: [GitHub Issues](https://github.com/lassestilvang/ai-summary-extension/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/lassestilvang/ai-summary-extension/discussions)
 
 ---
 
