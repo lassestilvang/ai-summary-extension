@@ -19,7 +19,7 @@
     "install-deps": "npm install"
   },
   "devDependencies": {
-    "@babel/core": "^7.28.5",
+    "@babel/core": "^7.29.6",
     "@babel/preset-env": "^7.28.5",
     "@stryker-mutator/core": "^9.2.0",
     "@stryker-mutator/jest-runner": "^9.2.0",
